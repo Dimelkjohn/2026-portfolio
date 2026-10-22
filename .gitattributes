@@ -1,0 +1,9 @@
+# Keep LF in the repo and the working tree (matches .editorconfig and Prettier)
+* text=auto eol=lf
+
+# Binary assets
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.svg text
