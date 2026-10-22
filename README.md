@@ -4,6 +4,8 @@ Portfolio for John Dimelu, frontend and full-stack engineer, UI/UX designer.
 The whole site is a detective evidence board: pinned photos, newspaper
 clippings and post-it notes joined by red thread, viewed at night by torchlight.
 
+Repo: https://github.com/Dimelkjohn/2026-portfolio (private while in progress).
+
 ## Stack
 
 | Concern    | Choice                                          |
@@ -11,6 +13,7 @@ clippings and post-it notes joined by red thread, viewed at night by torchlight.
 | Framework  | React 19 + TypeScript (strict), Vite 8          |
 | Styling    | Tailwind v4 (`@theme` tokens) + plain CSS files |
 | Motion     | `motion` (Framer Motion), CSS custom properties |
+| Images     | `sharp` build script for textures               |
 | Tests      | Vitest + Testing Library (jsdom)                |
 | Lint / fmt | oxlint, Prettier (Tailwind class sorting)       |
 | Git hooks  | Husky + lint-staged on pre-commit               |
@@ -18,7 +21,7 @@ clippings and post-it notes joined by red thread, viewed at night by torchlight.
 ## Scripts
 
 ```sh
-npm run dev            # start the dev server
+npm run dev            # start the dev server (http://localhost:5173)
 npm run build          # typecheck + production build to dist/
 npm run preview        # serve the production build
 npm run check          # typecheck + lint + format check + tests
@@ -38,27 +41,44 @@ src/
     board/                cork board (full viewport) + evidence layer
     torch/                night overlay + beam that follows the pointer
   hooks/
-    useTorch.ts           pointer tracking -> --torch-x/--torch-y on :root
+    useTorch.ts           frame loop: pointer easing, sway, breathing, flicker
     useReducedMotion.ts   prefers-reduced-motion as a React value
   data/board.ts           board content (items + threads), empty for now
   types/evidence.ts       EvidenceItem / Thread / BoardData model
   lib/cn.ts               class name helper
   test/setup.ts           jest-dom matchers, matchMedia stub
-public/textures/          generated web-sized textures (npm run textures)
-assets-src/textures/      full-resolution originals, git-ignored
-scripts/optimize-textures.mjs  sharp script that fills public/textures
-docs/inspiration/         reference images for the look
+scripts/optimize-textures.mjs  builds the seamless cork tile (see below)
+public/textures/          generated web-sized textures (committed)
+assets-src/textures/      full-resolution originals, git-ignored (35 MB)
+docs/inspiration/         reference images for the look (see note below)
 ```
+
+## How the board works
+
+The cork is one 1600x1068 JPEG tile built by `npm run textures` from the
+original photo in `assets-src/textures`. The script flattens the photo's
+lighting (subtracts a heavy blur), then makes it tileable with a
+contrast-preserving offset blend, so repeats show no grid, seams or soft
+bands. There is no mirroring. The CSS tiles it at `--cork-tile-size`
+(1000px, in `src/index.css`); smaller means finer grain. A large soft-light
+mottle layer sits on top to break any residual repetition, and a procedural
+noise layer underneath is the fallback if the photo fails to load.
 
 ## How the torch works
 
-`useTorch` listens for `pointermove` and eases the beam toward the pointer in a
-`requestAnimationFrame` loop, writing `--torch-x` and `--torch-y` directly to
-`:root`. No React state is touched per move. Two fixed layers read those
-variables: a warm soft-light glow and a dark overlay with a radial mask that
-punches the hole. A registered `--torch-flicker` property animates the radius
-for a hand-held feel. Reduced motion disables the lag and the flicker; touch
-devices get a wider, lighter beam.
+`useTorch` runs a `requestAnimationFrame` loop and writes four custom
+properties to `:root` each frame: `--torch-x` / `--torch-y` (beam centre,
+eased toward the pointer with an 85ms time constant plus a few px of
+hand-held sway), `--torch-scale` (slow breathing of the radius) and
+`--torch-intensity` (random flicker bursts every 2.5-9s, floor 0.55, never
+off). No React state is touched per frame.
+
+Three fixed layers read those variables: a soft-light warm spill, a
+screen-blended hotspot with corona and reflector rings and an orange edge
+fringe, and the dark overlay whose radial mask punches out the beam. The
+page cursor is hidden; the beam is the cursor. Reduced motion snaps the beam
+and holds it steady; touch devices get a wider, lighter beam. Knobs live at
+the top of `src/hooks/useTorch.ts` and in `src/index.css`.
 
 ## Roadmap
 
@@ -66,3 +86,9 @@ devices get a wider, lighter beam.
 - [ ] Evidence items pinned to the board with hover tooltips (fun facts)
 - [ ] Red thread between items converging on "who is John Dimelu?"
 - [ ] Clickable items open a carousel for a closer look
+
+## Before making the repo public
+
+- Delete `docs/inspiration/` (watermarked stock photos, reference only) and
+  commit the removal. The Figma draft in that folder can be kept elsewhere.
+- Then: `gh repo edit Dimelkjohn/2026-portfolio --visibility public --accept-visibility-change-consequences`
