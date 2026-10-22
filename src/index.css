@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+/*
+  Design tokens for the evidence board.
+  Tailwind v4 reads @theme and exposes these as utilities (bg-cork, text-ink, ...).
+*/
+@theme {
+  --color-cork: #a9733f;
+  --color-cork-deep: #7a4f27;
+  --color-night: #07070e;
+  --color-torch: #ffd79a;
+  --color-ink: #1b1b1f;
+  --color-paper: #f3ecd9;
+  --color-postit: #f7e463;
+  --color-thread: #b3121b;
+
+  --font-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --font-mono-type: 'Special Elite', 'Courier New', monospace;
+}
+
+:root {
+  /* Torch position/size are written to :root by useTorch so that the fixed
+     torch layers can blend with the board without a wrapping stacking context. */
+  /* Rendered width of one cork tile. Smaller = finer grain. */
+  --cork-tile-size: 1000px;
+
+  --torch-x: 50vw;
+  --torch-y: 50vh;
+  --torch-radius: 240px;
+  --torch-darkness: 0.94;
+
+  color-scheme: dark;
+  background-color: var(--color-night);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-mono-type);
+  /* The torch beam is the cursor. */
+  cursor: none;
+  color: var(--color-paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Touch devices have no hover: widen the beam and lift the darkness so the board stays readable. */
+@media (hover: none) {
+  :root {
+    --torch-radius: 360px;
+    --torch-darkness: 0.8;
+  }
+}

@@ -1,0 +1,58 @@
+/*
+  The cork board itself. Layer order (top to bottom):
+    1. public/textures/cork-board.jpg  - drop the real texture here; if the
+       file is missing the browser skips it and the procedural cork shows.
+    2. Procedural cork: SVG fractal noise multiplied over the cork colour.
+*/
+.board {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background-color: var(--color-cork);
+}
+
+.board__cork {
+  position: absolute;
+  inset: 0;
+  /*
+    Layers, top to bottom:
+      1. Mottle: very low-frequency noise on a large tile, soft-light blended.
+         Adds slow light/dark variation that does not line up with the cork
+         tile, so the repeat never reads as a grid.
+      2. Cork: offset-blended seamless tile (no mirroring), tiled at
+         --cork-tile-size so the grain reads like cork seen from a chair.
+      3. Procedural fallback (fine noise multiplied over a cork gradient),
+         only visible if the photo fails to load.
+  */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1800' height='1800'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.0022' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.55'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>"),
+    url('/textures/cork-board.jpg'),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at center, #b9834a 0%, #a9733f 55%, #8c5c30 100%);
+  background-size:
+    1800px 1800px,
+    var(--cork-tile-size) auto,
+    320px 320px,
+    cover;
+  background-position:
+    37% 61%,
+    top left,
+    top left,
+    center;
+  background-repeat: repeat, repeat, repeat, no-repeat;
+  background-blend-mode: soft-light, normal, multiply, normal;
+}
+
+/* Soft vignette only; the cork runs right to the viewport edge. */
+.board__frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 160px rgb(0 0 0 / 0.35);
+}
+
+/* Future evidence items (photos, clippings, post-its, thread) mount here. */
+.board__layer {
+  position: absolute;
+  inset: 0;
+}

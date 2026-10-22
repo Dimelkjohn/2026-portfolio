@@ -1,0 +1,114 @@
+/*
+  Three fixed, pointer-transparent layers above the board, modelled on a real
+  hand torch: a near-white hotspot in the middle, a warm spill around it, a
+  slightly brighter corona ring where the reflector's edge focuses light, faint
+  outer reflector rings, and a warm-to-orange fringe at the edge of the beam.
+
+  .torch-glow     warm spill, soft-light blended so the cork looks lit.
+  .torch-hotspot  hotspot + corona + reflector rings, screen blended (additive).
+  .torch-dark     the night. A radial mask punches the beam out of it.
+
+  All read from :root (written every frame by useTorch):
+    --torch-x / --torch-y   beam centre
+    --torch-scale           radius multiplier (breathing)
+    --torch-intensity       0.55-1, random flicker, never fully off
+  --torch-radius and --torch-darkness are static tokens in index.css.
+
+  They are siblings of the board, not children of a wrapper, because a wrapper
+  with position:fixed would create a stacking context and break the blending.
+*/
+
+:root {
+  --torch-scale: 1;
+  --torch-intensity: 1;
+  --torch-r: calc(var(--torch-radius) * var(--torch-scale));
+  --torch-i: var(--torch-intensity);
+}
+
+.torch-glow,
+.torch-hotspot,
+.torch-dark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Warm spill. Slightly cooler near the centre, warmer toward the edge. */
+.torch-glow {
+  z-index: 41;
+  background: radial-gradient(
+    circle calc(var(--torch-r) * 1.25) at var(--torch-x) var(--torch-y),
+    rgb(255 232 190 / calc(0.55 * var(--torch-i))) 0%,
+    rgb(255 214 150 / calc(0.4 * var(--torch-i))) 30%,
+    rgb(255 190 120 / calc(0.2 * var(--torch-i))) 60%,
+    rgb(255 160 90 / calc(0.08 * var(--torch-i))) 82%,
+    transparent 100%
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* Hotspot, corona ring, reflector rings and the orange edge fringe. */
+.torch-hotspot {
+  z-index: 42;
+  background:
+    /* hotspot: tight, near-white */
+    radial-gradient(
+      circle calc(var(--torch-r) * 0.6) at var(--torch-x) var(--torch-y),
+      rgb(255 246 225 / calc(0.2 * var(--torch-i))) 0%,
+      rgb(255 240 210 / calc(0.11 * var(--torch-i))) 35%,
+      rgb(255 232 195 / calc(0.04 * var(--torch-i))) 70%,
+      transparent 100%
+    ),
+    /* corona: brighter band just inside the beam edge */
+    radial-gradient(
+        circle calc(var(--torch-r) * 1.3) at var(--torch-x) var(--torch-y),
+        transparent 52%,
+        rgb(255 226 176 / calc(0.07 * var(--torch-i))) 62%,
+        rgb(255 226 176 / calc(0.13 * var(--torch-i))) 70%,
+        rgb(255 215 160 / calc(0.05 * var(--torch-i))) 78%,
+        transparent 86%
+      ),
+    /* inner reflector ring */
+    radial-gradient(
+        circle calc(var(--torch-r) * 1.3) at var(--torch-x) var(--torch-y),
+        transparent 38%,
+        rgb(255 236 200 / calc(0.05 * var(--torch-i))) 42%,
+        transparent 46%
+      ),
+    /* orange fringe at the very edge of the beam */
+    radial-gradient(
+        circle calc(var(--torch-r) * 1.7) at var(--torch-x) var(--torch-y),
+        transparent 74%,
+        rgb(255 150 70 / calc(0.07 * var(--torch-i))) 80%,
+        rgb(230 110 50 / calc(0.04 * var(--torch-i))) 86%,
+        transparent 92%
+      );
+  mix-blend-mode: screen;
+}
+
+.torch-dark {
+  z-index: 43;
+  background: rgb(7 7 14 / var(--torch-darkness));
+  /*
+    Mask: alpha = how much night shows. Centre alpha rises as intensity drops,
+    so a flicker visibly dims the whole beam; the edge stays fully dark.
+  */
+  -webkit-mask-image: radial-gradient(
+    circle calc(var(--torch-r) * 1.7) at var(--torch-x) var(--torch-y),
+    rgb(0 0 0 / calc(1 - var(--torch-i))) 0%,
+    rgb(0 0 0 / calc(1 - 0.92 * var(--torch-i))) 22%,
+    rgb(0 0 0 / calc(1 - 0.7 * var(--torch-i))) 42%,
+    rgb(0 0 0 / calc(1 - 0.3 * var(--torch-i))) 62%,
+    rgb(0 0 0 / 0.9) 82%,
+    black 100%
+  );
+  mask-image: radial-gradient(
+    circle calc(var(--torch-r) * 1.7) at var(--torch-x) var(--torch-y),
+    rgb(0 0 0 / calc(1 - var(--torch-i))) 0%,
+    rgb(0 0 0 / calc(1 - 0.92 * var(--torch-i))) 22%,
+    rgb(0 0 0 / calc(1 - 0.7 * var(--torch-i))) 42%,
+    rgb(0 0 0 / calc(1 - 0.3 * var(--torch-i))) 62%,
+    rgb(0 0 0 / 0.9) 82%,
+    black 100%
+  );
+}
