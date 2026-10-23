@@ -14,7 +14,9 @@ darkened board with no beam, a click plays the torch switch-on clip and the
 beam comes on with it, then the
 clip's ambience loops for the whole visit. Experimental and may be removed: a
 housefly (`src/components/fly/`) that darts across the board under the
-torch and buzzes louder as the cursor nears it. Next up, in order: evidence items with
+torch and buzzes louder as the cursor nears it. Background music: two tracks
+in `src/data/music.ts`, random first, then alternating with a crossfade.
+Next up, in order: evidence items with
 hover tooltips (fun facts), red thread converging on a centre post-it cluster
 ("who is John Dimelu?"), then a carousel for clickable items. The data model
 for all of that already exists in `src/types/evidence.ts`; content goes in

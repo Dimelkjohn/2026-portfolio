@@ -25,8 +25,14 @@ export type AudioEngine = {
    * before the bus exists, so it can be set from saved preferences at startup.
    */
   setBusLevel(bus: string, level: number): void
-  /** Fetch and decode a clip, cached by URL. */
+  /** Fetch and decode a clip, cached by URL. Short clips only: decoded audio is big. */
   load(url: string): Promise<AudioBuffer>
+  /**
+   * Route a media element (streamed audio, for long tracks) into a node of
+   * the graph. An element can only ever be wrapped once; later calls reuse
+   * the wrapper.
+   */
+  connectElement(element: HTMLMediaElement, out: AudioNode): void
   /**
    * Resolves once the context is running. Browsers only allow that after the
    * visitor has clicked, tapped or pressed a key; if the first attempt is
@@ -61,6 +67,7 @@ export function createAudioEngine(
   const clips = new Map<string, Promise<AudioBuffer>>()
   const buses = new Map<string, GainNode>()
   const busLevels = new Map<string, number>()
+  const elementSources = new WeakMap<HTMLMediaElement, MediaElementAudioSourceNode>()
 
   const bus = (name: string) => {
     let node = buses.get(name)
@@ -133,6 +140,16 @@ export function createAudioEngine(
       node.gain.value = gain
       node.connect((busName && bus(busName)) || master)
       return node
+    },
+    connectElement(element, out) {
+      const ctx = ensure()
+      if (!ctx) throw new Error('Web Audio is not supported here')
+      let source = elementSources.get(element)
+      if (!source) {
+        source = ctx.createMediaElementSource(element)
+        elementSources.set(element, source)
+      }
+      source.connect(out)
     },
     setBusLevel(name, level) {
       const value = Math.min(1, Math.max(0, level))

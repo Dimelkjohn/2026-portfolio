@@ -36,10 +36,10 @@ describe('SoundControls', () => {
     expect(soundPreferences.isOn('torch')).toBe(true)
   })
 
-  it('offers music as a switch that is not wired up yet', () => {
+  it('offers a music switch', () => {
     render(<SoundControls />)
     const music = screen.getByRole('button', { name: /music/i })
-    expect(music).toBeDisabled()
-    expect(music).toHaveTextContent(/soon/i)
+    expect(music).toBeEnabled()
+    expect(music).not.toHaveTextContent(/soon/i)
   })
 })

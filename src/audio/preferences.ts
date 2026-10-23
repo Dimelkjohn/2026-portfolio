@@ -18,7 +18,7 @@ export type SoundInfo = {
 export const SOUNDS: readonly SoundInfo[] = [
   { id: 'torch', label: 'Flashlight', available: true },
   { id: 'fly', label: 'Fly (Gus)', available: true },
-  { id: 'music', label: 'Music', available: false },
+  { id: 'music', label: 'Music', available: true },
 ]
 
 /** Everything on unless the visitor switches it off. */

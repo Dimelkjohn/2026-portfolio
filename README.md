@@ -103,7 +103,13 @@ and `src/audio/preferences.ts` holds one on/off switch per bus, remembered
 in localStorage and shown as the switches in the top-right corner
 (`src/components/sound/SoundControls.tsx`). A muted sound keeps running, so
 the torch's light stays in sync with its (silent) clip. Everything defaults
-to on. Music is listed but not wired up yet.
+to on.
+
+Music (`src/audio/music.ts`, mounted by `src/components/music/Music.tsx`)
+plays the tracks in `src/data/music.ts` (`public/audio/*.mp3`): one picked
+at random when the page opens, then each one fading into the next over 3 s
+as it ends, round the list for the whole visit. Tracks are streamed through
+`<audio>` elements routed into the music bus, never decoded into memory.
 
 The torch's clip is `public/audio/torch.mp3` (13 s): 0-1 s the switch
 clicking on, 1-11 s the ambience of the torch running, 11-13 s the switch-off

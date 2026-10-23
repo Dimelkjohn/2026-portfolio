@@ -8,6 +8,15 @@ export class FakeAudioParam {
   value = 1
   curves: Array<{ curve: Float32Array; at: number; duration: number }> = []
   targets: Array<{ value: number; at: number; timeConstant: number }> = []
+  ramps: Array<{ value: number; at: number }> = []
+  cancelScheduledValues() {
+    return this
+  }
+  linearRampToValueAtTime(value: number, at: number) {
+    this.ramps.push({ value, at })
+    this.value = value
+    return this
+  }
   setValueCurveAtTime(curve: Float32Array, at: number, duration: number) {
     this.curves.push({ curve, at, duration })
     return this
@@ -70,6 +79,12 @@ export class FakeAudioContext extends EventTarget {
     this.sources.push(source)
     return source
   }
+  elementSources: FakeNode[] = []
+  createMediaElementSource() {
+    const node = new FakeNode()
+    this.elementSources.push(node)
+    return node
+  }
   decodeAudioData(bytes: ArrayBuffer) {
     this.decoded.push(bytes)
     return Promise.resolve({ duration: 13, byteLength: bytes.byteLength })
@@ -98,6 +113,37 @@ export function fakeAudioContextClass() {
     }
   }
   return { Ctx: Ctx as unknown as typeof AudioContext, instances }
+}
+
+/** A stand-in for <audio>: records play/pause and lets a test move the clock. */
+export class FakeMediaElement extends EventTarget {
+  src = ''
+  preload = ''
+  currentTime = 0
+  duration = Number.NaN
+  paused = true
+  plays = 0
+  play() {
+    this.paused = false
+    this.plays++
+    return Promise.resolve()
+  }
+  pause() {
+    this.paused = true
+  }
+  removeAttribute(name: string) {
+    if (name === 'src') this.src = ''
+  }
+  /** Set the playhead and fire timeupdate, as the browser would. */
+  seek(time: number) {
+    this.currentTime = time
+    this.dispatchEvent(new Event('timeupdate'))
+  }
+  end() {
+    this.currentTime = this.duration
+    this.paused = true
+    this.dispatchEvent(new Event('ended'))
+  }
 }
 
 /** A fetch stub that serves a small buffer for any URL, or fails with `status`. */

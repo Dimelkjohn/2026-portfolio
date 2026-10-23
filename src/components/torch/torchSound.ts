@@ -31,7 +31,7 @@ export type TorchSoundCues = {
 export const TORCH_SOUND_CUES: TorchSoundCues = { switchOnEnd: 1, ambienceEnd: 11 }
 
 /** The torch's level on the master bus, 0-1. */
-const VOLUME = 0.7
+const VOLUME = 0.43
 
 export type TorchSoundOutcome = 'playing' | 'silent'
 
