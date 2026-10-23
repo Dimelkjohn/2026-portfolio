@@ -12,7 +12,11 @@
     --torch-x / --torch-y   beam centre
     --torch-scale           radius multiplier (breathing)
     --torch-intensity       0.55-1, random flicker, never fully off
+    --torch-power           0 before the switch-on, 1 once the torch is running
   --torch-radius and --torch-darkness are static tokens in index.css.
+
+  At power 0 there is no beam: the board shows under the plain night
+  darkness. The switch-on sound brings the power (and with it the beam) up.
 
   They are siblings of the board, not children of a wrapper, because a wrapper
   with position:fixed would create a stacking context and break the blending.
@@ -21,8 +25,9 @@
 :root {
   --torch-scale: 1;
   --torch-intensity: 1;
+  --torch-power: 0;
   --torch-r: calc(var(--torch-radius) * var(--torch-scale));
-  --torch-i: var(--torch-intensity);
+  --torch-i: calc(var(--torch-intensity) * var(--torch-power));
 }
 
 .torch-glow,
@@ -99,7 +104,7 @@
     rgb(0 0 0 / calc(1 - 0.92 * var(--torch-i))) 22%,
     rgb(0 0 0 / calc(1 - 0.7 * var(--torch-i))) 42%,
     rgb(0 0 0 / calc(1 - 0.3 * var(--torch-i))) 62%,
-    rgb(0 0 0 / 0.9) 82%,
+    rgb(0 0 0 / calc(1 - 0.1 * var(--torch-power))) 82%,
     black 100%
   );
   mask-image: radial-gradient(
@@ -108,7 +113,37 @@
     rgb(0 0 0 / calc(1 - 0.92 * var(--torch-i))) 22%,
     rgb(0 0 0 / calc(1 - 0.7 * var(--torch-i))) 42%,
     rgb(0 0 0 / calc(1 - 0.3 * var(--torch-i))) 62%,
-    rgb(0 0 0 / 0.9) 82%,
+    rgb(0 0 0 / calc(1 - 0.1 * var(--torch-power))) 82%,
     black 100%
   );
+}
+
+/* Shown in the dark when the browser will not play sound until the visitor interacts. */
+.torch-prompt {
+  position: fixed;
+  z-index: 44;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  pointer-events: none;
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: rgb(243 236 217 / 0.45);
+  animation: torch-prompt-in 1.2s ease-out both;
+}
+
+@keyframes torch-prompt-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .torch-prompt {
+    animation: none;
+  }
 }

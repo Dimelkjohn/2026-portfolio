@@ -9,7 +9,12 @@ Remote: https://github.com/Dimelkjohn/2026-portfolio (private, branch `master`).
 ## Status
 
 Done: initial load (cork board texture, night overlay, torch beam with lag,
-sway, breathing and random flicker). Next up, in order: evidence items with
+sway, breathing and random flicker), and sound: the page opens as the
+darkened board with no beam, a click plays the torch switch-on clip and the
+beam comes on with it, then the
+clip's ambience loops for the whole visit. Experimental and may be removed: a
+housefly (`src/components/fly/`) that darts across the board under the
+torch and buzzes louder as the cursor nears it. Next up, in order: evidence items with
 hover tooltips (fun facts), red thread converging on a centre post-it cluster
 ("who is John Dimelu?"), then a carousel for clickable items. The data model
 for all of that already exists in `src/types/evidence.ts`; content goes in
@@ -38,6 +43,12 @@ as references. Do not make the repo public with that folder present.
 - Respect `prefers-reduced-motion` for any new animation (`useReducedMotion`).
 - Board content (items, fun facts, threads) belongs in `src/data/board.ts`,
   typed by `src/types/evidence.ts`, not in components.
+- All sound goes through the shared engine in `src/audio/engine.ts` (one
+  AudioContext, master gain, clip cache, one autoplay unlock). New sounds
+  take `audio.channel(volume, bus)` and `audio.load()`; never create another
+  AudioContext. Each object has a bus (`torch`, `fly`, `music`) with an
+  on/off switch in `src/audio/preferences.ts`, shown top-right by
+  `SoundControls`. Clips live in `public/audio/`. See README "How the sound works".
 - Tests sit next to the code as `*.test.tsx`, using Testing Library queries
   by role/text first, `data-testid` only for presentational layers.
 - Prettier: no semicolons, single quotes, width 100. Husky runs lint-staged on commit.

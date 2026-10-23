@@ -1,0 +1,103 @@
+/*
+  Sound switches, top-right. Above the torch layers (z 60 > 43) so they stay
+  readable in the dark; the page hides the cursor, so they bring it back.
+*/
+.sound-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 8px;
+  min-width: 0;
+  border: 1px solid rgb(243 236 217 / 0.14);
+  border-radius: 6px;
+  background: rgb(7 7 14 / 0.72);
+  backdrop-filter: blur(4px);
+  font-family: var(--font-mono-type);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--color-paper);
+  cursor: auto;
+}
+
+.sound-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sound-switch:hover:not(:disabled) {
+  background: rgb(243 236 217 / 0.06);
+}
+
+.sound-switch:focus-visible {
+  outline: 2px solid var(--color-torch);
+  outline-offset: 1px;
+}
+
+.sound-switch:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* The knob: a small pill with a dot that slides right when on. */
+.sound-switch__knob {
+  position: relative;
+  width: 26px;
+  height: 14px;
+  flex: none;
+  border-radius: 7px;
+  background: rgb(243 236 217 / 0.18);
+  transition: background 150ms ease;
+}
+
+.sound-switch__knob::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-paper);
+  transition: transform 150ms ease;
+}
+
+.sound-switch--on .sound-switch__knob {
+  background: var(--color-torch);
+}
+
+.sound-switch--on .sound-switch__knob::after {
+  transform: translateX(12px);
+  background: var(--color-night);
+}
+
+.sound-switch__label {
+  min-width: 5.5em;
+}
+
+.sound-switch__soon {
+  font-size: 0.68em;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-switch__knob,
+  .sound-switch__knob::after {
+    transition: none;
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useReducedMotion } from './useReducedMotion'
 
 export type TorchOptions = {
@@ -9,6 +9,12 @@ export type TorchOptions = {
   lag?: number
   /** Breathing, sway and random flicker. Off under reduced motion regardless. */
   flicker?: boolean
+  /**
+   * Whether the torch is switched on. No beam while false; flipping
+   * to true runs the switch-on (a short electrical stutter up to full power).
+   * Defaults to true.
+   */
+  lit?: boolean
 }
 
 const DEFAULT_LAG = 85
@@ -19,8 +25,29 @@ const INTENSITY_FLOOR = 0.55
 const BURST_GAP: [number, number] = [2.5, 9]
 /** Burst length in seconds. */
 const BURST_LENGTH: [number, number] = [0.12, 0.5]
+/** Seconds from the switch click to full power. Matches the switch-on sound. */
+const SWITCH_ON_LENGTH = 0.9
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min)
+
+/**
+ * Power (0-1) as a function of seconds since the switch was pressed.
+ * A real torch does not fade in: the contact arcs for a moment, then holds.
+ * Without stutter (reduced motion) it is a plain ease-out.
+ */
+function switchOnCurve(t: number, stutter: boolean): number {
+  if (t <= 0) return 0
+  if (t >= SWITCH_ON_LENGTH) return 1
+  if (stutter) {
+    if (t < 0.08) return 0
+    if (t < 0.16) return 0.6
+    if (t < 0.22) return 0.3
+    const p = (t - 0.22) / (SWITCH_ON_LENGTH - 0.22)
+    return 0.8 + 0.2 * (1 - (1 - p) ** 2)
+  }
+  const p = t / SWITCH_ON_LENGTH
+  return 1 - (1 - p) ** 2
+}
 
 /**
  * The light's behaviour over time, independent of the pointer.
@@ -62,18 +89,25 @@ function createFlicker() {
   }
 }
 
+const PROPERTIES = ['--torch-x', '--torch-y', '--torch-scale', '--torch-intensity', '--torch-power']
+
 /**
- * Drives the torch. Writes four custom properties to :root every frame:
+ * Drives the torch. Writes five custom properties to :root every frame:
  *   --torch-x / --torch-y   beam centre (px), eased toward the pointer with hand-held sway
  *   --torch-scale           radius multiplier (slow breathing)
  *   --torch-intensity       brightness 0.55-1 (random flicker, never off)
+ *   --torch-power           0 while unlit, stutters up to 1 once `lit` becomes true
  *
  * Writes go straight to the DOM in a requestAnimationFrame loop; React never
- * re-renders for pointer movement. Under reduced motion the loop is skipped:
- * the beam snaps to the pointer and the light holds steady.
+ * re-renders for pointer movement. Under reduced motion the loop only runs
+ * for the switch-on fade: the beam snaps to the pointer and the light holds steady.
  */
-export function useTorch({ lag = DEFAULT_LAG, flicker = true }: TorchOptions = {}) {
+export function useTorch({ lag = DEFAULT_LAG, flicker = true, lit = true }: TorchOptions = {}) {
   const reducedMotion = useReducedMotion()
+  /** Timestamp the switch was pressed; -Infinity = on since before the loop started. */
+  const litAt = useRef<number | null>(lit ? Number.NEGATIVE_INFINITY : null)
+  /** Restarts the frame loop if it is idle (set by the main effect). */
+  const kick = useRef<() => void>(() => {})
 
   useEffect(() => {
     const root = document.documentElement
@@ -85,11 +119,15 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true }: TorchOptions = {
     let last = 0
     let start = 0
 
-    const paint = (x: number, y: number, scale: number, intensity: number) => {
+    const power = (now: number) =>
+      litAt.current === null ? 0 : switchOnCurve((now - litAt.current) / 1000, animate)
+
+    const paint = (x: number, y: number, scale: number, intensity: number, p: number) => {
       root.style.setProperty('--torch-x', `${x.toFixed(1)}px`)
       root.style.setProperty('--torch-y', `${y.toFixed(1)}px`)
       root.style.setProperty('--torch-scale', scale.toFixed(3))
       root.style.setProperty('--torch-intensity', intensity.toFixed(3))
+      root.style.setProperty('--torch-power', p.toFixed(3))
     }
 
     const step = (now: number) => {
@@ -108,7 +146,7 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true }: TorchOptions = {
       let scale = 1
       let intensity = 1
 
-      if (flicker) {
+      if (flicker && animate) {
         const light = tick(t, dt)
         scale = light.scale
         intensity = light.intensity
@@ -117,44 +155,60 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true }: TorchOptions = {
         y += 4 * Math.sin(t * 1.4 + 2.1) + 3 * Math.sin(t * 3.3)
       }
 
-      paint(x, y, scale, intensity)
-      frame = requestAnimationFrame(step)
+      const p = power(now)
+      paint(x, y, scale, intensity, p)
+      // Under reduced motion the loop only lives as long as the switch-on.
+      frame = animate || p < 1 ? requestAnimationFrame(step) : 0
+    }
+
+    const resume = () => {
+      if (frame || document.hidden) return
+      frame = requestAnimationFrame((now) => {
+        last = now
+        step(now)
+      })
     }
 
     const onPointerMove = (event: PointerEvent) => {
       target.x = event.clientX
       target.y = event.clientY
-      if (!animate) paint(target.x, target.y, 1, 1)
+      if (!animate) paint(target.x, target.y, 1, 1, power(performance.now()))
     }
 
     const onVisibility = () => {
-      if (!animate) return
       if (document.hidden) {
         cancelAnimationFrame(frame)
         frame = 0
-      } else if (!frame) {
-        last = 0
-        frame = requestAnimationFrame((now) => {
-          last = now
-          step(now)
-        })
+      } else {
+        resume()
       }
     }
 
-    paint(current.x, current.y, 1, 1)
+    kick.current = resume
+    paint(current.x, current.y, 1, 1, power(performance.now()))
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerdown', onPointerMove, { passive: true })
     document.addEventListener('visibilitychange', onVisibility)
-    if (animate) frame = requestAnimationFrame(step)
+    if (animate) resume()
 
     return () => {
+      kick.current = () => {}
       if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerMove)
       document.removeEventListener('visibilitychange', onVisibility)
-      for (const name of ['--torch-x', '--torch-y', '--torch-scale', '--torch-intensity']) {
-        root.style.removeProperty(name)
-      }
+      for (const name of PROPERTIES) root.style.removeProperty(name)
     }
   }, [lag, flicker, reducedMotion])
+
+  // Declared after the main effect so `kick` is wired before the first switch-on.
+  useEffect(() => {
+    if (!lit) {
+      litAt.current = null
+      return
+    }
+    if (litAt.current !== null) return
+    litAt.current = performance.now()
+    kick.current()
+  }, [lit])
 }
