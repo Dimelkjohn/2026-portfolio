@@ -18,7 +18,10 @@ describe('SoundControls', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: /^fly$/i })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Fly (Gus)' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
   })
 
   it('toggles a sound and reflects it', async () => {
