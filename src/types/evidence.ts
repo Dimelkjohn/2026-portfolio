@@ -1,22 +1,74 @@
 /**
  * Shared model for everything pinned to the board.
- * The initial load renders none of these yet; the shape is here so the
- * tooltip / carousel work can build on it without reshaping data later.
+ * Rendered by `src/components/evidence`; content lives in `src/data/board.ts`.
  */
 
-/** Position and rotation on the board, in percent of board width/height. */
+/** Position, size and rotation on the board, in percent of board width/height. */
 export type BoardPlacement = {
   /** 0-100, left edge of the item. */
   x: number
   /** 0-100, top edge of the item. */
   y: number
+  /** Width as a percent of board width. Each kind has a sensible default. */
+  width?: number
   /** Degrees; small values look hand-pinned. */
   rotate?: number
   /** Stacking order among evidence items. */
   z?: number
 }
 
-export type EvidenceKind = 'photo' | 'polaroid' | 'clipping' | 'postit' | 'receipt' | 'fingerprint'
+/**
+ * The kind of paper.
+ *   photo        print with a thin white border
+ *   polaroid     instant print with the thick bottom border
+ *   clipping     torn newspaper column
+ *   postit       yellow sticky note, handwritten
+ *   receipt      narrow till receipt, typed
+ *   fingerprint  white card with ink on it (media) or a drawn print
+ *   cutout       the image is the paper: a PNG with its own alpha, no card
+ *   note         a photographed scrap of paper (media) with handwriting (text) on it
+ */
+export type EvidenceKind =
+  'photo' | 'polaroid' | 'clipping' | 'postit' | 'receipt' | 'fingerprint' | 'cutout' | 'note'
+
+export type PinColor = 'red' | 'white' | 'yellow' | 'black'
+
+/** What holds the paper to the cork. Default: one red pin, top centre. */
+export type Fastener =
+  | {
+      kind: 'pin'
+      color?: PinColor
+      /** 0-100, where along the top edge the pin goes. Default 50. */
+      x?: number
+    }
+  | {
+      kind: 'tape'
+      /** One strip across the top, two opposite corners, or all four. Default 'top'. */
+      corners?: 'top' | 'diagonal' | 'all'
+      /** Strip length as a percent of the item's width. Default 55 (top) or 42 (corners). */
+      width?: number
+    }
+  | { kind: 'none' }
+
+/** A lab tag pinned to a point on the paper, shown only in the lifted view. */
+export type EvidenceLabel = {
+  /** Anchor point, percent of the paper's width and height. */
+  x: number
+  y: number
+  text: string
+  /** Which side of the anchor the tag sits on. Default 'above'. */
+  side?: 'above' | 'below' | 'left' | 'right'
+}
+
+/** An ink mark drawn over the paper itself (a circled face, an arrow), placed in percent. */
+export type EvidenceAnnotation = EvidenceMedia & {
+  /** Centre of the mark, percent of the paper. */
+  x: number
+  y: number
+  /** Width, percent of the paper; height follows the image. */
+  width: number
+  rotate?: number
+}
 
 export type EvidenceMedia = {
   src: string
@@ -28,10 +80,45 @@ export type EvidenceItem = {
   id: string
   kind: EvidenceKind
   placement: BoardPlacement
+  fastener?: Fastener
   /** Shown as the pinned thumbnail on the board. */
   media?: EvidenceMedia
-  /** Handwritten text for post-its and captions. */
+  /**
+   * Short text on the paper itself: a post-it note, a polaroid caption,
+   * a clipping headline, a receipt header, a fingerprint card label.
+   */
   text?: string
+  /** Longer copy: clipping body, receipt lines (newline separated). */
+  body?: string
+  /**
+   * Notes: where the writing may go, as a CSS inset in percent of the paper
+   * (top right bottom left), clear of any tape or tab baked into the photo.
+   * Default '14% 10%'. Framed cutouts: where the caption sits on the frame's
+   * bottom margin. Default 'auto 8% 5% 8%'.
+   */
+  inset?: string
+  /**
+   * Notes only: which handwriting. 'script' (default) is the loose script;
+   * 'caps' is the marker scrawl, always rendered in capitals.
+   */
+  hand?: 'script' | 'caps'
+  /**
+   * Notes only: an ink mark. Beneath the writing by default (an underline, a
+   * scribble); with `around`, drawn over the first occurrence of that word in
+   * the text instead (a circle).
+   */
+  mark?: EvidenceMedia & { around?: string }
+  /** Ink marks drawn over the paper, always visible. */
+  annotations?: EvidenceAnnotation[]
+  /** Lifts to the centre when clicked, like a note, even without labels. */
+  clickable?: boolean
+  /** Heading shown over the lifted view, e.g. 'Core strengths'. */
+  title?: string
+  /**
+   * Findings written on the paper when it is lifted (so the item is
+   * clickable): one tag per point of interest, e.g. a strength per finger.
+   */
+  labels?: EvidenceLabel[]
   /** Fun fact revealed in the hover tooltip. */
   funFact?: string
   /** When present, clicking opens the carousel with these images. */

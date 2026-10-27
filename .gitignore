@@ -29,5 +29,5 @@ pnpm-debug.log*
 Thumbs.db
 *.local
 
-# Full-resolution source assets (large binaries); run `npm run textures` to regenerate public/textures
-assets-src
+# Full-resolution source assets (large binaries). `npm run textures` and `npm run evidence` regenerate public/.
+assets-src/

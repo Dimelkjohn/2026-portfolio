@@ -1,0 +1,880 @@
+/*
+  Evidence pinned to the board.
+
+  Geometry comes from custom properties written by EvidenceItem.tsx:
+    --x / --y    left / top, percent of the board
+    --w          width, percent of the board
+    --rotate     tilt in degrees
+    --z          stacking order (hover lifts the item above its neighbours)
+
+  Each kind is a different piece of paper (.evidence__paper). The fun fact is
+  a manila tag (.evidence__fact) that hangs off the bottom edge on hover or
+  focus. Items live below the torch layers (z 41+), so they are lit the same
+  way as the cork and only readable where the beam falls.
+*/
+
+.evidence {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  z-index: var(--z, 1);
+  transform: rotate(var(--rotate));
+  transform-origin: 50% 0;
+  outline: none;
+  font-family: var(--font-mono-type);
+  color: var(--color-ink);
+  transition: transform 220ms ease;
+}
+
+/* Only paper that does something lifts under the pointer. */
+.evidence--clickable:hover,
+.evidence--clickable:focus-within {
+  z-index: 20;
+  transform: rotate(var(--rotate)) scale(1.03);
+}
+
+/* Hidden in place while its lifted copy is on screen. */
+.evidence--ghost {
+  visibility: hidden;
+}
+
+/*
+  Clickable items light up with a white halo on hover and keyboard focus, so
+  they read as touchable in the dark. The same blurred drop-shadow glow for
+  every kind, so a card and a cutout feel like the same affordance; it follows
+  the paper's edge, whatever the shape.
+*/
+.evidence--clickable .evidence__paper {
+  transition: filter 160ms ease;
+}
+
+.evidence--clickable:is(:hover, :focus-within) .evidence__paper {
+  filter: drop-shadow(0 0 2px rgb(255 255 255 / 1)) drop-shadow(0 0 9px rgb(255 255 255 / 0.85))
+    drop-shadow(0 0 22px rgb(255 255 255 / 0.5)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
+}
+
+/* Cards already carry a box-shadow for depth; while glowing, let the filter do all the shadowing. */
+.evidence--clickable:is(:hover, :focus-within):not(.evidence--cutout, .evidence--note)
+  .evidence__paper {
+  box-shadow: none;
+}
+
+/* Once lifted the paper is in the light already: no halo, no focus ring.
+   The .lift ancestor keeps this ahead of the hover halo on specificity. */
+.lift .evidence--lifted .evidence__paper,
+.lift
+  .evidence--lifted:is(.evidence--cutout, .evidence--note, .evidence):is(:hover, :focus-within)
+  .evidence__paper {
+  outline: none;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
+}
+
+/*
+  The lifted copy. It starts exactly where the original sits, then travels
+  to the centre by --lift-dx/--lift-dy and grows by --lift-s, all in one
+  transform so the pin and tape come along. Same transform origin as on the
+  board, so the start frame matches the original to the pixel.
+*/
+.evidence--lifted {
+  z-index: 1;
+  transition: transform 480ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.evidence--lifted,
+.evidence--lifted:hover,
+.evidence--lifted:focus-within {
+  transform: rotate(var(--rotate));
+}
+
+.evidence--lifted.evidence--entered,
+.evidence--lifted.evidence--entered:hover,
+.evidence--lifted.evidence--entered:focus-within {
+  transform: translate(var(--lift-dx), var(--lift-dy)) scale(var(--lift-s)) rotate(0deg);
+}
+
+/*
+  Lab tags on lifted paper. The item is scaled by --lift-s, so everything
+  here is divided by it to come out at a readable size on screen. Each tag
+  sits off its anchor point on the chosen side, joined to it by a short
+  leader with a dot at the anchor. They fade in once the paper has arrived.
+*/
+.evidence__labels {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease 320ms;
+}
+
+.evidence--entered .evidence__labels {
+  opacity: 1;
+}
+
+/* Overflow so tags can hang past the paper's edge. */
+.evidence--lifted .evidence__paper {
+  overflow: visible;
+}
+
+.evidence__label {
+  --gap: calc(14px / var(--lift-s, 1));
+  position: absolute;
+  left: var(--lx);
+  top: var(--ly);
+  width: max-content;
+  max-width: calc(190px / var(--lift-s, 1));
+  padding: calc(3px / var(--lift-s, 1)) calc(6px / var(--lift-s, 1));
+  border: calc(1px / var(--lift-s, 1)) solid rgb(27 27 31 / 0.75);
+  background: rgb(243 236 217 / 0.94);
+  font-family: var(--font-mono-type);
+  font-size: calc(0.8rem / var(--lift-s, 1));
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  box-shadow: 0 calc(2px / var(--lift-s, 1)) calc(6px / var(--lift-s, 1)) rgb(0 0 0 / 0.35);
+}
+
+/* The leader line (::before) and the anchor dot (::after). */
+.evidence__label::before,
+.evidence__label::after {
+  content: '';
+  position: absolute;
+  background: rgb(27 27 31 / 0.8);
+}
+
+.evidence__label::after {
+  width: calc(5px / var(--lift-s, 1));
+  height: calc(5px / var(--lift-s, 1));
+  border-radius: 50%;
+}
+
+.evidence__label--above {
+  transform: translate(-50%, calc(-100% - var(--gap)));
+}
+
+.evidence__label--above::before {
+  left: 50%;
+  top: 100%;
+  width: calc(1px / var(--lift-s, 1));
+  height: var(--gap);
+}
+
+.evidence__label--above::after {
+  left: 50%;
+  top: calc(100% + var(--gap));
+  transform: translate(-50%, -50%);
+}
+
+.evidence__label--below {
+  transform: translate(-50%, var(--gap));
+}
+
+.evidence__label--below::before {
+  left: 50%;
+  bottom: 100%;
+  width: calc(1px / var(--lift-s, 1));
+  height: var(--gap);
+}
+
+.evidence__label--below::after {
+  left: 50%;
+  bottom: calc(100% + var(--gap));
+  transform: translate(-50%, 50%);
+}
+
+.evidence__label--left {
+  transform: translate(calc(-100% - var(--gap)), -50%);
+}
+
+.evidence__label--left::before {
+  left: 100%;
+  top: 50%;
+  width: var(--gap);
+  height: calc(1px / var(--lift-s, 1));
+}
+
+.evidence__label--left::after {
+  left: calc(100% + var(--gap));
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.evidence__label--right {
+  transform: translate(var(--gap), -50%);
+}
+
+.evidence__label--right::before {
+  right: 100%;
+  top: 50%;
+  width: var(--gap);
+  height: calc(1px / var(--lift-s, 1));
+}
+
+.evidence__label--right::after {
+  right: calc(100% + var(--gap));
+  top: 50%;
+  transform: translate(50%, -50%);
+}
+
+/* ---- Lift overlay ------------------------------------------------------------- */
+
+/* A <dialog> with its UA box reset. Above the night layers (z 50 > 43), below the sound switches (60). */
+.lift {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.lift__backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(7 7 14 / 0);
+  cursor: none;
+  transition: background 480ms ease;
+}
+
+.lift--entered .lift__backdrop {
+  background: rgb(7 7 14 / 0.5);
+}
+
+/*
+  The lifted view's heading: a typed exhibit label pinned to the top of the
+  screen, naming what the visitor is looking at. Fades in with the paper.
+*/
+.lift__title {
+  position: absolute;
+  top: clamp(16px, 4vh, 40px);
+  left: 50%;
+  margin: 0;
+  padding: 6px 14px 7px;
+  transform: translate(-50%, -8px);
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
+  font-family: var(--font-mono-type);
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  opacity: 0;
+  transition:
+    opacity 240ms ease 280ms,
+    transform 240ms ease 280ms;
+}
+
+.lift__title::before {
+  content: 'Findings';
+  margin-right: 0.9em;
+  padding-right: 0.9em;
+  border-right: 1px solid rgb(27 27 31 / 0.4);
+  color: var(--color-thread);
+}
+
+.lift--entered .lift__title {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Spans the viewport like the board, so the item's percent placement lands in the same spot. */
+.lift__stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lift__stage .evidence {
+  pointer-events: auto;
+}
+
+.evidence__paper:focus-visible {
+  outline: 2px solid var(--color-thread);
+  outline-offset: 4px;
+}
+
+/* Ink drawn over the paper: centred on --ax/--ay, --aw wide, multiplied in. */
+.evidence__annotation {
+  position: absolute;
+  z-index: 2;
+  left: var(--ax);
+  top: var(--ay);
+  width: var(--aw);
+  max-width: none;
+  height: auto;
+  transform: translate(-50%, -50%) rotate(var(--ar, 0deg));
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* ---- Fasteners ------------------------------------------------------------- */
+
+/*
+  Thumbtack, drawn inline by Fastener.tsx (a flat head seen from the front,
+  with its own contact shadow, shading turned toward the torch). Centred on --pin-x a little below the
+  paper's top edge, where a pin really goes through.
+*/
+.evidence__pin {
+  position: absolute;
+  z-index: 3;
+  top: clamp(4px, 0.4vw, 7px);
+  left: var(--pin-x, 50%);
+  width: clamp(14px, 1.25vw, 22px);
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Lit from the torch: pinLighting.ts writes --pin-angle and --pin-glint per frame. */
+.evidence__pin-turn {
+  transform-box: view-box;
+  transform-origin: 20px 20px;
+  transform: rotate(var(--pin-angle, 0deg));
+}
+
+.evidence__pin-glint {
+  opacity: calc(0.85 * var(--pin-glint, 1));
+}
+
+/*
+  Masking tape sprites (public/props/tape). Each strip is centred on the
+  edge or corner it holds, then tilted. Slightly translucent so the paper
+  edge shows through, like real tape. --tape-w, set per item from the data,
+  overrides the strip length.
+*/
+.evidence__tape {
+  position: absolute;
+  z-index: 3;
+  width: clamp(40px, var(--tape-w, 55%), 170px);
+  height: auto;
+  opacity: 0.92;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
+  pointer-events: none;
+}
+
+.evidence__tape--top {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-3deg);
+}
+
+.evidence__tape--tl,
+.evidence__tape--tr,
+.evidence__tape--bl,
+.evidence__tape--br {
+  width: clamp(36px, var(--tape-w, 42%), 130px);
+}
+
+.evidence__tape--tl {
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.evidence__tape--tr {
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%) rotate(45deg);
+}
+
+.evidence__tape--bl {
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, 50%) rotate(45deg);
+}
+
+.evidence__tape--br {
+  bottom: 0;
+  right: 0;
+  transform: translate(50%, 50%) rotate(-45deg);
+}
+
+.evidence__paper {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  /* Reset for when the paper is a <button>. */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: none;
+  background: var(--color-paper);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.25),
+    0 6px 14px rgb(0 0 0 / 0.4),
+    0 14px 30px rgb(0 0 0 / 0.3);
+}
+
+/* Faint ageing on all paper: a mottled stain that reads as years on a board. */
+.evidence__paper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 80% 10%, rgb(120 80 30 / 0.12), transparent 50%),
+    radial-gradient(ellipse at 10% 90%, rgb(120 80 30 / 0.1), transparent 45%);
+  mix-blend-mode: multiply;
+}
+
+/* ---- Photo and polaroid --------------------------------------------- */
+
+/* Prints run edge to edge; only instant film keeps its frame. */
+.evidence--photo .evidence__paper {
+  padding: 0;
+  background: #f7f2e6;
+}
+
+.evidence--polaroid .evidence__paper {
+  padding: 6% 6% 20%;
+  background: #fbf8f0;
+}
+
+.evidence__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  filter: sepia(0.25) contrast(1.05);
+}
+
+/* Instant film is square whatever the shot. */
+.evidence--polaroid .evidence__photo {
+  aspect-ratio: 1;
+}
+
+/* No image yet: a print that never developed. */
+.evidence__photo--blank {
+  aspect-ratio: 4 / 5;
+  background: radial-gradient(ellipse at 50% 40%, #3a3330 0%, #1c1917 70%), #1c1917;
+  box-shadow: inset 0 0 20px rgb(0 0 0 / 0.6);
+}
+
+/* Handwriting on an instant-film frame's bottom margin: place and date. */
+.evidence__frame-caption {
+  position: absolute;
+  inset: auto 8% 5% 8%;
+  font-family: var(--font-caption, var(--font-hand));
+  font-size: clamp(0.55rem, 0.74vw, 1rem);
+  line-height: 1.05;
+  text-align: center;
+  color: #1f2a4a;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ---- Cutout and note: the image is the paper ------------------------------- */
+
+.evidence--cutout .evidence__paper,
+.evidence--note .evidence__paper {
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
+}
+
+.evidence--cutout .evidence__paper::after,
+.evidence--note .evidence__paper::after {
+  content: none;
+}
+
+/* Handwriting on a note: the loose script by default, the caps marker on request. */
+.evidence__scrawl {
+  position: absolute;
+  inset: 14% 10%;
+  margin: 0;
+  /* Visible so a ring around the last word is not cut off; copy is sized to fit. */
+  overflow: visible;
+  font-family: var(--font-note, var(--font-hand));
+  font-size: clamp(0.7rem, 1.02vw, 1.25rem);
+  line-height: 1;
+  color: #2b2420;
+  mix-blend-mode: multiply;
+}
+
+/* An ink mark under the writing, e.g. a marker underline. */
+.evidence__mark {
+  display: block;
+  width: 92%;
+  height: auto;
+  margin-top: 0.15em;
+  mix-blend-mode: multiply;
+}
+
+/* A word ringed in ink: the mark is stretched a little past the word on every side. */
+.evidence__circled {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.evidence__circle {
+  position: absolute;
+  top: -62%;
+  left: -34%;
+  width: 180%;
+  height: 224%;
+  /* Preflight caps images at 100% of their container; the ring must overhang the word. */
+  max-width: none;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Rock Salt has no lowercase and runs wide, so it goes smaller and looser. */
+.evidence__scrawl--caps {
+  font-family: var(--font-note-caps, var(--font-hand));
+  font-size: clamp(0.46rem, 0.64vw, 0.82rem);
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.evidence__cutout {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.evidence__caption {
+  position: absolute;
+  right: 6%;
+  bottom: 4%;
+  left: 6%;
+  font-family: var(--font-hand);
+  font-size: clamp(0.8rem, 1.1vw, 1.25rem);
+  line-height: 1.1;
+  color: #2a2630;
+  text-align: center;
+}
+
+.evidence--photo .evidence__caption {
+  bottom: auto;
+  top: 6%;
+  right: auto;
+  left: 8%;
+  padding: 0 4px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.8);
+  text-align: left;
+}
+
+/* ---- Newspaper clipping --------------------------------------------- */
+
+.evidence--clipping .evidence__paper {
+  padding: 3% 4% 5%;
+  background: linear-gradient(180deg, #efe8d6 0%, #e6dcc5 100%), #e9e1cd;
+  /* Torn edges. */
+  clip-path: polygon(
+    0 2%,
+    6% 0,
+    30% 1%,
+    55% 0,
+    80% 1.5%,
+    100% 0,
+    99% 30%,
+    100% 60%,
+    98.5% 100%,
+    70% 98%,
+    45% 100%,
+    20% 97.5%,
+    0 100%,
+    1% 60%,
+    0 40%
+  );
+  box-shadow: none;
+  filter: drop-shadow(0 8px 14px rgb(0 0 0 / 0.45));
+}
+
+.evidence__masthead {
+  display: block;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid #2a2520;
+  font-family: var(--font-news);
+  font-size: clamp(1.2rem, 2.6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  color: #2a2520;
+}
+
+.evidence__headline {
+  margin: 0.4em 0 0.3em;
+  font-family: var(--font-news);
+  font-size: clamp(0.9rem, 1.5vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #2a2520;
+}
+
+.evidence__column {
+  margin: 0;
+  column-count: 2;
+  column-gap: 1.2em;
+  font-family: var(--font-news);
+  font-size: clamp(0.5rem, 0.72vw, 0.85rem);
+  line-height: 1.3;
+  text-align: justify;
+  hyphens: auto;
+  color: #3a342c;
+}
+
+/* ---- Post-it ----------------------------------------------------------- */
+
+.evidence--postit .evidence__paper {
+  aspect-ratio: 1;
+  padding: 10% 9%;
+  background:
+    linear-gradient(160deg, #fbeb7a 0%, var(--color-postit) 55%, #e8d245 100%), var(--color-postit);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.2),
+    0 6px 12px rgb(0 0 0 / 0.35);
+}
+
+/* Lifted bottom-right corner. */
+.evidence--postit .evidence__paper::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18%;
+  height: 18%;
+  background: linear-gradient(315deg, transparent 50%, rgb(0 0 0 / 0.12) 50%, #d9c23a 54%);
+}
+
+.evidence__note {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: clamp(0.9rem, 1.5vw, 1.8rem);
+  line-height: 1.1;
+  color: #23201c;
+}
+
+/* ---- Receipt ------------------------------------------------------------- */
+
+.evidence--receipt .evidence__paper {
+  padding: 8% 7% 10%;
+  background: #f8f6ee;
+  /* Serrated bottom edge. */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    94% 100%,
+    88% 97%,
+    82% 100%,
+    76% 97%,
+    70% 100%,
+    64% 97%,
+    58% 100%,
+    52% 97%,
+    46% 100%,
+    40% 97%,
+    34% 100%,
+    28% 97%,
+    22% 100%,
+    16% 97%,
+    10% 100%,
+    4% 97%,
+    0 100%
+  );
+  box-shadow: none;
+  filter: drop-shadow(0 8px 12px rgb(0 0 0 / 0.45));
+}
+
+.evidence__receipt-header {
+  display: block;
+  margin-bottom: 0.6em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px dashed #777;
+  font-size: clamp(0.55rem, 0.85vw, 0.95rem);
+  letter-spacing: 0.14em;
+  text-align: center;
+  color: #3b3b3b;
+}
+
+.evidence__receipt-lines {
+  margin: 0;
+  font-family: var(--font-mono-type);
+  font-size: clamp(0.4rem, 0.6vw, 0.7rem);
+  line-height: 1.5;
+  white-space: pre;
+  color: #4a4a4a;
+}
+
+/* ---- Fingerprint card ----------------------------------------------------- */
+
+/* Ink on a white card, flush to its edges (the print's own margins are the
+   card's). With media the print sets the card's height; the drawn fallback
+   keeps a card shape. The ink multiplies onto the paper so
+   the card's ageing shows through it. */
+.evidence--fingerprint .evidence__paper {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  color: #1a1a1a;
+  /*
+    Handled card stock, top to bottom:
+      1. two soft creases, one diagonal and one near-vertical, each a dark
+         line with a pale lit edge
+      2. smudges: grey thumb-marks and a smear toward one corner
+      3. wrinkle shading: low-frequency noise, soft-light
+      4. paper grain: fine noise, multiplied
+      5. unevenly yellowed base
+  */
+  background-color: #efeadf;
+  background-image:
+    linear-gradient(
+      104deg,
+      transparent 46.8%,
+      rgb(60 45 25 / 0.1) 47.1%,
+      rgb(255 255 255 / 0.5) 47.5%,
+      transparent 48%
+    ),
+    linear-gradient(
+      8deg,
+      transparent 68.6%,
+      rgb(60 45 25 / 0.08) 68.9%,
+      rgb(255 255 255 / 0.4) 69.3%,
+      transparent 69.8%
+    ),
+    radial-gradient(ellipse 22% 16% at 82% 14%, rgb(50 40 30 / 0.17), transparent 70%),
+    radial-gradient(ellipse 14% 20% at 12% 72%, rgb(50 40 30 / 0.15), transparent 70%),
+    radial-gradient(ellipse 40% 12% at 60% 96%, rgb(40 30 20 / 0.2), transparent 70%),
+    radial-gradient(circle 7% at 90% 60%, rgb(30 25 20 / 0.14), transparent 70%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.014' numOctaves='3' seed='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='1.1'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23w)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.35'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"),
+    linear-gradient(160deg, #f7f4ee 0%, #eee8da 55%, #e6dfcf 100%);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    auto,
+    400px 400px,
+    200px 200px,
+    auto;
+  background-blend-mode:
+    multiply, multiply, multiply, multiply, multiply, multiply, soft-light, multiply, normal;
+}
+
+.evidence__ink {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: #1c1b1b;
+  mix-blend-mode: multiply;
+  filter: contrast(1.1);
+}
+
+.evidence__ink--drawn {
+  aspect-ratio: 5 / 6;
+  filter: blur(0.3px) contrast(1.2);
+}
+
+.evidence__ink-label {
+  font-size: clamp(0.45rem, 0.7vw, 0.8rem);
+  letter-spacing: 0.12em;
+  text-align: center;
+  color: #555;
+}
+
+/* ---- Fun-fact tag ----------------------------------------------------------- */
+
+/*
+  A manila evidence tag on a short string, hanging from the bottom centre of
+  the item. Hidden until hover or focus; translates in by a few px so it
+  reads as a tag swinging into view, not a UI tooltip.
+*/
+.evidence__fact {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 14px);
+  left: 50%;
+  width: max-content;
+  max-width: min(260px, 60vw);
+  padding: 8px 12px 9px;
+  border: 1px solid rgb(0 0 0 / 0.25);
+  border-radius: 3px;
+  background:
+    radial-gradient(
+      circle 4px at 12px 50%,
+      #7a4f27 0 2.5px,
+      rgb(0 0 0 / 0.25) 3px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e9d7ad, #d8c494);
+  padding-left: 24px;
+  box-shadow:
+    0 3px 6px rgb(0 0 0 / 0.4),
+    0 10px 20px rgb(0 0 0 / 0.3);
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  line-height: 1.15;
+  color: #2a2420;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -6px) rotate(-2deg);
+  transform-origin: 12px 50%;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    visibility 0s linear 180ms;
+}
+
+/* The string. */
+.evidence__fact::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 1px;
+  height: 14px;
+  background: rgb(60 40 20 / 0.7);
+}
+
+.evidence:hover .evidence__fact,
+.evidence:focus-within .evidence__fact {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0) rotate(-2deg);
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidence,
+  .evidence__fact,
+  .evidence__labels,
+  .lift__title,
+  .lift__backdrop {
+    transition: none;
+  }
+
+  .evidence--clickable:hover,
+  .evidence--clickable:focus-within {
+    transform: rotate(var(--rotate));
+  }
+}
