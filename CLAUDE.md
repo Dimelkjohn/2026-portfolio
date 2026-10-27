@@ -16,11 +16,13 @@ clip's ambience loops for the whole visit. Experimental and may be removed: a
 housefly (`src/components/fly/`) that darts across the board under the
 torch and buzzes louder as the cursor nears it. Background music: two tracks
 in `src/data/music.ts`, random first, then alternating with a crossfade.
-Next up, in order: evidence items with
-hover tooltips (fun facts), red thread converging on a centre post-it cluster
-("who is John Dimelu?"), then a carousel for clickable items. The data model
-for all of that already exists in `src/types/evidence.ts`; content goes in
-`src/data/board.ts`.
+Evidence items with hover tooltips (fun facts) are built
+(`src/components/evidence/`); the board is being filled zone by zone, with the
+bottom-left (identifying marks, notes written as the office's reads on John,
+handprint with five strengths) and the top-left photos (vintage B&W, three
+in instant-film frames) in place. Next: facts on the photos, the other zones, red thread converging on a centre post-it cluster ("who is John
+Dimelu?"), then a carousel for clickable items. Data model in
+`src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Before the repo goes public
 
@@ -32,6 +34,8 @@ as references. Do not make the repo public with that folder present.
 - `npm run dev` / `npm run build` / `npm run check` (typecheck + lint + format + tests)
 - `npm test` runs Vitest once; `npm run test:watch` for watch mode.
 - `npm run textures` rebuilds `public/textures` from `assets-src/textures` (git-ignored originals).
+- `npm run evidence` rebuilds `public/props` (tape) and `public/evidence` (prints, photos)
+  from `assets-src/evidence` (git-ignored originals, copied from the user's media folder).
 - GitHub CLI is installed at `C:\Program Files\GitHub CLI\gh.exe` and logged in as Dimelkjohn.
 
 ## Conventions
@@ -44,13 +48,24 @@ as references. Do not make the repo public with that folder present.
   (see `useTorch`); never route pointer movement through React state.
 - Respect `prefers-reduced-motion` for any new animation (`useReducedMotion`).
 - Board content (items, fun facts, threads) belongs in `src/data/board.ts`,
-  typed by `src/types/evidence.ts`, not in components.
+  typed by `src/types/evidence.ts`, not in components. Every item has a
+  `fastener` (pin colour and position, or tape); new media goes through
+  `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
+  it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
+  layers); anything with `labels` (lab tags shown only when lifted) lifts too,
+  and other kinds can join by adding them to `LIFTS`. Handwriting on notes
+  uses two Google fonts via tokens in `src/index.css`: `--font-note`
+  (Swanky and Moo Moo, loose script) and `--font-note-caps` (Rock Salt,
+  capitals only), chosen per note with `hand: 'script' | 'caps'`. Pins are lit from
+  the torch by `src/components/evidence/pinLighting.ts` (per-frame custom
+  properties, same pattern as `useTorch`).
 - All sound goes through the shared engine in `src/audio/engine.ts` (one
   AudioContext, master gain, clip cache, one autoplay unlock). New sounds
   take `audio.channel(volume, bus)` and `audio.load()`; never create another
   AudioContext. Each object has a bus (`torch`, `fly`, `music`) with an
   on/off switch in `src/audio/preferences.ts`, shown top-right by
-  `SoundControls`. Clips live in `public/audio/`. See README "How the sound works".
+  `SoundControls` under a master "All sound" switch that turns every sound on
+  or off together. Clips live in `public/audio/`. See README "How the sound works".
 - Tests sit next to the code as `*.test.tsx`, using Testing Library queries
   by role/text first, `data-testid` only for presentational layers.
 - Prettier: no semicolons, single quotes, width 100. Husky runs lint-staged on commit.

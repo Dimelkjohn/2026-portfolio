@@ -29,6 +29,7 @@ npm run test:watch     # vitest in watch mode
 npm run lint:fix       # oxlint with autofix
 npm run format         # prettier --write .
 npm run textures       # regenerate public/textures from assets-src/textures
+npm run evidence       # regenerate public/props and public/evidence from assets-src/evidence
 ```
 
 ## Project layout
@@ -39,17 +40,21 @@ src/
   index.css               Tailwind import, design tokens, torch root variables
   components/
     board/                cork board (full viewport) + evidence layer
+    evidence/             EvidenceItem (each kind of paper, fun-fact tag), Fastener (pins, tape)
     torch/                night overlay + beam that follows the pointer
   hooks/
     useTorch.ts           frame loop: pointer easing, sway, breathing, flicker
     useReducedMotion.ts   prefers-reduced-motion as a React value
-  data/board.ts           board content (items + threads), empty for now
+  data/board.ts           board content (items + threads), filled zone by zone
   types/evidence.ts       EvidenceItem / Thread / BoardData model
   lib/cn.ts               class name helper
   test/setup.ts           jest-dom matchers, matchMedia stub
 scripts/optimize-textures.mjs  builds the seamless cork tile (see below)
+scripts/prepare-evidence.mjs   cuts tape strips, knocks out ink prints (see below)
 public/textures/          generated web-sized textures (committed)
-assets-src/textures/      full-resolution originals, git-ignored (35 MB)
+public/props/             masking-tape strips (committed)
+public/evidence/          prints and photos pinned to the board (committed)
+assets-src/               full-resolution originals, git-ignored (textures/, evidence/)
 docs/inspiration/         reference images for the look (see note below)
 ```
 
@@ -63,6 +68,55 @@ bands. There is no mirroring. The CSS tiles it at `--cork-tile-size`
 (1000px, in `src/index.css`); smaller means finer grain. A large soft-light
 mottle layer sits on top to break any residual repetition, and a procedural
 noise layer underneath is the fallback if the photo fails to load.
+
+## How the evidence works
+
+Every pinned thing is an `EvidenceItem` from `src/data/board.ts`, rendered by
+`src/components/evidence/EvidenceItem.tsx`. Its `kind` picks the paper
+(photo, polaroid, clipping, post-it, receipt, fingerprint card, a cutout
+whose PNG is the paper, or a note: a photographed scrap of paper with
+handwriting laid over it, inside an `inset` that keeps clear of any tape or
+tab baked into the photo; `hand` picks Swanky and Moo Moo (`--font-note`) or
+Rock Salt in capitals (`--font-note-caps`)), its `placement` is in percent of the board and is
+written to custom properties so `evidence.css` owns the geometry, and its
+`fastener` is a flat thumbtack (drawn inline as SVG, four colours, anywhere
+along the top edge) or masking tape (one strip, two corners or four, any
+length). The tacks are lit by the torch: each is drawn as if lit from
+straight above, and `pinLighting.ts` rotates that drawing toward the beam
+centre every frame (reading the `--torch-x/y` that `useTorch` writes), so
+the bright rim, the glint and the contact shadow follow the light. The
+glint fades as the beam moves off. Under reduced motion it updates only on
+pointer moves. Items sit below the torch
+layers, so they are lit like the cork. Hover or focus lifts the item a touch
+and swings out a manila tag with the fun fact; the show and hide is pure
+CSS. The paper is a `<button>` whenever there is something to reveal.
+
+Clickable items (notes, for now) light up with a white halo on hover and
+focus. Clicking one lifts it out of the board: `EvidenceLayer` renders a copy
+in a fixed `<dialog>` above the night layer, spanning the viewport like the
+board so the percent placement lands on the same spot, then on the next
+frame translates and scales it to the centre (`liftFor`), pin or tape and
+all, in one CSS transition. Click, Escape or the backdrop sends it back the
+same way and the overlay is removed once the transition settles (or after a
+fallback delay). Under reduced motion it snaps. An item with `labels` lifts
+too, and once it has arrived its lab tags fade in: each is anchored to a
+point on the paper in percent, sits above, below, left or right of it on a
+short leader, and is sized in inverse proportion to the lift scale so it
+reads at screen size. The handprint carries five, one strength per finger.
+
+`npm run evidence` builds the assets from `assets-src/evidence`: it splits
+the masking-tape sheet into strips by flood-filling the cream pixels, and
+turns ink-on-white prints into ink-on-alpha so they multiply onto the
+card's paper, cuts the note papers out of their black or white backgrounds
+(flood-filled from the border, with the baked-in drop shadow faded rather
+than kept), and prepares John's photos: every one gets the same vintage pass
+(soften, lifted blacks and dulled whites, film grain, vignette), black and
+white with a warm paper tone by default or faded colour on request, and
+three are mounted in instant-film frames. The frames' windows are painted as a checkerboard or
+plain white in the source, so the script finds each window by walking out
+from the frame's centre until a band holds nothing as bright as the window,
+knocks it out, and drops in the photo cropped to the window around the
+subject (`position: attention`).
 
 ## How the torch works
 
@@ -101,9 +155,10 @@ time. The first pass can start earlier in the clip than the loop (a lead-in).
 Each object plays into its own bus of the engine (`torch`, `fly`, `music`),
 and `src/audio/preferences.ts` holds one on/off switch per bus, remembered
 in localStorage and shown as the switches in the top-right corner
-(`src/components/sound/SoundControls.tsx`). A muted sound keeps running, so
-the torch's light stays in sync with its (silent) clip. Everything defaults
-to on.
+(`src/components/sound/SoundControls.tsx`), under a master "All sound"
+switch that reads on when every sound is on and turns all of them on or off
+together. A muted sound keeps running, so the torch's light stays
+in sync with its (silent) clip. Everything defaults to on.
 
 Music (`src/audio/music.ts`, mounted by `src/components/music/Music.tsx`)
 plays the tracks in `src/data/music.ts` (`public/audio/*.mp3`): one picked
@@ -157,7 +212,8 @@ reduced motion. The sprite is `public/sprites/fly.png`, made from
 ## Roadmap
 
 - [x] Initial load: cork board, night overlay, torchlight
-- [ ] Evidence items pinned to the board with hover tooltips (fun facts)
+- [x] Evidence items pinned to the board with hover tooltips (fun facts)
+- [ ] Board content, zone by zone: bottom-left and top-left (photos) in, the rest to come
 - [ ] Red thread between items converging on "who is John Dimelu?"
 - [ ] Clickable items open a carousel for a closer look
 

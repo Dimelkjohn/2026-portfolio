@@ -1,10 +1,308 @@
 import type { BoardData } from '@/types/evidence'
 
 /**
- * Content for the board. Empty for the initial-load milestone; populate as
- * evidence items are designed. Keep copy here, not in components.
+ * Content for the board. Keep copy here, not in components.
+ *
+ * Zones (see the plan in the README): the suspect top-left, whereabouts top
+ * centre, exhibits top-right, sketches right, identifying marks bottom-left,
+ * make contact bottom centre, the question in the middle. Placement is in
+ * percent of the board. Media lives in public/evidence (built by
+ * `npm run evidence`); photos without `media` render as a blank print.
+ *
+ * Items may run a little past the board's edges, like a real board; keep it
+ * to a few and keep it slight. Items are being added zone by zone. Fun facts (`funFact`) and captions
+ * (`text`) are left off until the copy is written.
  */
 export const boardData: BoardData = {
-  items: [],
+  items: [
+    // ---- Top left: the suspect (photos of John; three in instant-film frames) ----
+    {
+      id: 'me-beanie',
+      kind: 'cutout',
+      clickable: true,
+      placement: { x: 18.5, y: 4, width: 9, rotate: -5, z: 4 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: { src: '/evidence/me-beanie-framed.png', alt: 'John in a beanie, smiling, framed' },
+      text: 'Aquarium (circa 2022)',
+      inset: 'auto 3% 6% 3%',
+    },
+    {
+      id: 'me-leaves',
+      kind: 'cutout',
+      clickable: true,
+      placement: { x: 2, y: 20, width: 10, rotate: -3, z: 3 },
+      fastener: { kind: 'tape', corners: 'top', width: 40 },
+      media: { src: '/evidence/me-leaves-framed.png', alt: 'John among large leaves, framed' },
+      text: 'Unknown location (???)',
+      inset: 'auto 8% 6% 8%',
+      annotations: [
+        {
+          src: '/evidence/mark-circle-crayon-red.png',
+          alt: '',
+          x: 59,
+          y: 41,
+          width: 70,
+          rotate: -8,
+        },
+      ],
+    },
+    {
+      id: 'me-helmet',
+      kind: 'cutout',
+      clickable: true,
+      placement: { x: 26, y: 14, width: 7.5, rotate: 4, z: 2 },
+      fastener: { kind: 'pin', color: 'white' },
+      media: {
+        src: '/evidence/me-helmet-framed.png',
+        alt: 'John in a motocross helmet in the desert, framed',
+      },
+      text: "Morocco '25",
+      inset: 'auto 8% 5% 8%',
+    },
+    // CCTV stills: the empty car park sits in the open, the street (tiny,
+    // unidentifiable figures) is buried.
+    {
+      id: 'cctv-lot',
+      kind: 'photo',
+      placement: { x: -4, y: -5, width: 25, rotate: -5, z: 0 },
+      fastener: { kind: 'tape', corners: 'top', width: 40 },
+      media: { src: '/evidence/cctv-lot.jpg', alt: 'CCTV still of a car park at night' },
+    },
+    {
+      id: 'cctv-street',
+      kind: 'photo',
+      placement: { x: 23, y: 40, width: 8, rotate: -6, z: 1 },
+      fastener: { kind: 'pin', color: 'black', x: 30 },
+      media: {
+        src: '/evidence/cctv-street.jpg',
+        alt: 'CCTV still of a street at night, timestamped',
+      },
+    },
+    {
+      id: 'me-fallon',
+      kind: 'photo',
+      clickable: true,
+      placement: { x: 10.5, y: 2, width: 7.5, rotate: 3, z: 3 },
+      fastener: { kind: 'tape', corners: 'diagonal' },
+      media: { src: '/evidence/me-fallon.jpg', alt: 'John posing beside a wax figure' },
+    },
+    {
+      id: 'me-kid',
+      kind: 'photo',
+      clickable: true,
+      placement: { x: 14, y: 26, width: 7, rotate: -8, z: 2 },
+      fastener: { kind: 'pin', color: 'black', x: 60 },
+      media: { src: '/evidence/me-kid.jpg', alt: 'John as a boy in a striped polo shirt' },
+    },
+    {
+      id: 'me-passport',
+      kind: 'photo',
+      clickable: true,
+      placement: { x: 22.5, y: 32, width: 6, rotate: 7, z: 4 },
+      fastener: { kind: 'pin', color: 'yellow' },
+      media: { src: '/evidence/me-passport.jpg', alt: 'Passport photo of John as a teenager' },
+    },
+    // Notes on the suspect, in the detective's hand. On top of the photos (z 12+).
+    {
+      id: 'note-helmet',
+      kind: 'note',
+      placement: { x: 30, y: 24, width: 7, rotate: 6, z: 12 },
+      fastener: { kind: 'pin', color: 'black', x: 40 },
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Crumpled yellow note' },
+      text: 'motorcycle helmet. adventurous, or hiding his face.',
+    },
+    {
+      id: 'note-music',
+      kind: 'note',
+      placement: { x: 26.5, y: 1.5, width: 6.5, rotate: -7, z: 12 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Crumpled yellow note' },
+      text: 'suspect visuals',
+      hand: 'caps',
+    },
+    {
+      id: 'note-aquarium',
+      kind: 'note',
+      placement: { x: 13, y: 13.5, width: 6.5, rotate: 5, z: 12 },
+      fastener: { kind: 'pin', color: 'yellow', x: 60 },
+      media: { src: '/evidence/note-blue-square.webp', alt: 'Crumpled blue note' },
+      text: 'the aquarium shot. something fishy.',
+    },
+    {
+      id: 'note-wax',
+      kind: 'note',
+      placement: { x: 3, y: 10, width: 9, rotate: -4, z: 12 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-kraft.webp', alt: 'Torn kraft paper with a yellow tab' },
+      text: 'Jimmy Fallon? he must be a late night television fan.',
+      inset: '24% 12% 10%',
+    },
+    {
+      id: 'note-earliest',
+      kind: 'note',
+      placement: { x: 5, y: 42.5, width: 6, rotate: 8, z: 12 },
+      fastener: { kind: 'pin', color: 'white', x: 55 },
+      media: { src: '/evidence/note-blue-torn.png', alt: 'Torn blue note' },
+      text: 'charming smile. best be on our ten toes.',
+      inset: '14% 20% 14% 12%',
+    },
+    {
+      id: 'note-flies',
+      kind: 'note',
+      placement: { x: 27.5, y: 43, width: 8, rotate: -3, z: 12 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-beige-taped.webp', alt: 'Beige note held by brown tape' },
+      text: 'private school uniform. taken in Nigeria?',
+      inset: '28% 8% 8%',
+    },
+    // ---- Bottom left: identifying marks (how John works, what he likes) ----
+    {
+      id: 'tenprint',
+      kind: 'cutout',
+      placement: { x: -0.5, y: 56, width: 17, rotate: -4, z: 2 },
+      fastener: { kind: 'pin', color: 'white', x: 50 },
+      media: {
+        src: '/evidence/tenprint-card.png',
+        alt: 'Ten-print fingerprint card, right and left hand',
+      },
+    },
+    {
+      id: 'handprint',
+      kind: 'fingerprint',
+      placement: { x: 14.5, y: 64, width: 9.5, rotate: 7, z: 4 },
+      fastener: { kind: 'pin', color: 'red', x: 72 },
+      media: { src: '/evidence/handprint.png', alt: 'Full handprint in black ink' },
+      title: 'Core strengths',
+      // Five strengths, one per finger, read off the print when it is lifted.
+      // Anchors are the fingertips of the print: little, ring, middle, index, thumb.
+      labels: [
+        { x: 4, y: 44, text: 'React, React Native, TypeScript', side: 'left' },
+        { x: 11, y: 20, text: 'Design systems, component libraries, accessibility', side: 'left' },
+        { x: 20, y: 5.5, text: 'End to end, concept to production', side: 'above' },
+        { x: 38, y: 4.5, text: 'AI-assisted development', side: 'right' },
+        { x: 91, y: 17, text: 'Fast, reliable real‑time UI', side: 'right' },
+      ],
+    },
+    {
+      id: 'palm',
+      kind: 'fingerprint',
+      placement: { x: 24, y: 54, width: 5.5, rotate: -11, z: 3 },
+      fastener: { kind: 'pin', color: 'yellow', x: 60 },
+      media: { src: '/evidence/palm-left.png', alt: 'Left palm print' },
+    },
+    {
+      id: 'hobbies',
+      kind: 'fingerprint',
+      placement: { x: 2, y: 80, width: 14.5, rotate: 2, z: 3 },
+      fastener: { kind: 'tape', corners: 'top', width: 30 },
+      media: { src: '/evidence/prints-three.png', alt: 'Three fingerprints side by side' },
+    },
+    {
+      id: 'armchair',
+      kind: 'photo',
+      placement: { x: 23, y: 77, width: 10, rotate: -6, z: 5 },
+      fastener: { kind: 'tape', corners: 'diagonal' },
+      media: { src: '/evidence/scene-armchair.webp', alt: 'An empty leather armchair' },
+    },
+    {
+      id: 'tenement',
+      kind: 'photo',
+      placement: { x: 29, y: 48, width: 11, rotate: 5, z: 0 },
+      fastener: { kind: 'tape', corners: 'top', width: 40 },
+      media: { src: '/evidence/scene-tenement.webp', alt: 'A cramped tenement room, unmade bed' },
+    },
+    {
+      id: 'bucket',
+      kind: 'photo',
+      placement: { x: 15.5, y: 49, width: 9, rotate: -8, z: 1 },
+      fastener: { kind: 'pin', color: 'black', x: 70 },
+      media: { src: '/evidence/scene-bucket.webp', alt: 'A chair, a bucket and an open box' },
+    },
+    {
+      id: 'desk',
+      kind: 'photo',
+      placement: { x: 31.5, y: 82, width: 10, rotate: 4, z: 3 },
+      fastener: { kind: 'tape', corners: 'top', width: 40 },
+      media: {
+        src: '/evidence/scene-desk.webp',
+        alt: 'A desk with a town map and an evidence box on the floor',
+      },
+    },
+    // Notes, always on top of the photos and cards (z 12+). The detective's
+    // own observations about John, in two hands: Rock Salt caps for the short
+    // ones, the loose script for the rest.
+    {
+      id: 'note-prints',
+      kind: 'note',
+      placement: { x: 10.5, y: 50.5, width: 6.5, rotate: -7, z: 12 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Crumpled yellow note' },
+      text: 'check the prints again',
+      hand: 'caps',
+      mark: { src: '/evidence/mark-underline.png', alt: '' },
+    },
+    {
+      id: 'note-typist',
+      kind: 'note',
+      placement: { x: 18.5, y: 59.5, width: 6.5, rotate: 4, z: 13 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-yellow-taped.png', alt: 'Taped yellow note' },
+      text: 'fingers look like he types a lot.',
+      inset: '26% 12% 12%',
+    },
+    {
+      id: 'note-night',
+      kind: 'note',
+      placement: { x: 36.5, y: 53.5, width: 6, rotate: 9, z: 14 },
+      fastener: { kind: 'pin', color: 'black' },
+      media: { src: '/evidence/note-orange.png', alt: 'Crumpled orange note' },
+      text: 'night owl. lights on at 2am.',
+      hand: 'caps',
+      mark: { src: '/evidence/mark-circle-red.png', alt: '', around: '2am' },
+    },
+    {
+      id: 'note-polygraph',
+      kind: 'note',
+      placement: { x: 3.5, y: 72.5, width: 8, rotate: -4, z: 12 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-kraft.webp', alt: 'Torn kraft paper with a yellow tab' },
+      text: 'knows his way around a polygraph. do not bluff him.',
+      inset: '24% 12% 10%',
+    },
+    {
+      id: 'note-ships',
+      kind: 'note',
+      placement: { x: 14.5, y: 79.5, width: 8.5, rotate: 2, z: 12 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-beige-taped.webp', alt: 'Beige note held by brown tape' },
+      text: 'no accomplices. did the whole job alone.',
+      inset: '28% 8% 8%',
+    },
+    {
+      id: 'note-heights',
+      kind: 'note',
+      placement: { x: 38, y: 66, width: 6.4, rotate: -8, z: 12 },
+      fastener: { kind: 'pin', color: 'white', x: 40 },
+      media: { src: '/evidence/note-blue-torn.png', alt: 'Torn blue note' },
+      text: 'will not go near a window. heights?',
+      inset: '14% 20% 14% 12%',
+    },
+    {
+      id: 'note-sedentary',
+      kind: 'note',
+      placement: { x: 29.5, y: 69.5, width: 9, rotate: 5, z: 12 },
+      fastener: { kind: 'pin', color: 'yellow', x: 55 },
+      media: { src: '/evidence/note-blue.png', alt: 'Crumpled blue note' },
+      text: 'sedentary lifestyle, probably. should pick up walking.',
+      inset: '12% 10%',
+    },
+    {
+      id: 'smudges',
+      kind: 'fingerprint',
+      placement: { x: 30, y: 61, width: 8, rotate: 9, z: 1 },
+      fastener: { kind: 'pin', color: 'black', x: 40 },
+      media: { src: '/evidence/prints-smudged.png', alt: 'Smudged, overlapping fingerprints' },
+    },
+  ],
   threads: [],
 }
