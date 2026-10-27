@@ -101,3 +101,14 @@
     transition: none;
   }
 }
+
+/* Master switch on top, a hairline under it. */
+.sound-switch--master .sound-switch__label {
+  font-weight: 700;
+}
+
+.sound-controls__rule {
+  height: 1px;
+  margin: 2px 6px;
+  background: rgb(243 236 217 / 0.14);
+}

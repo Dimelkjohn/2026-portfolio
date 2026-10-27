@@ -3,7 +3,9 @@ import { audio, type AudioEngine } from './engine'
 /**
  * Which sounds the visitor wants on. One switch per object; each drives a
  * bus of the audio engine, so a sound keeps running (and keeps the light in
- * sync, in the torch's case) while muted. Remembered in localStorage.
+ * sync, in the torch's case) while muted. The master switch is simply all
+ * of them at once: on turns every sound on, off turns every sound off.
+ * Remembered in localStorage.
  */
 
 export type SoundId = 'torch' | 'fly' | 'music'
@@ -29,6 +31,12 @@ export type SoundPreferences = {
   isOn(id: SoundId): boolean
   setOn(id: SoundId, on: boolean): void
   toggle(id: SoundId): void
+  /** True when every sound is on. */
+  isMasterOn(): boolean
+  /** Switch every sound on or off together. */
+  setMasterOn(on: boolean): void
+  /** All off if everything is on; otherwise all on. */
+  toggleMaster(): void
   subscribe(listener: () => void): () => void
 }
 
@@ -42,21 +50,41 @@ export function createSoundPreferences(
   const apply = (id: SoundId) => engine.setBusLevel(id, state[id] ? 1 : 0)
   for (const { id } of SOUNDS) apply(id)
 
+  const persistAndNotify = () => {
+    try {
+      storage?.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // Private mode or quota: the choice just does not persist.
+    }
+    for (const listener of listeners) listener()
+  }
+
+  const allOn = () => SOUNDS.every(({ id }) => state[id])
+
   return {
     isOn: (id) => state[id],
     setOn(id, on) {
       if (state[id] === on) return
       state[id] = on
       apply(id)
-      try {
-        storage?.setItem(STORAGE_KEY, JSON.stringify(state))
-      } catch {
-        // Private mode or quota: the choice just does not persist.
-      }
-      for (const listener of listeners) listener()
+      persistAndNotify()
     },
     toggle(id) {
       this.setOn(id, !state[id])
+    },
+    isMasterOn: allOn,
+    setMasterOn(on) {
+      let changed = false
+      for (const { id } of SOUNDS) {
+        if (state[id] === on) continue
+        state[id] = on
+        apply(id)
+        changed = true
+      }
+      if (changed) persistAndNotify()
+    },
+    toggleMaster() {
+      this.setMasterOn(!allOn())
     },
     subscribe(listener) {
       listeners.add(listener)

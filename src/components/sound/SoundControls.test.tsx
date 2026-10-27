@@ -43,3 +43,24 @@ describe('SoundControls', () => {
     expect(music).not.toHaveTextContent(/soon/i)
   })
 })
+
+describe('master switch', () => {
+  it('turns every sound on, then every sound off', async () => {
+    const user = userEvent.setup()
+    render(<SoundControls />)
+    const all = screen.getByRole('button', { name: /all sound/i })
+    // Fly starts off (see beforeEach), so the master reads off.
+    expect(all).toHaveAttribute('aria-pressed', 'false')
+    await user.click(all)
+    expect(all).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Fly (Gus)' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(all)
+    expect(all).toHaveAttribute('aria-pressed', 'false')
+    for (const name of [/flashlight/i, 'Fly (Gus)', /music/i]) {
+      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false')
+    }
+  })
+})

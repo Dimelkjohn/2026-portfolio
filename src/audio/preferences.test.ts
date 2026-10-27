@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { AudioEngine } from './engine'
-import { createSoundPreferences } from './preferences'
+import { SOUNDS, createSoundPreferences } from './preferences'
 
 function fakeEngine() {
   const levels: Array<[string, number]> = []
@@ -66,5 +66,42 @@ describe('createSoundPreferences', () => {
     const prefs = createSoundPreferences(engine, undefined)
     prefs.toggle('fly')
     expect(prefs.isOn('fly')).toBe(false)
+  })
+})
+
+describe('master switch', () => {
+  it('is on only when every sound is on', () => {
+    const prefs = createSoundPreferences(fakeEngine().engine, fakeStorage())
+    expect(prefs.isMasterOn()).toBe(true)
+    prefs.setOn('fly', false)
+    expect(prefs.isMasterOn()).toBe(false)
+  })
+
+  it('switching it on turns every sound on, and off turns every sound off', () => {
+    const { engine, levels } = fakeEngine()
+    const storage = fakeStorage()
+    const prefs = createSoundPreferences(engine, storage)
+    prefs.setOn('fly', false)
+    levels.length = 0
+    prefs.setMasterOn(true)
+    expect(levels).toEqual([['fly', 1]])
+    expect(SOUNDS.every(({ id }) => prefs.isOn(id))).toBe(true)
+    levels.length = 0
+    prefs.setMasterOn(false)
+    expect(levels).toEqual([
+      ['torch', 0],
+      ['fly', 0],
+      ['music', 0],
+    ])
+    expect(JSON.parse(storage.stored!)).toEqual({ torch: false, fly: false, music: false })
+  })
+
+  it('toggling from a mixed state turns everything on first', () => {
+    const prefs = createSoundPreferences(fakeEngine().engine, fakeStorage())
+    prefs.setOn('music', false)
+    prefs.toggleMaster()
+    expect(prefs.isMasterOn()).toBe(true)
+    prefs.toggleMaster()
+    expect(SOUNDS.some(({ id }) => prefs.isOn(id))).toBe(false)
   })
 })
