@@ -15,36 +15,36 @@ import type { BoardData } from '@/types/evidence'
  */
 export const boardData: BoardData = {
   items: [
-    // ---- Centre: the question. Every thread leads here. ----
+    // ---- Centre: the question, in three notes. Every thread leads back to JOHN's pin. ----
     {
-      id: 'hub',
+      id: 'hub-who',
       kind: 'note',
-      placement: { x: 44.5, y: 40, width: 9.5, rotate: -3, z: 14 },
+      placement: { x: 41.5, y: 33, width: 10, rotate: -4, z: 14 },
       fastener: { kind: 'pin', color: 'red' },
-      media: {
-        src: '/evidence/note-yellow-square.webp',
-        alt: 'Yellow note asking who John Dimelu is',
-      },
-      text: 'who is John Dimelu?',
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Yellow note reading who is' },
+      text: 'who is',
       hand: 'caps',
-      inset: '16% 12%',
+      size: 2.6,
     },
     {
-      id: 'hub-day-night',
+      id: 'hub-john',
       kind: 'note',
-      placement: { x: 55, y: 50, width: 7, rotate: 7, z: 13 },
-      fastener: { kind: 'pin', color: 'white', x: 45 },
-      media: { src: '/evidence/note-blue-square.webp', alt: 'Crumpled blue note' },
-      text: 'front end by day. creative by night.',
+      placement: { x: 51, y: 41, width: 9, rotate: 5, z: 15 },
+      fastener: { kind: 'pin', color: 'white' },
+      media: { src: '/evidence/note-blue-square.webp', alt: 'Blue note reading John' },
+      text: 'John',
+      hand: 'caps',
+      size: 2.6,
     },
     {
-      id: 'hub-priors',
+      id: 'hub-dimelu',
       kind: 'note',
-      placement: { x: 38, y: 36.5, width: 5.2, rotate: -10, z: 15 },
-      fastener: { kind: 'pin', color: 'black', x: 55 },
-      media: { src: '/evidence/note-orange.png', alt: 'Crumpled orange note' },
-      text: 'no priors. many commits.',
+      placement: { x: 42, y: 58, width: 12.5, rotate: -3, z: 14 },
+      fastener: { kind: 'pin', color: 'black' },
+      media: { src: '/evidence/note-blue.png', alt: 'Blue note reading Dimelu' },
+      text: 'Dimelu',
       hand: 'caps',
+      size: 2.6,
     },
 
     // ---- Top left: the suspect (photos of John; three in instant-film frames) ----
@@ -83,7 +83,8 @@ export const boardData: BoardData = {
       kind: 'cutout',
       clickable: true,
       placement: { x: 26, y: 14, width: 7.5, rotate: 4, z: 2 },
-      fastener: { kind: 'pin', color: 'white' },
+      // Its top edge sits under the note above it: no pin to see.
+      fastener: { kind: 'none' },
       media: {
         src: '/evidence/me-helmet-framed.png',
         alt: 'John in a motocross helmet in the desert, framed',
@@ -104,7 +105,8 @@ export const boardData: BoardData = {
       id: 'cctv-street',
       kind: 'photo',
       placement: { x: 23, y: 40, width: 8, rotate: -6, z: 1 },
-      fastener: { kind: 'pin', color: 'black', x: 30 },
+      // Buried under the prints: no pin to see.
+      fastener: { kind: 'none' },
       media: {
         src: '/evidence/cctv-street.jpg',
         alt: 'CCTV still of a street at night, timestamped',
@@ -122,8 +124,8 @@ export const boardData: BoardData = {
       id: 'me-kid',
       kind: 'photo',
       clickable: true,
-      placement: { x: 14, y: 26, width: 7, rotate: -8, z: 2 },
-      fastener: { kind: 'pin', color: 'black', x: 60 },
+      placement: { x: 14, y: 26, width: 7, rotate: -8, z: 5 },
+      fastener: { kind: 'pin', color: 'black', x: 88 },
       media: { src: '/evidence/me-kid.jpg', alt: 'John as a boy in a striped polo shirt' },
     },
     {
@@ -202,7 +204,7 @@ export const boardData: BoardData = {
       id: 'handprint',
       kind: 'fingerprint',
       placement: { x: 14.5, y: 64, width: 9.5, rotate: 7, z: 4 },
-      fastener: { kind: 'pin', color: 'red', x: 72 },
+      fastener: { kind: 'pin', color: 'red', x: 38 },
       media: { src: '/evidence/handprint.png', alt: 'Full handprint in black ink' },
       title: 'Core strengths',
       // Five strengths, one per finger, read off the print when it is lifted.
@@ -313,8 +315,8 @@ export const boardData: BoardData = {
     {
       id: 'note-heights',
       kind: 'note',
-      placement: { x: 38, y: 66, width: 6.4, rotate: -8, z: 12 },
-      fastener: { kind: 'pin', color: 'white', x: 40 },
+      placement: { x: 35.5, y: 70, width: 6.4, rotate: -8, z: 15 },
+      fastener: { kind: 'pin', color: 'white', x: 90 },
       media: { src: '/evidence/note-blue-torn.png', alt: 'Torn blue note' },
       text: 'will not go near a window. heights?',
       inset: '14% 20% 14% 12%',
@@ -336,16 +338,30 @@ export const boardData: BoardData = {
       media: { src: '/evidence/prints-smudged.png', alt: 'Smudged, overlapping fingerprints' },
     },
   ],
-  // Red thread. One run from the hub to an anchor in each zone, plus a few
-  // short local ties. Endpoints are the items' pins (or the paper's top edge
-  // for taped items), measured from the DOM.
+  // Red thread. Every pinned item is tied to something: some runs feed back
+  // to JOHN's pin in the centre, the rest are short local ties. Endpoints
+  // are the items' pins (or the paper's top edge for taped items), measured
+  // from the DOM.
   threads: [
-    { from: 'hub', to: 'handprint' },
-    { from: 'hub', to: 'me-beanie' },
-    { from: 'hub', to: 'tenprint' },
-    { from: 'me-beanie', to: 'me-helmet' },
-    { from: 'me-leaves', to: 'me-kid' },
+    // The hub itself
+    { from: 'hub-john', to: 'hub-who' },
+    { from: 'hub-john', to: 'hub-dimelu' },
+    // Top left
+    { from: 'hub-john', to: 'me-beanie' },
+    { from: 'me-beanie', to: 'note-music' },
+    { from: 'note-music', to: 'note-helmet' },
+    { from: 'note-aquarium', to: 'me-kid' },
+    { from: 'me-kid', to: 'me-passport' },
+    { from: 'note-earliest', to: 'me-passport' },
+    // Bottom left
+    { from: 'hub-john', to: 'handprint' },
+    { from: 'hub-john', to: 'tenprint' },
     { from: 'handprint', to: 'smudges' },
-    { from: 'hub-priors', to: 'note-prints' },
+    { from: 'smudges', to: 'note-night' },
+    { from: 'tenprint', to: 'note-prints' },
+    { from: 'bucket', to: 'tenprint' },
+    { from: 'palm', to: 'note-sedentary' },
+    { from: 'note-heights', to: 'smudges' },
+    { from: 'hub-dimelu', to: 'note-sedentary' },
   ],
 }

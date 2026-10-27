@@ -28,6 +28,21 @@ describe('EvidenceLayer', () => {
     expect(screen.queryAllByRole('article')).toHaveLength(boardData.items.length)
   })
 
+  it('ties every pinned item on the board to at least one thread', () => {
+    const tied = new Set(boardData.threads.flatMap((t) => [t.from, t.to]))
+    const pinned = boardData.items.filter(
+      (item) => (item.fastener ?? { kind: 'pin' }).kind === 'pin',
+    )
+    const loose = pinned.filter((item) => !tied.has(item.id)).map((item) => item.id)
+    expect(loose).toEqual([])
+  })
+
+  it('only ties items that exist', () => {
+    const ids = new Set(boardData.items.map((item) => item.id))
+    const unknown = boardData.threads.flatMap((t) => [t.from, t.to]).filter((id) => !ids.has(id))
+    expect(unknown).toEqual([])
+  })
+
   it('board data ids are unique so each tooltip describes its own item', () => {
     const ids = boardData.items.map((item) => item.id)
     expect(new Set(ids).size).toBe(ids.length)

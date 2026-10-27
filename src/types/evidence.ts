@@ -103,6 +103,11 @@ export type EvidenceItem = {
    */
   hand?: 'script' | 'caps'
   /**
+   * Notes only: handwriting size multiplier for headline notes (one short
+   * phrase, kept on a single line, centred). Default 1.
+   */
+  size?: number
+  /**
    * Notes only: an ink mark. Beneath the writing by default (an underline, a
    * scribble); with `around`, drawn over the first occurrence of that word in
    * the text instead (a circle).

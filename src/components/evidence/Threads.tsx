@@ -11,7 +11,10 @@ type ThreadsProps = {
 
 /**
  * Where a thread ties onto an item: the centre of its pin, or the top centre
- * of the paper when it is held by tape or nothing.
+ * of the paper when it is held by tape or nothing. Null when that point is
+ * covered by another item: a thread cannot tie to a pin nobody can see.
+ * (elementFromPoint skips pointer-transparent layers, so the thread SVG and
+ * the torch do not get in the way of the test.)
  */
 function anchorOf(container: HTMLElement, id: string): Point | null {
   const item = container.querySelector<HTMLElement>(`[data-evidence-id="${id}"]`)
@@ -22,10 +25,14 @@ function anchorOf(container: HTMLElement, id: string): Point | null {
     item.querySelector<HTMLElement>('.evidence__paper') ??
     item
   ).getBoundingClientRect()
+  const x = box.left + box.width / 2
+  const y = pin ? box.top + box.height / 2 : box.top + 2
+  // jsdom has no hit testing; there, every pin counts as visible.
+  const onTop =
+    typeof document.elementFromPoint === 'function' ? document.elementFromPoint(x, y) : null
+  if (onTop && !item.contains(onTop) && onTop.closest('.evidence')) return null
   const origin = container.getBoundingClientRect()
-  return pin
-    ? { x: box.left + box.width / 2 - origin.left, y: box.top + box.height / 2 - origin.top }
-    : { x: box.left + box.width / 2 - origin.left, y: box.top - origin.top }
+  return { x: x - origin.left, y: (pin ? y : box.top) - origin.top }
 }
 
 /**

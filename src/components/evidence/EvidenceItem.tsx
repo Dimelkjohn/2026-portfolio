@@ -57,6 +57,7 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
     body,
     inset,
     hand,
+    size,
     mark,
     labels,
     annotations,
@@ -102,8 +103,17 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
           <img className="evidence__cutout" src={media.src} alt={media.alt} draggable={false} />
           {text && (
             <p
-              className={cn('evidence__scrawl', hand === 'caps' && 'evidence__scrawl--caps')}
-              style={inset ? { inset } : undefined}
+              className={cn(
+                'evidence__scrawl',
+                hand === 'caps' && 'evidence__scrawl--caps',
+                size && 'evidence__scrawl--headline',
+              )}
+              style={
+                {
+                  ...(inset && { inset }),
+                  ...(size && { '--scrawl-scale': size }),
+                } as CSSProperties
+              }
             >
               <Scrawl text={text} mark={mark} />
             </p>

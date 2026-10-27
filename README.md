@@ -123,7 +123,10 @@ subject (`position: attention`).
 `Threads.tsx` draws the red thread as one SVG over the evidence layer. The
 data (`threads` in `src/data/board.ts`) only says which items are tied
 together; the endpoints are measured from the DOM, the centre of each item's
-pin or the top edge of taped paper, so moving an item moves its thread. Each
+pin or the top edge of taped paper, so moving an item moves its thread. A
+thread only ties to a pin somebody can see: if another item covers the pin
+(checked with `elementFromPoint`), that run is skipped, and a test keeps
+every pinned item in the data tied to something. Each
 run is a shallow quadratic curve (`thread.ts`): pulled straight by tension,
 sagging a little under its own weight, with the sag varied per thread, and
 held back a few pixels from each pin centre so it reads as tucked under the
