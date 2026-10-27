@@ -118,6 +118,20 @@ from the frame's centre until a band holds nothing as bright as the window,
 knocks it out, and drops in the photo cropped to the window around the
 subject (`position: attention`).
 
+## How the thread works
+
+`Threads.tsx` draws the red thread as one SVG over the evidence layer. The
+data (`threads` in `src/data/board.ts`) only says which items are tied
+together; the endpoints are measured from the DOM, the centre of each item's
+pin or the top edge of taped paper, so moving an item moves its thread. Each
+run is a shallow quadratic curve (`thread.ts`): pulled straight by tension,
+sagging a little under its own weight, with the sag varied per thread, and
+held back a few pixels from each pin centre so it reads as tucked under the
+head. A dark offset copy under the red gives it a hair of lift off the
+paper. It sits above the items and below a hovered one, so paper you point
+at comes up through the thread. Measured on mount, once more after the
+first paint settles, and on resize; nothing runs per frame.
+
 ## How the torch works
 
 `useTorch` runs a `requestAnimationFrame` loop and writes four custom
@@ -213,8 +227,8 @@ reduced motion. The sprite is `public/sprites/fly.png`, made from
 
 - [x] Initial load: cork board, night overlay, torchlight
 - [x] Evidence items pinned to the board with hover tooltips (fun facts)
-- [ ] Board content, zone by zone: bottom-left and top-left (photos) in, the rest to come
-- [ ] Red thread between items converging on "who is John Dimelu?"
+- [ ] Board content, zone by zone: centre hub, bottom-left and top-left in, the rest to come
+- [x] Red thread between items converging on "who is John Dimelu?"
 - [ ] Clickable items open a carousel for a closer look
 
 ## Before making the repo public

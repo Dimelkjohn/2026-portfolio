@@ -20,8 +20,11 @@ Evidence items with hover tooltips (fun facts) are built
 (`src/components/evidence/`); the board is being filled zone by zone, with the
 bottom-left (identifying marks, notes written as the office's reads on John,
 handprint with five strengths) and the top-left photos (vintage B&W, three
-in instant-film frames) in place. Next: facts on the photos, the other zones, red thread converging on a centre post-it cluster ("who is John
-Dimelu?"), then a carousel for clickable items. Data model in
+in instant-film frames), the centre hub ("who is John Dimelu?" cluster) and
+the red thread (`src/components/evidence/Threads.tsx`, endpoints measured
+from the DOM) in place. Next: the other zones (top centre logistics, top
+right exhibits, right design work, bottom centre contact and résumé), a
+carousel for exhibits, facts on hover for the photos, and a mobile layout. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Before the repo goes public

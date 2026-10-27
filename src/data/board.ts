@@ -15,6 +15,38 @@ import type { BoardData } from '@/types/evidence'
  */
 export const boardData: BoardData = {
   items: [
+    // ---- Centre: the question. Every thread leads here. ----
+    {
+      id: 'hub',
+      kind: 'note',
+      placement: { x: 44.5, y: 40, width: 9.5, rotate: -3, z: 14 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: {
+        src: '/evidence/note-yellow-square.webp',
+        alt: 'Yellow note asking who John Dimelu is',
+      },
+      text: 'who is John Dimelu?',
+      hand: 'caps',
+      inset: '16% 12%',
+    },
+    {
+      id: 'hub-day-night',
+      kind: 'note',
+      placement: { x: 55, y: 50, width: 7, rotate: 7, z: 13 },
+      fastener: { kind: 'pin', color: 'white', x: 45 },
+      media: { src: '/evidence/note-blue-square.webp', alt: 'Crumpled blue note' },
+      text: 'front end by day. creative by night.',
+    },
+    {
+      id: 'hub-priors',
+      kind: 'note',
+      placement: { x: 38, y: 36.5, width: 5.2, rotate: -10, z: 15 },
+      fastener: { kind: 'pin', color: 'black', x: 55 },
+      media: { src: '/evidence/note-orange.png', alt: 'Crumpled orange note' },
+      text: 'no priors. many commits.',
+      hand: 'caps',
+    },
+
     // ---- Top left: the suspect (photos of John; three in instant-film frames) ----
     {
       id: 'me-beanie',
@@ -304,5 +336,16 @@ export const boardData: BoardData = {
       media: { src: '/evidence/prints-smudged.png', alt: 'Smudged, overlapping fingerprints' },
     },
   ],
-  threads: [],
+  // Red thread. One run from the hub to an anchor in each zone, plus a few
+  // short local ties. Endpoints are the items' pins (or the paper's top edge
+  // for taped items), measured from the DOM.
+  threads: [
+    { from: 'hub', to: 'handprint' },
+    { from: 'hub', to: 'me-beanie' },
+    { from: 'hub', to: 'tenprint' },
+    { from: 'me-beanie', to: 'me-helmet' },
+    { from: 'me-leaves', to: 'me-kid' },
+    { from: 'handprint', to: 'smudges' },
+    { from: 'hub-priors', to: 'note-prints' },
+  ],
 }

@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { EvidenceItem as EvidenceItemData } from '@/types/evidence'
+import type { EvidenceItem as EvidenceItemData, Thread } from '@/types/evidence'
 import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
 import { startPinLighting } from './pinLighting'
+import { Threads } from './Threads'
 
 type EvidenceLayerProps = {
   /** Defaults to the board content in src/data/board.ts. */
   items?: EvidenceItemData[]
+  threads?: Thread[]
 }
 
 /** Which kinds lift to the centre when clicked. Anything with labels, or marked clickable, lifts too. */
@@ -53,7 +55,11 @@ export function liftFor(
  * identically), then travels to the centre and scales up. Click, Escape or
  * the backdrop sends it back, and the overlay is removed once it has settled.
  */
-export function EvidenceLayer({ items = boardData.items }: EvidenceLayerProps) {
+export function EvidenceLayer({
+  items = boardData.items,
+  threads = boardData.threads,
+}: EvidenceLayerProps) {
+  const within = useCallback(() => layer.current?.parentElement ?? null, [])
   const reducedMotion = useReducedMotion()
   const layer = useRef<HTMLElement>(null)
   const stage = useRef<HTMLDivElement>(null)
@@ -140,6 +146,7 @@ export function EvidenceLayer({ items = boardData.items }: EvidenceLayerProps) {
             ghost={lifted?.item.id === item.id}
           />
         ))}
+        <Threads threads={threads} within={within} />
       </section>
       {lifted &&
         createPortal(

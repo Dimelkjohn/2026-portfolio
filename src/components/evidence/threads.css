@@ -1,0 +1,31 @@
+/*
+  The red thread. One SVG over the evidence layer; each thread is a thin
+  shadow path under a red one, so it reads as sitting a hair above the
+  paper. Above the items (their z stops at 14) but below a hovered item
+  (20), so paper you point at comes up through the thread, and below the
+  torch layers, so the thread is lit like everything else.
+*/
+.threads {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.threads__shadow {
+  fill: none;
+  stroke: rgb(0 0 0 / 0.45);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform: translate(1px, 2px);
+}
+
+.threads__thread {
+  fill: none;
+  stroke: var(--color-thread);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}

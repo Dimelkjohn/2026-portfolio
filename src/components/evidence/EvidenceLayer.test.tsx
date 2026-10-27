@@ -87,6 +87,27 @@ describe('EvidenceLayer', () => {
   })
 })
 
+describe('threads', () => {
+  it('draws a shadow and a thread path for every tie', () => {
+    const { container } = render(
+      <EvidenceLayer
+        items={items}
+        threads={[
+          { from: 'a', to: 'b' },
+          { from: 'b', to: 'n' },
+        ]}
+      />,
+    )
+    expect(container.querySelectorAll('.threads__thread')).toHaveLength(2)
+    expect(container.querySelectorAll('.threads__shadow')).toHaveLength(2)
+  })
+
+  it('renders no thread layer when there are no threads', () => {
+    const { container } = render(<EvidenceLayer items={items} threads={[]} />)
+    expect(container.querySelector('.threads')).toBeNull()
+  })
+})
+
 describe('liftFor', () => {
   const viewport = { width: 1000, height: 800 }
 
