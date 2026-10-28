@@ -46,8 +46,14 @@ export function Torchlight({ sound, ...torch }: TorchlightProps) {
       <div className="torch-glow" data-testid="torch-glow" aria-hidden="true" />
       <div className="torch-hotspot" data-testid="torch-hotspot" aria-hidden="true" />
       <div className="torch-dark" data-testid="torch-dark" aria-hidden="true" />
-      {needsGesture && !lit && (
-        <output className="torch-prompt">Click anywhere to switch on the torch</output>
+      {!lit && (
+        // Nothing on the board can be hovered or clicked in the dark; the
+        // first gesture lands here and reaches the unlock listeners on window.
+        <div className="torch-shield" data-testid="torch-shield">
+          {needsGesture && (
+            <output className="torch-prompt">Click anywhere to switch on the torch</output>
+          )}
+        </div>
       )}
     </>
   )

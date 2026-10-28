@@ -7,6 +7,8 @@
   .torch-glow     warm spill, soft-light blended so the cork looks lit.
   .torch-hotspot  hotspot + corona + reflector rings, screen blended (additive).
   .torch-dark     the night. A radial mask punches the beam out of it.
+  .torch-shield   only while unlit: seals the board from the pointer and
+                  holds the "click anywhere" prompt.
 
   All read from :root (written every frame by useTorch):
     --torch-x / --torch-y   beam centre
@@ -118,16 +120,26 @@
   );
 }
 
-/* Shown in the dark when the browser will not play sound until the visitor interacts. */
-.torch-prompt {
+/*
+  While the torch is off the board is sealed: this catches every hover and
+  click so nothing underneath lights up, lifts or opens in the dark. The
+  gesture still bubbles to window, where the audio unlock listens. The sound
+  switches (z 60) stay reachable above it.
+*/
+.torch-shield {
   position: fixed;
   z-index: 44;
   inset: 0;
   display: grid;
   place-items: center;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Shown in the dark when the browser will not play sound until the visitor interacts. */
+.torch-prompt {
   margin: 0;
   padding: 0 16px;
-  pointer-events: none;
   font-family: var(--font-hand);
   font-size: 1.5rem;
   letter-spacing: 0.04em;

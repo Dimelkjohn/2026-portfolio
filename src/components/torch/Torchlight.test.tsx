@@ -179,6 +179,38 @@ describe('Torchlight', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
+  it('seals the board from the pointer until the torch is lit', async () => {
+    const onBoard = vi.fn<() => void>()
+    const unlock = vi.fn<() => void>()
+    window.addEventListener('pointerdown', unlock)
+    render(
+      <>
+        <button type="button" onClick={onBoard} style={{ position: 'fixed', inset: 0 }}>
+          board
+        </button>
+        <Torchlight />
+      </>,
+    )
+    const shield = screen.getByTestId('torch-shield')
+    expect(getComputedStyle(shield).pointerEvents).not.toBe('none')
+    // The shield is a sibling above the board, so the click lands on it, not the board.
+    fireEvent.pointerDown(shield)
+    fireEvent.click(shield)
+    expect(onBoard).not.toHaveBeenCalled()
+    expect(unlock).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      sounds[0]!.resolve('playing')
+    })
+    expect(screen.queryByTestId('torch-shield')).not.toBeInTheDocument()
+    window.removeEventListener('pointerdown', unlock)
+  })
+
+  it('never seals the board when the torch is silent and on from the start', () => {
+    render(<Torchlight sound={false} />)
+    expect(screen.queryByTestId('torch-shield')).not.toBeInTheDocument()
+  })
+
   it('passes the clip URL through and stops the sound on unmount', () => {
     const { unmount } = render(<Torchlight sound="/elsewhere/torch.mp3" />)
     expect(sounds[0]!.options.url).toBe('/elsewhere/torch.mp3')
