@@ -127,7 +127,7 @@
   top: var(--ly);
   width: max-content;
   max-width: calc(190px / var(--lift-s, 1));
-  padding: calc(3px / var(--lift-s, 1)) calc(6px / var(--lift-s, 1));
+  padding: calc(5px / var(--lift-s, 1)) calc(7px / var(--lift-s, 1)) calc(4px / var(--lift-s, 1));
   border: calc(1px / var(--lift-s, 1)) solid rgb(27 27 31 / 0.75);
   background: rgb(243 236 217 / 0.94);
   font-family: var(--font-mono-type);

@@ -390,7 +390,7 @@ export const boardData: BoardData = {
         { x: 4, y: 44, text: 'React, React Native, TypeScript', side: 'left' },
         { x: 11, y: 20, text: 'Design systems, component libraries, accessibility', side: 'left' },
         { x: 20, y: 5.5, text: 'End to end, concept to production', side: 'above' },
-        { x: 38, y: 4.5, text: 'AI-assisted development', side: 'right' },
+        { x: 44, y: 8, text: 'AI-assisted development', side: 'right' },
         { x: 91, y: 17, text: 'Fast, reliable real‑time UI', side: 'right' },
       ],
     },
