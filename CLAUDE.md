@@ -36,6 +36,13 @@ the exhibits in the carousel, facts on hover for the photos, and a mobile layout
 Delete `docs/inspiration/` first. It holds watermarked stock photos used only
 as references. Do not make the repo public with that folder present.
 
+## Favicon
+
+`public/favicon.png` (and the flattened `apple-touch-icon.png`) is a big "?" in
+Permanent Marker on the yellow square note. It was rendered in the browser
+(canvas, with the web font loaded) because the image pipeline cannot reach
+Google Fonts; to change it, redraw it the same way and resize with sharp.
+
 ## Commands
 
 - `npm run dev` / `npm run build` / `npm run check` (typecheck + lint + format + tests)
