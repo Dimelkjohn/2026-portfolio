@@ -110,6 +110,12 @@ export type EvidenceItem = {
    * between visits whichever item opened it.
    */
   opens?: 'work'
+  /**
+   * With `opens: 'work'`: the id of the file (src/data/work.ts) the pile
+   * opens on, so a cutting tells its own story. Without it the pile opens
+   * where it was last left.
+   */
+  opensAt?: string
   /** Clippings on a scan: multiplier on the printed headline's size. Default 1. */
   size?: number
   /**

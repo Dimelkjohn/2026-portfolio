@@ -10,6 +10,12 @@
  *   public/evidence/*.png|webp      ink prints with the white paper knocked
  *                                   out to alpha, photos resized, and note
  *                                   papers (assets-src/evidence/notes) cut out
+ *   public/evidence/work-*.webp     the photograph in each selected-work file
+ *                                   (assets-src/evidence/work), resized whole;
+ *                                   the sheet crops it to the print box from
+ *                                   its top left
+ *
+ * One step alone: node scripts/prepare-evidence.mjs exhibits
  *
  * Originals are never modified. Sources are git-ignored; outputs are committed.
  */
@@ -806,8 +812,41 @@ async function me() {
   await print('IMG_3504.jpeg', 'me-passport.jpg', { width: 600, colour: true })
 }
 
-await tape()
-await evidence()
-await notes()
-await news()
-await me()
+// ---- Selected-work exhibits ---------------------------------------------------
+
+const WORK = path.join(SRC, 'work')
+/** Widest the print box gets on screen is ~500px; this leaves room for high-density screens. */
+const PRINT_WIDTH = 1600
+
+/**
+ * One exhibit's photograph, whole: resized to the print's width and no more,
+ * its own proportions kept. The sheet crops it to the print box from its top
+ * left (CSS object-fit: cover), so nothing is cropped away here.
+ */
+async function exhibit(file, out) {
+  const result = await sharp(path.join(WORK, file))
+    .resize({ width: PRINT_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(path.join(OUT, out))
+  console.log(`exhibit  ${out}  ${result.width}x${result.height}`)
+}
+
+async function exhibits() {
+  await exhibit('obsessed-app-store.png', 'work-obsessed.webp')
+  await exhibit('bumper-globe.png', 'work-bumper-globe.webp')
+  await exhibit('authentica.png', 'work-authentica.webp')
+  await exhibit('v2l.png', 'work-v2l.webp')
+  for (const n of [1, 2, 3, 4]) await exhibit(`webfruit-${n}.png`, `work-webfruit-${n}.webp`)
+  await exhibit('this-board.png', 'work-this-board.webp')
+  await exhibit('old-portfolio.png', 'work-old-portfolio.webp')
+}
+
+const steps = { tape, evidence, notes, news, me, exhibits }
+const only = process.argv[2]
+if (only && !(only in steps)) {
+  console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)
+  process.exit(1)
+}
+for (const [name, step] of Object.entries(steps)) {
+  if (!only || only === name) await step()
+}

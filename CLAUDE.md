@@ -26,9 +26,13 @@ carousel in `src/components/work/`, a stack of files on a scanned
 manila folder; each cutting is a scanned torn newspaper with its headline
 printed on the blank patch, the oldest tinted tan; and a service record
 receipt on creased till paper) and the red thread (`src/components/evidence/Threads.tsx`, endpoints measured
-from the DOM) in place. Next: the other zones (top centre logistics,
-right design work, bottom centre contact and résumé), media and copy for
-the exhibits in the carousel, facts on hover for the photos, and a mobile layout. Data model in
+from the DOM) in place. The carousel's seven files are filled (print, three-line
+blurb, one-line stack, link or SEALED stamp); each print is built by the
+pipeline's `exhibits` step and a file may hold several photographs that
+play through. Until the torch is lit a shield seals the board from the
+pointer. Next: the other zones (top centre logistics,
+right design work, bottom centre contact and résumé), facts on hover for
+the photos, and a mobile layout. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Before the repo goes public
@@ -70,7 +74,8 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   and `clickable: true | false` on an item overrides both ways. `opens: 'work'`
   makes a click open the selected-work carousel instead (`WorkCarousel`, one
   shared stack of case files from `src/data/work.ts`; its index lives in
-  `EvidenceLayer` so it keeps its place between visits). It opens by being
+  `EvidenceLayer` so it keeps its place between visits, unless the item
+  also names a file with `opensAt`, in which case it opens on that one). It opens by being
   dropped onto the desk and closes by being snatched toward its opener, all
   CSS keyframes keyed off `dossier--entering|settled|leaving`; reduced motion
   fades instead. Handwriting on notes

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { EvidenceItem } from '@/types/evidence'
 import { boardData } from '@/data/board'
+import { selectedWork } from '@/data/work'
 import { EvidenceLayer, liftFor } from './EvidenceLayer'
 
 const items: EvidenceItem[] = [
@@ -89,6 +90,42 @@ describe('EvidenceLayer', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Core strengths' })).toBeInTheDocument()
   })
 
+  it('opens the carousel on the file a cutting names, and elsewhere where it was left', async () => {
+    const user = userEvent.setup()
+    const second = selectedWork[1]!
+    const clips: EvidenceItem[] = [
+      {
+        id: 'c1',
+        kind: 'clipping',
+        placement: { x: 0, y: 0 },
+        text: 'Named cutting',
+        opens: 'work',
+        opensAt: second.id,
+      },
+      {
+        id: 'c2',
+        kind: 'clipping',
+        placement: { x: 50, y: 0 },
+        text: 'Plain cutting',
+        opens: 'work',
+      },
+    ]
+    render(<EvidenceLayer items={clips} threads={[]} />)
+    await user.click(screen.getByRole('button', { name: 'Named cutting' }))
+    expect(screen.getByRole('heading', { name: second.title })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Next exhibit' }))
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    // The plain cutting picks up where the pile was left: the third file.
+    await user.click(screen.getByRole('button', { name: 'Plain cutting' }))
+    expect(screen.getByRole('heading', { name: selectedWork[2]!.title })).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    // The named cutting always goes back to its own file.
+    await user.click(screen.getByRole('button', { name: 'Named cutting' }))
+    expect(screen.getByRole('heading', { name: second.title })).toBeInTheDocument()
+  })
+
   it('opens one shared selected-work carousel from any clipping, keeping its place', async () => {
     const user = userEvent.setup()
     const clips: EvidenceItem[] = [
@@ -113,11 +150,15 @@ describe('EvidenceLayer', () => {
     expect(dialog).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Next exhibit' }))
     await user.click(screen.getByRole('button', { name: 'Next exhibit' }))
-    expect(screen.getByText('03 / 08')).toBeInTheDocument()
+    expect(
+      screen.getByText(`03 / ${String(selectedWork.length).padStart(2, '0')}`),
+    ).toBeInTheDocument()
     await user.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     await user.click(screen.getByRole('button', { name: 'Second cutting' }))
-    expect(screen.getByText('03 / 08')).toBeInTheDocument()
+    expect(
+      screen.getByText(`03 / ${String(selectedWork.length).padStart(2, '0')}`),
+    ).toBeInTheDocument()
   })
 
   it('lifts a clicked note into a dialog and sends it back on Escape', async () => {

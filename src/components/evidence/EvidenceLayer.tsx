@@ -6,6 +6,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
+import { selectedWork } from '@/data/work'
 import { startPinLighting } from './pinLighting'
 import { Threads } from './Threads'
 
@@ -97,6 +98,9 @@ export function EvidenceLayer({
       workOpener.current = el
       const r = el.getBoundingClientRect()
       setWorkOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      // A cutting with a file of its own opens the pile on it; the rest pick up where it was left.
+      const at = selectedWork.findIndex((work) => work.id === item.opensAt)
+      if (at >= 0) setWorkIndex(at)
       setWorkOpen(true)
       return
     }

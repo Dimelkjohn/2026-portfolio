@@ -66,6 +66,11 @@
   width: min(680px, 76vw);
   /* The folder scan's own proportions. */
   aspect-ratio: 1100 / 899;
+  /*
+    Every size on the files is in cqi, a percent of this width, so the pile
+    scales as one piece and the notes wrap the same at any window size.
+  */
+  container-type: inline-size;
   transform: var(--rest);
   pointer-events: none;
 }
@@ -140,7 +145,7 @@
   left: 54%;
   width: 40%;
   overflow: hidden;
-  font-size: clamp(0.52rem, 0.8vw, 0.8rem);
+  font-size: 1.88cqi;
   /* The typewriter face has no bold cut: a synthetic bold plus a hairline stroke stands in. */
   font-weight: 700;
   -webkit-text-stroke: 0.3px #3a2b14;
@@ -153,15 +158,17 @@
   color: #3a2b14;
 }
 
+/*
+  The sheet of notes inside the folder. Plain block flow, not a grid: a grid
+  column's auto minimum took the photo's intrinsic width (its height times
+  its aspect ratio) and pushed every row past the paper's right edge.
+*/
 .dossier__sheet {
   position: absolute;
   top: 13%;
   right: 8%;
-  bottom: 8%;
+  bottom: 6.5%;
   left: 8%;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.45em;
   padding: 3.5% 5% 4%;
   overflow: hidden;
   background: var(--color-paper);
@@ -170,39 +177,83 @@
     0 6px 14px rgb(0 0 0 / 0.25);
 }
 
-.dossier__photo {
+/*
+  The photograph: one print box across the top of the sheet, the same size on
+  every file (the sheet's proportions are fixed, so a share of its height is
+  a fixed box). The image fills it, cropped from the right and the bottom so
+  its top left corner always shows, and its edge is torn fine and close
+  (--torn, from the exhibit's id) so it reads as a print on paper; the
+  shadow sits on the wrapper so it follows the torn edge. Taped top left and
+  bottom right with
+  the board's masking-tape sprites (Fastener, styled in evidence.css), and a
+  hair off square, like a print stuck on by hand.
+*/
+.dossier__print {
+  --tape-w: 13%;
+  position: relative;
   width: 100%;
-  aspect-ratio: 16 / 5;
+  height: 48%;
+  margin: 0 0 0.9em;
+  transform: rotate(-0.35deg);
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.3));
+}
+
+.dossier__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: left top;
   background: #2b2a2e;
+  clip-path: var(--torn, none);
+}
+
+/* Several photographs stack in the box; the shown one is opaque, the rest wait behind it. */
+img.dossier__photo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+img.dossier__photo--shown {
+  opacity: 1;
+}
+
+.dossier--still img.dossier__photo {
+  transition: none;
 }
 
 .dossier__photo--none {
   display: grid;
   place-items: center;
+  clip-path: none;
   border: 1px dashed rgb(27 27 31 / 0.4);
   background: repeating-linear-gradient(
     135deg,
     rgb(27 27 31 / 0.04) 0 8px,
     rgb(27 27 31 / 0.08) 8px 16px
   );
-  font-size: clamp(0.6rem, 0.85vw, 0.8rem);
+  font-size: 1.55cqi;
+  line-height: 1.5;
   letter-spacing: 0.16em;
+  text-align: center;
   text-transform: uppercase;
   color: rgb(27 27 31 / 0.55);
 }
 
+/* The exhibit's name, written on the sheet in marker. */
 .dossier__title {
-  margin: 0;
-  font-family: var(--font-news);
-  font-size: clamp(1.2rem, 2vw, 1.9rem);
-  font-weight: 700;
-  line-height: 1.05;
+  margin: 0 0 0.15em;
+  font-family: var(--font-marker);
+  font-size: 4.47cqi;
+  font-weight: 400;
+  line-height: 1.1;
 }
 
 .dossier__meta {
-  margin: 0;
-  font-size: clamp(0.62rem, 0.85vw, 0.82rem);
+  margin: 0 0 0.7em;
+  font-size: 1.93cqi;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(27 27 31 / 0.7);
@@ -210,36 +261,84 @@
 
 .dossier__summary {
   margin: 0;
-  font-size: clamp(0.62rem, 0.86vw, 0.86rem);
+  font-size: 2.02cqi;
   line-height: 1.4;
 }
 
+/* The stack on one typed line; the data keeps it short enough to fit. */
 .dossier__tags {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.4em;
-  margin: 0.2em 0 0;
+  margin: 0.8em 0 0;
   padding: 0;
   list-style: none;
 }
 
 .dossier__tags li {
   padding: 0.2em 0.6em;
+  white-space: nowrap;
   border: 1px solid rgb(27 27 31 / 0.5);
-  font-size: clamp(0.55rem, 0.75vw, 0.72rem);
+  font-size: 1.69cqi;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .dossier__link {
-  justify-self: start;
-  margin-top: auto;
-  font-size: clamp(0.65rem, 0.9vw, 0.85rem);
+  display: inline-block;
+  margin: 0.9em 0 0;
+  font-size: 2cqi;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-thread);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* No address on file: the line is typed anyway, struck through, and stamped over. */
+.dossier__link--sealed {
+  position: relative;
+  display: inline-block;
+  color: rgb(27 27 31 / 0.45);
+  text-decoration: none;
+}
+
+/* The words and their strike fade together under the stamp. */
+.dossier__link--sealed s {
+  opacity: 0.55;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgb(27 27 31 / 0.35);
+}
+
+/* A rubber stamp in the thread red, slammed down over the words: inked unevenly, askew. */
+.dossier__stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 0.15em 0.5em 0.1em;
+  border: 2px solid rgb(179 18 27 / 0.75);
+  border-radius: 3px;
+  transform: translate(-50%, -54%) rotate(-7deg);
+  font-size: 1.15em;
+  line-height: 1.1;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgb(179 18 27 / 0.8);
+  -webkit-mask-image: radial-gradient(
+    ellipse at 40% 60%,
+    #000 55%,
+    rgb(0 0 0 / 0.55) 80%,
+    rgb(0 0 0 / 0.85) 100%
+  );
+  mask-image: radial-gradient(
+    ellipse at 40% 60%,
+    #000 55%,
+    rgb(0 0 0 / 0.55) 80%,
+    rgb(0 0 0 / 0.85) 100%
+  );
 }
 
 /* Arrows at the screen's edges: paper tags with a big typed chevron. */

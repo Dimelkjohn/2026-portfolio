@@ -15,6 +15,48 @@ const items: Work[] = ['Alpha', 'Beta', 'Gamma'].map((title, i) => ({
 }))
 
 describe('WorkCarousel', () => {
+  it('links the exhibit when it has an address, and seals the line when it does not', () => {
+    const linked = items.map((item, i) =>
+      i === 0 ? { ...item, link: 'https://example.test/alpha' } : item,
+    )
+    render(
+      <WorkCarousel open index={0} onIndexChange={() => {}} onClose={() => {}} items={linked} />,
+    )
+    const link = screen.getByRole('link', { name: 'Open the exhibit' })
+    expect(link).toHaveAttribute('href', 'https://example.test/alpha')
+    // The other files carry the sealed line, struck through and stamped.
+    expect(screen.getAllByText('Sealed')).toHaveLength(2)
+    expect(screen.queryAllByRole('link')).toHaveLength(1)
+  })
+
+  it('plays through several photographs on the front file', () => {
+    vi.useFakeTimers()
+    const pictures = [
+      { src: '/a.webp', alt: 'first page' },
+      { src: '/b.webp', alt: 'second page' },
+    ]
+    const withPictures = items.map((item, i) => (i === 0 ? { ...item, media: pictures } : item))
+    render(
+      <WorkCarousel
+        open
+        index={0}
+        onIndexChange={() => {}}
+        onClose={() => {}}
+        items={withPictures}
+      />,
+    )
+    const first = screen.getByAltText('first page')
+    const second = screen.getByAltText('second page')
+    expect(first).toHaveClass('dossier__photo--shown')
+    expect(second).not.toHaveClass('dossier__photo--shown')
+    act(() => {
+      vi.advanceTimersByTime(3200)
+    })
+    expect(second).toHaveClass('dossier__photo--shown')
+    expect(first).not.toHaveClass('dossier__photo--shown')
+    vi.useRealTimers()
+  })
+
   it('renders nothing while closed', () => {
     render(
       <WorkCarousel

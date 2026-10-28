@@ -20,6 +20,12 @@ export function rng(seed: number): () => number {
 export type TornOptions = {
   /** How far the tear wanders in from the edge, percent of the paper. */
   rag?: number
+  /**
+   * The same for the left and right edges, when the paper is far from square:
+   * a percent of a wide sheet's width is a deeper bite than a percent of its
+   * height. Defaults to `rag`.
+   */
+  ragX?: number
   /** Points per edge. */
   steps?: number
 }
@@ -29,16 +35,23 @@ export type TornOptions = {
  * wanders in and out, with the odd deeper nick, and no two seeds tear alike.
  * Coordinates are percent, clockwise from the top-left corner.
  */
-export function tornOutline(seed: string, { rag = 2.5, steps = 16 }: TornOptions = {}): string {
+export function tornOutline(
+  seed: string,
+  { rag = 2.5, ragX = rag, steps = 16 }: TornOptions = {},
+): string {
   const next = rng(hash(seed))
-  const nick = () => (next() < 0.18 ? rag * (1 + next() * 1.5) : 0)
-  const wobble = () => next() * rag + nick()
+  // Draws in this order so every existing seed tears exactly as it did.
+  const wobble = (r: number) => {
+    const wander = next() * r
+    const nick = next() < 0.18 ? r * (1 + next() * 1.5) : 0
+    return wander + nick
+  }
   const pts: string[] = []
   const f = (n: number) => Number(n.toFixed(1))
-  for (let i = 0; i <= steps; i++) pts.push(`${f((i / steps) * 100)}% ${f(wobble())}%`)
-  for (let i = 1; i <= steps; i++) pts.push(`${f(100 - wobble())}% ${f((i / steps) * 100)}%`)
-  for (let i = steps - 1; i >= 0; i--) pts.push(`${f((i / steps) * 100)}% ${f(100 - wobble())}%`)
-  for (let i = steps - 1; i >= 1; i--) pts.push(`${f(wobble())}% ${f((i / steps) * 100)}%`)
+  for (let i = 0; i <= steps; i++) pts.push(`${f((i / steps) * 100)}% ${f(wobble(rag))}%`)
+  for (let i = 1; i <= steps; i++) pts.push(`${f(100 - wobble(ragX))}% ${f((i / steps) * 100)}%`)
+  for (let i = steps - 1; i >= 0; i--) pts.push(`${f((i / steps) * 100)}% ${f(100 - wobble(rag))}%`)
+  for (let i = steps - 1; i >= 1; i--) pts.push(`${f(wobble(ragX))}% ${f((i / steps) * 100)}%`)
   return `polygon(${pts.join(', ')})`
 }
 

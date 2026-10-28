@@ -9,7 +9,10 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { sfx as siteSfx, type Sfx } from '@/audio/sfx'
+import { Fastener } from '@/components/evidence/Fastener'
+import { tornOutline } from '@/components/evidence/torn'
 import { selectedWork, type Work } from '@/data/work'
+import type { EvidenceMedia } from '@/types/evidence'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import './work-carousel.css'
@@ -28,6 +31,58 @@ type WorkCarouselProps = {
   sfx?: Sfx
 }
 
+type PrintProps = {
+  media: EvidenceMedia[] | undefined
+  /** The exhibit's id: seeds the tear and the tape so they never change. */
+  seed: string
+  /** Only the front file plays through its photographs. */
+  active: boolean
+}
+
+/**
+ * The photograph, taped to the sheet at its corners like the prints on the
+ * board. A file with several photographs shows them in turn, each fading
+ * into the next while the file is at the front; under reduced motion the
+ * first one simply stays.
+ */
+function Print({ media, seed, active }: PrintProps) {
+  const reducedMotion = useReducedMotion()
+  const [frame, setFrame] = useState(0)
+  const count = media?.length ?? 0
+  const plays = active && count > 1 && !reducedMotion
+
+  useEffect(() => {
+    if (!plays) return
+    const t = window.setInterval(() => setFrame((f) => (f + 1) % count), FRAME_MS)
+    return () => window.clearInterval(t)
+  }, [plays, count])
+
+  return (
+    <div
+      className="dossier__print"
+      style={{ '--torn': tornOutline(seed, PRINT_TEAR) } as CSSProperties}
+    >
+      {media && count > 0 ? (
+        media.map((picture, i) => (
+          <img
+            key={picture.src}
+            className={cn('dossier__photo', i === frame && 'dossier__photo--shown')}
+            src={picture.src}
+            alt={picture.alt}
+            aria-hidden={i !== frame}
+            draggable={false}
+          />
+        ))
+      ) : (
+        <div className="dossier__photo dossier__photo--none" aria-hidden="true">
+          No photograph on file
+        </div>
+      )}
+      <Fastener fastener={{ kind: 'tape', corners: 'diagonal' }} seed={seed} />
+    </div>
+  )
+}
+
 /** Files further back than this in the stack are not drawn. */
 const VISIBLE_BEHIND = 3
 /** Wheel travel that counts as one step, and the pause before the next. */
@@ -42,6 +97,15 @@ const IMPACT_MS = 268
 type Phase = 'entering' | 'settled' | 'leaving'
 
 export const wrap = (i: number, n: number) => ((i % n) + n) % n
+
+/**
+ * The print's edge: a fine, dense tear, so it reads as a photo on paper rather
+ * than a rectangle. The box is about 2.6 times wider than it is tall, so the
+ * sides take a proportionally smaller bite than the top and bottom.
+ */
+const PRINT_TEAR = { rag: 0.8, ragX: 0.3, steps: 48 }
+/** How long each photograph holds on a file with several, before the next fades in. */
+const FRAME_MS = 3200
 
 /** The dust the pile raises when it lands: one cloud image, three times, rolling out left, right and up. */
 const PUFFS = ['left', 'right', 'up'] as const
@@ -204,13 +268,7 @@ function Pile({ index, onIndexChange, onClose, origin, items, sfx }: PileProps) 
                   Exhibit {String(i + 1).padStart(2, '0')}: {work.tab}
                 </span>
                 <div className="dossier__sheet">
-                  {work.media ? (
-                    <img className="dossier__photo" src={work.media.src} alt={work.media.alt} />
-                  ) : (
-                    <div className="dossier__photo dossier__photo--none" aria-hidden="true">
-                      No photograph on file
-                    </div>
-                  )}
+                  <Print media={work.media} seed={work.id} active={offset === 0} />
                   <h3 className="dossier__title">{work.title}</h3>
                   {(work.year || work.role) && (
                     <p className="dossier__meta">
@@ -225,10 +283,22 @@ function Pile({ index, onIndexChange, onClose, origin, items, sfx }: PileProps) 
                       ))}
                     </ul>
                   )}
-                  {work.link && offset === 0 && (
-                    <a className="dossier__link" href={work.link} target="_blank" rel="noreferrer">
+                  {/* Every file has the line; without an address it is struck through and stamped. */}
+                  {work.link ? (
+                    <a
+                      className="dossier__link"
+                      href={work.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      tabIndex={offset === 0 ? undefined : -1}
+                    >
                       Open the exhibit
                     </a>
+                  ) : (
+                    <p className="dossier__link dossier__link--sealed">
+                      <s>Open the exhibit</s>
+                      <span className="dossier__stamp">Sealed</span>
+                    </p>
                   )}
                 </div>
               </div>

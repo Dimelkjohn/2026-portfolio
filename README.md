@@ -116,7 +116,12 @@ three are mounted in instant-film frames. The frames' windows are painted as a c
 plain white in the source, so the script finds each window by walking out
 from the frame's centre until a band holds nothing as bright as the window,
 knocks it out, and drops in the photo cropped to the window around the
-subject (`position: attention`).
+subject (`position: attention`). The selected-work photographs come from
+`assets-src/evidence/work`: each is resized whole to the print's width and
+written as `work-<id>.webp`; the sheet fills the print box with it, cropping
+from the right and bottom so the image's top left always shows. The
+script runs every step by default; `node scripts/prepare-evidence.mjs
+exhibits` (or `tape`, `notes`, `news`, `me`) runs one.
 
 ## How the thread works
 
@@ -203,8 +208,11 @@ pressed a key. `Torchlight` opens with no beam, asks the engine to unlock, and s
 `lit` the moment the switch-on actually starts playing, so the light and the
 sound come on together. If the first attempt is refused (always the case on
 a first visit) a faint "Click anywhere to switch on the torch" prompt appears
-and the first gesture starts both. If Web Audio is unavailable or the clip
-fails to load, the torch switches on silently rather than staying off.
+and the first gesture starts both. Until the torch is lit a pointer-catching
+shield (`.torch-shield`) sits over the board, so nothing can be hovered,
+lifted or opened in the dark; only the sound switches stay reachable above
+it. If Web Audio is unavailable or the clip fails to load, the torch
+switches on silently rather than staying off.
 Tests use the fake Web Audio in `src/test/fakeAudio.ts`.
 
 ## The fly (experimental, may be removed)
