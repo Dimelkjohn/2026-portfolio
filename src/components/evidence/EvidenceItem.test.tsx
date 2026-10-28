@@ -82,6 +82,24 @@ describe('EvidenceItem', () => {
     expect(second.container.querySelector('.evidence__pin')).toBeNull()
   })
 
+  it('writes a headline in marker under the lead-in on a titled note', () => {
+    render(
+      <EvidenceItem
+        item={{
+          id: 'hub',
+          kind: 'note',
+          placement: { x: 40, y: 40 },
+          media: { src: '/evidence/note-lined-torn.webp', alt: 'Torn lined sheet' },
+          text: 'who is',
+          headline: 'John Dimelu',
+        }}
+      />,
+    )
+    expect(screen.getByText('who is')).toHaveClass('evidence__scrawl--titled')
+    expect(screen.getByText('John')).toHaveClass('evidence__marker-word')
+    expect(screen.getByText('Dimelu').parentElement).toHaveClass('evidence__marker')
+  })
+
   it('renders an ink print on a fingerprint card when media is given', () => {
     render(
       <EvidenceItem

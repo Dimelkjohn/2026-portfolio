@@ -342,6 +342,8 @@ async function notes() {
     'note-orange.png',
   )
   await noteOnBlack('StickyNote-Wrinkled-1-04-PNG_Image-Isolated_Object.webp', 'note-blue.png')
+  // Wide torn sheet of lined paper: the DIMELU note in the hub.
+  await noteReady('torn-lined.webp', 'note-lined-torn.webp')
   await noteOnBlack(
     'StickyNote-Wrinkled-Ripped-1-04-PNG_Image-Isolated_Object.webp',
     'note-blue-torn.png',

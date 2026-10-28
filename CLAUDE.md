@@ -20,7 +20,7 @@ Evidence items with hover tooltips (fun facts) are built
 (`src/components/evidence/`); the board is being filled zone by zone, with the
 bottom-left (identifying marks, notes written as the office's reads on John,
 handprint with five strengths) and the top-left photos (vintage B&W, three
-in instant-film frames), the centre hub ("who is John Dimelu?" cluster) and
+in instant-film frames), the centre hub (one torn sheet asking "who is John Dimelu") and
 the red thread (`src/components/evidence/Threads.tsx`, endpoints measured
 from the DOM) in place. Next: the other zones (top centre logistics, top
 right exhibits, right design work, bottom centre contact and résumé), a
@@ -56,10 +56,11 @@ as references. Do not make the repo public with that folder present.
   `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
   it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
   layers); anything with `labels` (lab tags shown only when lifted) lifts too,
-  and other kinds can join by adding them to `LIFTS`. Handwriting on notes
+  and `clickable: true | false` on an item overrides both ways. Handwriting on notes
   uses two Google fonts via tokens in `src/index.css`: `--font-note`
   (Swanky and Moo Moo, loose script) and `--font-note-caps` (Rock Salt,
-  capitals only), chosen per note with `hand: 'script' | 'caps'`. Pins are lit from
+  capitals only), chosen per note with `hand: 'script' | 'caps'`; a note's
+  `headline` is written big in `--font-marker` (Permanent Marker). Pins are lit from
   the torch by `src/components/evidence/pinLighting.ts` (per-frame custom
   properties, same pattern as `useTorch`).
 - All sound goes through the shared engine in `src/audio/engine.ts` (one

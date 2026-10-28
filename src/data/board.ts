@@ -15,36 +15,79 @@ import type { BoardData } from '@/types/evidence'
  */
 export const boardData: BoardData = {
   items: [
-    // ---- Centre: the question, in three notes. Every thread leads back to JOHN's pin. ----
+    // ---- Centre: the question, on one torn sheet. Every thread to the centre ties to its pin. ----
     {
-      id: 'hub-who',
+      id: 'hub',
       kind: 'note',
-      placement: { x: 41.5, y: 33, width: 10, rotate: -4, z: 14 },
+      placement: { x: 39.5, y: 39, width: 20, rotate: -3, z: 14 },
       fastener: { kind: 'pin', color: 'red' },
-      media: { src: '/evidence/note-yellow-square.webp', alt: 'Yellow note reading who is' },
+      media: {
+        src: '/evidence/note-lined-torn.webp',
+        alt: 'Torn sheet of lined paper asking who John Dimelu is',
+      },
       text: 'who is',
-      hand: 'caps',
-      size: 2.6,
+      headline: 'John Dimelu',
     },
+    // Question marks crowding the sheet: over its torn margins, never its writing; the pinned
+    // ones are tied back to it.
     {
-      id: 'hub-john',
+      id: 'q-1',
       kind: 'note',
-      placement: { x: 51, y: 41, width: 9, rotate: 5, z: 15 },
+      clickable: false,
+      placement: { x: 37.3, y: 33.5, width: 4.6, rotate: -9, z: 15 },
       fastener: { kind: 'pin', color: 'white' },
-      media: { src: '/evidence/note-blue-square.webp', alt: 'Blue note reading John' },
-      text: 'John',
-      hand: 'caps',
-      size: 2.6,
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Yellow note with a question mark' },
+      headline: '?',
     },
     {
-      id: 'hub-dimelu',
+      id: 'q-2',
       kind: 'note',
-      placement: { x: 42, y: 58, width: 12.5, rotate: -3, z: 14 },
+      clickable: false,
+      placement: { x: 56.2, y: 34, width: 4.2, rotate: 7, z: 15 },
+      fastener: { kind: 'tape', corners: 'top', width: 36 },
+      media: { src: '/evidence/note-blue-square.webp', alt: 'Blue note with two question marks' },
+      headline: '??',
+    },
+    {
+      id: 'q-3',
+      kind: 'note',
+      clickable: false,
+      placement: { x: 58.4, y: 45.5, width: 3.4, rotate: -5, z: 15 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: { src: '/evidence/note-orange.png', alt: 'Orange note with a question mark' },
+      headline: '?',
+    },
+    {
+      id: 'q-4',
+      kind: 'note',
+      clickable: false,
+      placement: { x: 54, y: 57, width: 5.4, rotate: 8, z: 15 },
       fastener: { kind: 'pin', color: 'black' },
-      media: { src: '/evidence/note-blue.png', alt: 'Blue note reading Dimelu' },
-      text: 'Dimelu',
-      hand: 'caps',
-      size: 2.6,
+      media: { src: '/evidence/note-kraft.webp', alt: 'Kraft note with three question marks' },
+      inset: '26% 12% 10%',
+      headline: '???',
+    },
+    {
+      id: 'q-5',
+      kind: 'note',
+      clickable: false,
+      placement: { x: 38.6, y: 56, width: 4.4, rotate: -6, z: 15 },
+      fastener: { kind: 'pin', color: 'white', x: 55 },
+      media: { src: '/evidence/note-blue-torn.png', alt: 'Torn blue note with a question mark' },
+      headline: '?',
+    },
+    {
+      id: 'q-6',
+      kind: 'note',
+      clickable: false,
+      placement: { x: 46.5, y: 55.6, width: 5, rotate: 4, z: 15 },
+      fastener: { kind: 'none' },
+      media: {
+        src: '/evidence/note-yellow-taped.png',
+        alt: 'Taped yellow note with a question mark',
+      },
+      inset: '26% 12% 12%',
+      headline: '?',
     },
 
     // ---- Top left: the suspect (photos of John; three in instant-film frames) ----
@@ -339,29 +382,31 @@ export const boardData: BoardData = {
     },
   ],
   // Red thread. Every pinned item is tied to something: some runs feed back
-  // to JOHN's pin in the centre, the rest are short local ties. Endpoints
+  // to the hub's pin in the centre, the rest are short local ties. Endpoints
   // are the items' pins (or the paper's top edge for taped items), measured
   // from the DOM.
   threads: [
-    // The hub itself
-    { from: 'hub-john', to: 'hub-who' },
-    { from: 'hub-john', to: 'hub-dimelu' },
+    // Question marks
+    { from: 'hub', to: 'q-1' },
+    { from: 'hub', to: 'q-3' },
+    { from: 'hub', to: 'q-4' },
+    { from: 'hub', to: 'q-5' },
     // Top left
-    { from: 'hub-john', to: 'me-beanie' },
+    { from: 'hub', to: 'me-beanie' },
     { from: 'me-beanie', to: 'note-music' },
     { from: 'note-music', to: 'note-helmet' },
     { from: 'note-aquarium', to: 'me-kid' },
     { from: 'me-kid', to: 'me-passport' },
     { from: 'note-earliest', to: 'me-passport' },
     // Bottom left
-    { from: 'hub-john', to: 'handprint' },
-    { from: 'hub-john', to: 'tenprint' },
+    { from: 'hub', to: 'handprint' },
+    { from: 'hub', to: 'tenprint' },
     { from: 'handprint', to: 'smudges' },
     { from: 'smudges', to: 'note-night' },
     { from: 'tenprint', to: 'note-prints' },
     { from: 'bucket', to: 'tenprint' },
     { from: 'palm', to: 'note-sedentary' },
     { from: 'note-heights', to: 'smudges' },
-    { from: 'hub-dimelu', to: 'note-sedentary' },
+    { from: 'hub', to: 'note-sedentary' },
   ],
 }

@@ -57,7 +57,7 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
     body,
     inset,
     hand,
-    size,
+    headline,
     mark,
     labels,
     annotations,
@@ -101,21 +101,25 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
       {kind === 'note' && media && (
         <>
           <img className="evidence__cutout" src={media.src} alt={media.alt} draggable={false} />
-          {text && (
+          {(text || headline) && (
             <p
               className={cn(
                 'evidence__scrawl',
                 hand === 'caps' && 'evidence__scrawl--caps',
-                size && 'evidence__scrawl--headline',
+                headline && 'evidence__scrawl--titled',
               )}
-              style={
-                {
-                  ...(inset && { inset }),
-                  ...(size && { '--scrawl-scale': size }),
-                } as CSSProperties
-              }
+              style={inset ? { inset } : undefined}
             >
-              <Scrawl text={text} mark={mark} />
+              {text && <Scrawl text={text} mark={mark} />}
+              {headline && (
+                <strong className="evidence__marker">
+                  {headline.split(' ').map((word, i) => (
+                    <span key={i} className="evidence__marker-word">
+                      {word}
+                    </span>
+                  ))}
+                </strong>
+              )}
             </p>
           )}
         </>

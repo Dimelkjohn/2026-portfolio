@@ -20,6 +20,7 @@
   /* Handwriting on the notes: a loose script, and a caps-only marker scrawl. */
   --font-note: 'Swanky and Moo Moo', var(--font-hand);
   --font-note-caps: 'Rock Salt', var(--font-hand);
+  --font-marker: 'Permanent Marker', var(--font-hand);
   /* Pen on an instant-film frame's margin. */
   --font-caption: 'Over the Rainbow', var(--font-hand);
 }

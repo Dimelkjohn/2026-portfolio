@@ -77,7 +77,7 @@ Every pinned thing is an `EvidenceItem` from `src/data/board.ts`, rendered by
 whose PNG is the paper, or a note: a photographed scrap of paper with
 handwriting laid over it, inside an `inset` that keeps clear of any tape or
 tab baked into the photo; `hand` picks Swanky and Moo Moo (`--font-note`) or
-Rock Salt in capitals (`--font-note-caps`)), its `placement` is in percent of the board and is
+Rock Salt in capitals (`--font-note-caps`), and a `headline` is written big under it in Permanent Marker (`--font-marker`)), its `placement` is in percent of the board and is
 written to custom properties so `evidence.css` owns the geometry, and its
 `fastener` is a flat thumbtack (drawn inline as SVG, four colours, anywhere
 along the top edge) or masking tape (one strip, two corners or four, any

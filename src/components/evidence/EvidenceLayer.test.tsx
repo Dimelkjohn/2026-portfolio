@@ -57,9 +57,18 @@ describe('EvidenceLayer', () => {
       title: 'Core strengths',
       labels: [{ x: 50, y: 10, text: 'Steady hand' }],
     }
-    render(<EvidenceLayer items={[...items, labelled]} />)
+    const plain: EvidenceItem = {
+      id: 'q',
+      kind: 'note',
+      clickable: false,
+      placement: { x: 0, y: 0 },
+      media: { src: '/evidence/note-orange.png', alt: 'Orange note' },
+      headline: '?',
+    }
+    render(<EvidenceLayer items={[...items, labelled, plain]} />)
     expect(screen.getByRole('button', { name: 'Crumpled blue note' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Handprint' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Orange note' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'First' })).not.toBeInTheDocument()
   })
 

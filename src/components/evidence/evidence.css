@@ -505,21 +505,48 @@
   /* Visible so a ring around the last word is not cut off; copy is sized to fit. */
   overflow: visible;
   font-family: var(--font-note, var(--font-hand));
-  font-size: calc(clamp(0.7rem, 1.02vw, 1.25rem) * var(--scrawl-scale, 1));
+  font-size: clamp(0.7rem, 1.02vw, 1.25rem);
   line-height: 1;
   color: #2b2420;
   mix-blend-mode: multiply;
 }
 
-/* Headline notes: one phrase, one line, centred on the paper. */
-.evidence__scrawl--headline {
+/* A titled note: the text as a lead-in, then the headline big in thick marker, both centred. */
+.evidence__scrawl--titled {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.1em;
   overflow: visible;
   white-space: nowrap;
-  line-height: 1.1;
   text-align: center;
+  font-size: clamp(1rem, 1.5vw, 1.8rem);
+}
+
+.evidence__marker {
+  display: flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-family: var(--font-marker, var(--font-hand));
+  font-weight: 400;
+  font-size: 1.7em;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #1a1512;
+}
+
+/* Each word written on its own, a touch off the line and at its own slight angle, like a hand would. */
+.evidence__marker-word {
+  display: inline-block;
+}
+
+.evidence__marker-word:nth-child(odd) {
+  transform: translateY(-0.07em) rotate(-3deg);
+}
+
+.evidence__marker-word:nth-child(even) {
+  transform: translateY(0.09em) rotate(2.5deg);
 }
 
 /* An ink mark under the writing, e.g. a marker underline. */
@@ -553,7 +580,7 @@
 /* Rock Salt has no lowercase and runs wide, so it goes smaller and looser. */
 .evidence__scrawl--caps {
   font-family: var(--font-note-caps, var(--font-hand));
-  font-size: calc(clamp(0.46rem, 0.64vw, 0.82rem) * var(--scrawl-scale, 1));
+  font-size: clamp(0.46rem, 0.64vw, 0.82rem);
   line-height: 1.55;
   letter-spacing: 0.02em;
   text-transform: uppercase;

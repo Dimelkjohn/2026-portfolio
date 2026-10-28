@@ -103,10 +103,11 @@ export type EvidenceItem = {
    */
   hand?: 'script' | 'caps'
   /**
-   * Notes only: handwriting size multiplier for headline notes (one short
-   * phrase, kept on a single line, centred). Default 1.
+   * Notes only: a headline written big in thick marker under `text` (or
+   * alone), centred on the paper: the hub's "who is / John Dimelu", the
+   * question marks around it.
    */
-  size?: number
+  headline?: string
   /**
    * Notes only: an ink mark. Beneath the writing by default (an underline, a
    * scribble); with `around`, drawn over the first occurrence of that word in
@@ -115,7 +116,10 @@ export type EvidenceItem = {
   mark?: EvidenceMedia & { around?: string }
   /** Ink marks drawn over the paper, always visible. */
   annotations?: EvidenceAnnotation[]
-  /** Lifts to the centre when clicked, like a note, even without labels. */
+  /**
+   * Overrides whether the item lifts to the centre when clicked: true makes
+   * any paper lift, false keeps a note (or labelled paper) plain.
+   */
   clickable?: boolean
   /** Heading shown over the lifted view, e.g. 'Core strengths'. */
   title?: string

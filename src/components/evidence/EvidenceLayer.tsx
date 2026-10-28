@@ -14,10 +14,13 @@ type EvidenceLayerProps = {
   threads?: Thread[]
 }
 
-/** Which kinds lift to the centre when clicked. Anything with labels, or marked clickable, lifts too. */
+/**
+ * Which kinds lift to the centre when clicked. Anything with labels lifts
+ * too, and `clickable` on an item overrides either way.
+ */
 const LIFTS = new Set<EvidenceItemData['kind']>(['note'])
 const lifts = (item: EvidenceItemData) =>
-  LIFTS.has(item.kind) || Boolean(item.labels?.length) || Boolean(item.clickable)
+  item.clickable ?? (LIFTS.has(item.kind) || Boolean(item.labels?.length))
 
 /** The lifted item fills at most this much of the viewport. */
 const MAX_WIDTH_FRACTION = 0.46
