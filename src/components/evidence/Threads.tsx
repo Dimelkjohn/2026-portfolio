@@ -10,29 +10,56 @@ type ThreadsProps = {
 }
 
 /**
- * Where a thread ties onto an item: the centre of its pin, or the top centre
- * of the paper when it is held by tape or nothing. Null when that point is
- * covered by another item: a thread cannot tie to a pin nobody can see.
- * (elementFromPoint skips pointer-transparent layers, so the thread SVG and
- * the torch do not get in the way of the test.)
+ * Where a thread could tie onto an item: the centre of each of its pins, or
+ * the top centre of the paper when it is held by tape or nothing. A point
+ * covered by another item is left out: a thread cannot tie to a pin nobody
+ * can see. (elementFromPoint skips pointer-transparent layers, so the thread
+ * SVG and the torch do not get in the way of the test.)
  */
-function anchorOf(container: HTMLElement, id: string): Point | null {
+function anchorsOf(container: HTMLElement, id: string): Point[] {
   const item = container.querySelector<HTMLElement>(`[data-evidence-id="${id}"]`)
-  if (!item) return null
-  const pin = item.querySelector<HTMLElement>('.evidence__pin')
-  const box = (
-    pin ??
-    item.querySelector<HTMLElement>('.evidence__paper') ??
-    item
-  ).getBoundingClientRect()
-  const x = box.left + box.width / 2
-  const y = pin ? box.top + box.height / 2 : box.top + 2
-  // jsdom has no hit testing; there, every pin counts as visible.
-  const onTop =
-    typeof document.elementFromPoint === 'function' ? document.elementFromPoint(x, y) : null
-  if (onTop && !item.contains(onTop) && onTop.closest('.evidence')) return null
+  if (!item) return []
+  // A spot is tested for cover at (x, y); a paper edge then ties at its top.
+  type Spot = { x: number; y: number; top?: number }
+  const pins = Array.from(item.querySelectorAll<HTMLElement>('.evidence__pin'))
+  let spots: Spot[]
+  if (pins.length > 0) {
+    spots = pins.map((pin) => {
+      const box = pin.getBoundingClientRect()
+      return { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+    })
+  } else {
+    const box = (
+      item.querySelector<HTMLElement>('.evidence__paper') ?? item
+    ).getBoundingClientRect()
+    spots = [{ x: box.left + box.width / 2, y: box.top + 2, top: box.top }]
+  }
   const origin = container.getBoundingClientRect()
-  return { x: x - origin.left, y: (pin ? y : box.top) - origin.top }
+  return spots
+    .filter(({ x, y }) => {
+      // jsdom has no hit testing; there, every pin counts as visible.
+      const onTop =
+        typeof document.elementFromPoint === 'function' ? document.elementFromPoint(x, y) : null
+      return !(onTop && !item.contains(onTop) && onTop.closest('.evidence'))
+    })
+    .map((spot) => ({ x: spot.x - origin.left, y: (spot.top ?? spot.y) - origin.top }))
+}
+
+/** The anchor nearest `toward`, or the first when there is nothing to aim at. */
+function anchorOf(container: HTMLElement, id: string, toward?: Point): Point | null {
+  const anchors = anchorsOf(container, id)
+  if (anchors.length === 0) return null
+  if (!toward) return anchors[0]!
+  let best = anchors[0]!
+  let bestD = Number.POSITIVE_INFINITY
+  for (const a of anchors) {
+    const d = (a.x - toward.x) ** 2 + (a.y - toward.y) ** 2
+    if (d < bestD) {
+      bestD = d
+      best = a
+    }
+  }
+  return best
 }
 
 /**
@@ -53,8 +80,10 @@ export function Threads({ threads, within }: ThreadsProps) {
       el.setAttribute('viewBox', `0 0 ${width} ${height}`)
       for (const path of Array.from(el.querySelectorAll<SVGPathElement>('path[data-thread]'))) {
         const [from, to] = (path.dataset.thread ?? '').split('>')
-        const a = from ? anchorOf(container, from) : null
-        const b = to ? anchorOf(container, to) : null
+        // Each end picks the pin nearest the other, so a two-pin piece ties at the right corner.
+        const first = from ? anchorOf(container, from) : null
+        const b = to ? anchorOf(container, to, first ?? undefined) : null
+        const a = from ? anchorOf(container, from, b ?? undefined) : null
         const sag = DEFAULT_SAG * (0.6 + 0.8 * jitter(path.dataset.thread ?? ''))
         path.setAttribute('d', a && b ? threadPath(a, b, { sag }) : '')
       }

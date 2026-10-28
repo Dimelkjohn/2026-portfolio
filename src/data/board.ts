@@ -340,6 +340,46 @@ export const boardData: BoardData = {
       media: { src: '/evidence/note-blue-square.webp', alt: 'Crumpled blue note' },
       text: 'went solo in 2026. app, backend, all his.',
     },
+    // ---- Right, below the cuttings: the design work, bagged as evidence. ----
+    {
+      id: 'design-photos',
+      kind: 'cutout',
+      bagged: true,
+      clickable: true,
+      placement: { x: 63, y: 54, width: 30, rotate: -8, z: 3 },
+      fastener: { kind: 'none' },
+      media: {
+        src: '/evidence/photo-stack.webp',
+        alt: 'A pile of photographs inside the evidence bag, the top one of John singing into a microphone outdoors',
+      },
+    },
+    {
+      id: 'design-bag',
+      kind: 'bag',
+      // Fills the zone under the cuttings and runs off the bottom of the viewport; the record, the
+      // worn cutting and the note sit on top of it.
+      placement: { x: 62, y: 48, width: 36, rotate: -1.5, z: 4 },
+      // Held by the pin through the "examine photos" note, which sits over its top-left.
+      fastener: { kind: 'none' },
+      media: {
+        src: '/evidence/bag.webp',
+        alt: 'A clear zip-seal evidence bag, pinned to the board',
+      },
+    },
+    {
+      // Pinned through the bag's top-left: the one pin holds note and bag, and takes the threads.
+      id: 'note-examine',
+      kind: 'note',
+      placement: { x: 63.6, y: 60.4, width: 5.5, rotate: -6, z: 5 },
+      fastener: { kind: 'pin', color: 'red' },
+      media: { src: '/evidence/note-yellow-square.webp', alt: 'Yellow note' },
+      text: 'examine photos',
+      hand: 'caps',
+      // A marker arrow under the words, pointing into the bag.
+      annotations: [
+        { src: '/evidence/mark-arrow-red.png', alt: '', x: 52, y: 76, width: 62, rotate: 28 },
+      ],
+    },
     {
       id: 'note-ci',
       kind: 'note',
@@ -434,7 +474,7 @@ export const boardData: BoardData = {
     {
       id: 'desk',
       kind: 'photo',
-      placement: { x: 31.5, y: 82, width: 10, rotate: 4, z: 3 },
+      placement: { x: 31.5, y: 82, width: 10, rotate: 28, z: 3 },
       fastener: { kind: 'tape', corners: 'top', width: 40 },
       media: {
         src: '/evidence/scene-desk.webp',
@@ -544,6 +584,9 @@ export const boardData: BoardData = {
     { from: 'note-midnight', to: 'clip-obsessed' },
     { from: 'note-ci', to: 'service-record' },
     { from: 'clip-obsessed', to: 'note-frontend' },
+    // Right: the design work, bagged below the record
+    { from: 'q-4', to: 'note-examine' },
+    { from: 'note-examine', to: 'note-ci' },
     // Bottom left
     { from: 'hub', to: 'handprint' },
     { from: 'hub', to: 'tenprint' },

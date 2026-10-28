@@ -326,12 +326,12 @@
 /*
   Thumbtack, drawn inline by Fastener.tsx (a flat head seen from the front,
   with its own contact shadow, shading turned toward the torch). Centred on --pin-x a little below the
-  paper's top edge, where a pin really goes through.
+  paper's top edge, where a pin really goes through, or at --pin-y down the paper when set.
 */
 .evidence__pin {
   position: absolute;
   z-index: 3;
-  top: clamp(4px, 0.4vw, 7px);
+  top: var(--pin-y, clamp(4px, 0.4vw, 7px));
   left: var(--pin-x, 50%);
   width: clamp(14px, 1.25vw, 22px);
   height: auto;
@@ -484,6 +484,35 @@
 
 /* ---- Cutout and note: the image is the paper ------------------------------- */
 
+/*
+  An evidence bag: see-through plastic laid over whatever is bagged. It never
+  takes the pointer, so the paper inside can; a little opacity comes off the
+  plastic as well, so the contents read through it.
+*/
+.evidence--bag {
+  pointer-events: none;
+}
+
+/*
+  A flat bag on cork throws almost no shadow of its own: what there is sits
+  at its edges, its zip and its folds, where the plastic is solid. Drop
+  shadows follow the plastic's alpha, so they land exactly there; two tight
+  ones compound where the plastic is clear, and a wider one softens the lot.
+  The weight of the shadow in this zone comes from what is inside the bag.
+*/
+.evidence--bag .evidence__paper {
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+  opacity: 0.8;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6)) drop-shadow(0 3px 5px rgb(0 0 0 / 0.5))
+    drop-shadow(0 12px 18px rgb(0 0 0 / 0.45));
+}
+
+.evidence--bag .evidence__paper::after {
+  content: none;
+}
+
 .evidence--cutout .evidence__paper,
 .evidence--note .evidence__paper {
   overflow: visible;
@@ -495,6 +524,37 @@
 .evidence--cutout .evidence__paper::after,
 .evidence--note .evidence__paper::after {
   content: none;
+}
+
+/*
+  Paper inside a bag: frosted and rippled through the plastic (the bag-glass
+  filter in EvidenceLayer), softened a little, like a print under a layer of
+  plastic. Hover adds the ordinary scale and white halo on top of that look
+  but leaves it under the bag's layer; the plastic only comes off once the
+  paper is lifted out. After the cutout rules above, which it must outrank.
+*/
+.evidence--bagged .evidence__paper {
+  /* Through the plastic: bent along its folds, a touch soft, darks deeper and whites dulled. */
+  --bag-look: url('#bag-glass') blur(0.6px) brightness(0.88) contrast(1.1) saturate(0.9);
+  /*
+    A thick pile's shadow, thrown through the bag's back sheet onto the cork:
+    a tight dark contact shadow at its edges, a softer one from its thickness,
+    and a wide faint penumbra from the front plastic tented over it. Drawn with
+    the pile, under the bag, so the plastic dims it as it would.
+  */
+  --bag-shadow: drop-shadow(0 2px 3px rgb(0 0 0 / 0.55)) drop-shadow(0 12px 20px rgb(0 0 0 / 0.45))
+    drop-shadow(0 28px 44px rgb(0 0 0 / 0.25));
+  filter: var(--bag-look) var(--bag-shadow);
+}
+
+.evidence--bagged.evidence--clickable:is(:hover, :focus-within) {
+  z-index: var(--z, 1);
+}
+
+.evidence--bagged.evidence--clickable:is(:hover, :focus-within) .evidence__paper {
+  filter: var(--bag-look) drop-shadow(0 0 2px rgb(255 255 255 / 1))
+    drop-shadow(0 0 9px rgb(255 255 255 / 0.85)) drop-shadow(0 0 22px rgb(255 255 255 / 0.5))
+    var(--bag-shadow);
 }
 
 /* Handwriting on a note: the loose script by default, the caps marker on request. */

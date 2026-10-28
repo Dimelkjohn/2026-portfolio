@@ -10,6 +10,17 @@
  *   public/evidence/*.png|webp      ink prints with the white paper knocked
  *                                   out to alpha, photos resized, and note
  *                                   papers (assets-src/evidence/notes) cut out
+ *   public/evidence/bag.webp        the evidence bag (assets-src/evidence/bag.png,
+ *                                   already cut out), its flat plastic made
+ *                                   see-through so the cork shows inside it
+ *   public/evidence/mark-arrow-red.png the marker arrow drawn on the "examine
+ *                                   photos" note (its own step, `marks`, so
+ *                                   adding a mark does not regrind the notes)
+ *   public/evidence/bag-folds.png   a displacement map of the bag's creases
+ *                                   (R = slope across, G = slope down), which
+ *                                   the sheet uses to bend whatever is bagged
+ *   public/evidence/photo-stack.webp the pile of prints that goes in the bag,
+ *                                   resized
  *   public/evidence/work-*.webp     the photograph in each selected-work file
  *                                   (assets-src/evidence/work), resized whole;
  *                                   the sheet crops it to the print box from
@@ -841,7 +852,105 @@ async function exhibits() {
   await exhibit('old-portfolio.png', 'work-old-portfolio.webp')
 }
 
-const steps = { tape, evidence, notes, news, me, exhibits }
+// ---- The evidence bag ---------------------------------------------------------
+
+/**
+ * The zip bag is photographed on white and already cut out, but its body is
+ * opaque. Real bag plastic is clear: only the creases, the highlights and
+ * the blue zip are solid. So alpha follows how far a pixel strays from the
+ * flat grey of the body, which keeps every fold and glint and lets the cork
+ * show through the rest; strongly coloured pixels (the zip) stay as they are.
+ */
+async function bag() {
+  const { data, info } = await sharp(src('bag.png'))
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const BODY = 197 // the flat plastic's brightness
+  const SPREAD = 58 // how far a crease or highlight gets from it
+  const FLOOR = 0.3 // how solid the flat plastic stays
+  for (let p = 0; p < info.width * info.height; p++) {
+    const i = p * 4
+    const a = data[i + 3]
+    if (a === 0) continue
+    const r = data[i]
+    const g = data[i + 1]
+    const b = data[i + 2]
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b)
+    if (saturation > 40) continue
+    const lum = (r + g + b) / 3
+    const solid = Math.min(1, FLOOR + (1 - FLOOR) * (Math.abs(lum - BODY) / SPREAD))
+    data[i + 3] = Math.round(a * solid)
+  }
+  const result = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .resize({ width: 1200 })
+    .webp({ quality: 85, alphaQuality: 90 })
+    .toFile(path.join(OUT, 'bag.webp'))
+  console.log(`bag  bag.webp  ${result.width}x${result.height}`)
+  await bagFolds()
+
+  // What goes in it: already cut out, only resized.
+  const stack = await sharp(src('photo-stack.png'))
+    .resize({ width: 1000, withoutEnlargement: true })
+    .webp({ quality: 85, alphaQuality: 90 })
+    .toFile(path.join(OUT, 'photo-stack.webp'))
+  console.log(`bag  photo-stack.webp  ${stack.width}x${stack.height}`)
+}
+
+/**
+ * The bag's creases as a displacement map, so a print inside it bends where
+ * the plastic folds rather than everywhere at once. The bag's brightness is
+ * read as a height field (ridges catch the light); its slope across and down
+ * goes into the red and green channels around 128, which is "no shift" to
+ * feDisplacementMap. Outside the bag, and on the flat body, the map is 128.
+ */
+async function bagFolds() {
+  const WIDTH = 600
+  const { data, info } = await sharp(src('bag.png'))
+    .resize({ width: WIDTH })
+    .ensureAlpha()
+    .toColourspace('b-w')
+    .blur(2)
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width, height, channels } = info
+  const h = (x, y) => {
+    x = clamp(x, 0, width - 1)
+    y = clamp(y, 0, height - 1)
+    const i = (y * width + x) * channels
+    // Transparent pixels count as the flat body, so the edge of the bag is no cliff.
+    return data[i + channels - 1] < 128 ? 197 : data[i]
+  }
+  const GAIN = 2.2 // how many map units one unit of brightness slope is worth
+  const out = Buffer.alloc(width * height * 3)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const dx = (h(x + 1, y) - h(x - 1, y)) * GAIN
+      const dy = (h(x, y + 1) - h(x, y - 1)) * GAIN
+      const o = (y * width + x) * 3
+      out[o] = clamp(Math.round(128 + dx))
+      out[o + 1] = clamp(Math.round(128 + dy))
+      out[o + 2] = 128
+    }
+  }
+  const result = await sharp(out, { raw: { width, height, channels: 3 } })
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(OUT, 'bag-folds.png'))
+  console.log(`bag  bag-folds.png  ${result.width}x${result.height}`)
+}
+
+// ---- Marker marks added after the notes were cut --------------------------------
+
+async function marks() {
+  // Lighter than full ink, so it reads as marker drawn on the note.
+  await ink('notes/arrow-red.png', 'mark-arrow-red.png', {
+    trim: true,
+    ink: [179, 18, 27],
+    gain: 1.05,
+  })
+}
+
+const steps = { tape, evidence, notes, marks, news, me, bag, exhibits }
 const only = process.argv[2]
 if (only && !(only in steps)) {
   console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)

@@ -38,6 +38,7 @@ const DEFAULT_WIDTH: Record<EvidenceItemData['kind'], number> = {
   fingerprint: 10,
   cutout: 10,
   note: 7,
+  bag: 30,
 }
 
 /**
@@ -68,6 +69,7 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
     annotations,
     funFact,
     gallery,
+    bagged,
   } = item
   const fastener = item.fastener ?? { kind: 'pin' as const }
   const style = {
@@ -106,6 +108,9 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
       {kind === 'receipt' && <Receipt header={text} body={body} footer={footer} />}
       {kind === 'fingerprint' && <Fingerprint media={media} label={text} />}
       {(kind === 'photo' || kind === 'polaroid') && <Print media={media} caption={text} />}
+      {kind === 'bag' && media && (
+        <img className="evidence__cutout" src={media.src} alt={media.alt} draggable={false} />
+      )}
       {kind === 'cutout' && media && (
         <>
           <img className="evidence__cutout" src={media.src} alt={media.alt} draggable={false} />
@@ -155,6 +160,7 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
         worn && 'evidence--worn',
         kind === 'clipping' && media && 'evidence--scan',
         interactive && 'evidence--clickable',
+        bagged && 'evidence--bagged',
         lift && 'evidence--lifted',
         lift?.entered && 'evidence--entered',
         ghost && 'evidence--ghost',

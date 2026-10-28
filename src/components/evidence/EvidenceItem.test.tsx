@@ -120,6 +120,42 @@ describe('EvidenceItem', () => {
     expect(pin?.style.getPropertyValue('--pin-x')).toBe('20%')
   })
 
+  it('puts a pin at each place in a list, for a piece held at both corners', () => {
+    const { container } = render(
+      <EvidenceItem item={{ ...postit, fastener: { kind: 'pin', color: 'red', x: [4, 96] } }} />,
+    )
+    const pins = Array.from(container.querySelectorAll<SVGElement>('.evidence__pin'))
+    expect(pins.map((pin) => pin.style.getPropertyValue('--pin-x'))).toEqual(['4%', '96%'])
+  })
+
+  it('puts a pin down the paper when a fastener says how far', () => {
+    const { container } = render(
+      <EvidenceItem item={{ ...postit, fastener: { kind: 'pin', x: 30, y: 50 } }} />,
+    )
+    const pin = container.querySelector<SVGElement>('.evidence__pin')
+    expect(pin?.style.getPropertyValue('--pin-x')).toBe('30%')
+    expect(pin?.style.getPropertyValue('--pin-y')).toBe('50%')
+  })
+
+  it('draws a bag as plastic over the board and marks paper that sits inside one', () => {
+    const bag = render(
+      <EvidenceItem
+        item={{
+          ...postit,
+          id: 'bag',
+          kind: 'bag',
+          media: { src: '/evidence/bag.webp', alt: 'An evidence bag' },
+        }}
+      />,
+    )
+    expect(bag.container.querySelector('.evidence--bag img')).toHaveAttribute(
+      'alt',
+      'An evidence bag',
+    )
+    const inside = render(<EvidenceItem item={{ ...postit, id: 'inside', bagged: true }} />)
+    expect(inside.container.querySelector('.evidence')).toHaveClass('evidence--bagged')
+  })
+
   it('renders tape strips, two for diagonal corners, and the same strips every render', () => {
     const item = { ...postit, fastener: { kind: 'tape' as const, corners: 'diagonal' as const } }
     const first = render(<EvidenceItem item={item} />)

@@ -28,7 +28,11 @@ type FastenerProps = {
  */
 export function Fastener({ fastener, seed }: FastenerProps) {
   if (fastener.kind === 'none') return null
-  if (fastener.kind === 'pin') return <Pin color={fastener.color ?? 'red'} x={fastener.x ?? 50} />
+  if (fastener.kind === 'pin') {
+    const color = fastener.color ?? 'red'
+    const places = Array.isArray(fastener.x) ? fastener.x : [fastener.x ?? 50]
+    return places.map((x) => <Pin key={x} color={color} x={x} y={fastener.y} />)
+  }
 
   const h = hash(seed)
   const corners = fastener.corners ?? 'top'
@@ -68,14 +72,17 @@ export function Fastener({ fastener, seed }: FastenerProps) {
  * rim, the glint and the shadow's offset all turn to face the torch. The
  * glint's strength is --pin-glint, which fades as the beam moves off.
  */
-function Pin({ color, x }: { color: PinColor; x: number }) {
+function Pin({ color, x, y }: { color: PinColor; x: number; y?: number }) {
   const id = useId()
   const face = `${id}-face`
   const rim = `${id}-rim`
   const blur = `${id}-blur`
   const soft = `${id}-soft`
   const { light, base, dark } = PIN_PALETTE[color]
-  const style = { '--pin-x': `${x}%` } as CSSProperties
+  const style = {
+    '--pin-x': `${x}%`,
+    ...(y === undefined ? {} : { '--pin-y': `${y}%` }),
+  } as CSSProperties
   return (
     <svg
       className="evidence__pin"

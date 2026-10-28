@@ -29,7 +29,16 @@ export type BoardPlacement = {
  *   note         a photographed scrap of paper (media) with handwriting (text) on it
  */
 export type EvidenceKind =
-  'photo' | 'polaroid' | 'clipping' | 'postit' | 'receipt' | 'fingerprint' | 'cutout' | 'note'
+  | 'photo'
+  | 'polaroid'
+  | 'clipping'
+  | 'postit'
+  | 'receipt'
+  | 'fingerprint'
+  | 'cutout'
+  | 'note'
+  /** A clear evidence bag: see-through plastic drawn over whatever is bagged; never takes the pointer. */
+  | 'bag'
 
 export type PinColor = 'red' | 'white' | 'yellow' | 'black'
 
@@ -38,8 +47,17 @@ export type Fastener =
   | {
       kind: 'pin'
       color?: PinColor
-      /** 0-100, where along the top edge the pin goes. Default 50. */
-      x?: number
+      /**
+       * 0-100, where along the top edge the pin goes. Default 50. A list puts
+       * a pin at each place, for a wide piece held at both corners; a thread
+       * ties to whichever pin is nearest its other end.
+       */
+      x?: number | number[]
+      /**
+       * 0-100, how far down the paper the pin goes. Default 0, the top edge.
+       * A pin through the middle of a piece, say, sits at 50.
+       */
+      y?: number
     }
   | {
       kind: 'tape'
@@ -104,6 +122,12 @@ export type EvidenceItem = {
   worn?: boolean
   /** Receipts only: the centred closing lines under the last rule (the thank-you). */
   footer?: string
+  /**
+   * Sits inside a bag: place it under the bag's z, and it is drawn softened
+   * and rippled as if seen through the plastic. It still rises on hover (under
+   * the bag) and lifts out clear when clicked.
+   */
+  bagged?: boolean
   /**
    * What a click opens instead of lifting the paper. 'work' is the
    * selected-work carousel, one shared stack of files that keeps its place

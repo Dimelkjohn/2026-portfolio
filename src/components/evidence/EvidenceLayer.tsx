@@ -7,6 +7,9 @@ import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { selectedWork } from '@/data/work'
+
+/** The bag's creases as a displacement map, built by `npm run evidence`. */
+const BAG_FOLDS_URL = `${import.meta.env.BASE_URL}evidence/bag-folds.png`
 import { startPinLighting } from './pinLighting'
 import { Threads } from './Threads'
 
@@ -168,6 +171,25 @@ export function EvidenceLayer({
 
   return (
     <>
+      {/*
+        Bagged paper is drawn through this: bent along the bag's own creases.
+        The fold map (public/evidence/bag-folds.png, from the pipeline) is
+        stretched over the paper, so the print kinks where the plastic folds.
+      */}
+      <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
+        <defs>
+          <filter id="bag-glass" x="-5%" y="-5%" width="110%" height="110%">
+            <feImage href={BAG_FOLDS_URL} preserveAspectRatio="none" result="folds" />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="folds"
+              scale="18"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </defs>
+      </svg>
       <section ref={layer} className="contents" aria-label="Evidence">
         {items.map((item) => (
           <EvidenceItem

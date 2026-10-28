@@ -67,7 +67,10 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
 - Respect `prefers-reduced-motion` for any new animation (`useReducedMotion`).
 - Board content (items, fun facts, threads) belongs in `src/data/board.ts`,
   typed by `src/types/evidence.ts`, not in components. Every item has a
-  `fastener` (pin colour and position, or tape); new media goes through
+  `fastener` (pin colour and position, or tape); a `kind: 'bag'` item is
+  see-through plastic that never takes the pointer, and an item with
+  `bagged: true` placed under it is drawn through the plastic (the
+  `bag-glass` SVG filter) yet stays clickable; new media goes through
   `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
   it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
   layers); anything with `labels` (lab tags shown only when lifted) lifts too,
