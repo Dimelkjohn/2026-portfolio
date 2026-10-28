@@ -248,8 +248,8 @@ async function noteOnBlack(file, out, { width = 700 } = {}) {
  * only a hint remains. Coloured pixels (the paper) stay opaque, and so does
  * anything neutral away from the edge (the tape).
  */
-async function noteOnWhite(file, out, { width = 700 } = {}) {
-  const { data, info } = await sharp(note(file))
+async function noteOnWhite(file, out, { width = 700, bgLuma = 245, tint, src = note } = {}) {
+  const { data, info } = await sharp(src(file))
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
@@ -259,7 +259,7 @@ async function noteOnWhite(file, out, { width = 700 } = {}) {
     Math.max(data[p * 3], data[p * 3 + 1], data[p * 3 + 2]) -
       Math.min(data[p * 3], data[p * 3 + 1], data[p * 3 + 2]) <
     14
-  const bg = floodBackground(w, h, (p) => neutral(p) && luma(p) > 245)
+  const bg = floodBackground(w, h, (p) => neutral(p) && luma(p) > bgLuma)
   // Distance-to-background, up to 8px, by repeated dilation.
   const FRINGE = 8
   let edge = bg
@@ -294,22 +294,41 @@ async function noteOnWhite(file, out, { width = 700 } = {}) {
     else if (near[p] && neutral(p) && luma(p) > 200) a = clamp(((246 - luma(p)) / 46) * 255)
     rgba[p * 4 + 3] = a
   }
-  const result = await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+  let sheet = sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
     .trim({ threshold: 8 })
     .resize({ width, withoutEnlargement: true })
-    .png({ compressionLevel: 9 })
-    .toFile(path.join(OUT, out))
+  if (tint) sheet = sheet.tint(tint)
+  const result = await sheet.png({ compressionLevel: 9 }).toFile(path.join(OUT, out))
   console.log(`note  ${out}  ${result.width}x${result.height}`)
 }
 
 /** Already transparent: trim and shrink. */
-async function noteReady(file, out, { width = 700 } = {}) {
-  const result = await sharp(note(file))
+async function noteReady(file, out, { width = 700, src = note } = {}) {
+  const result = await sharp(src(file))
     .trim({ threshold: 8 })
     .resize({ width, withoutEnlargement: true })
     .webp({ quality: 82 })
     .toFile(path.join(OUT, out))
   console.log(`note  ${out}  ${result.width}x${result.height}`)
+}
+
+/**
+ * Crumpled paper as a light multiply layer: greyscale, stretched to full
+ * range, then lifted so the flats sit near white and only the creases darken
+ * whatever paper colour sits under it.
+ */
+async function wrinkle(file, out, { width = 1000 } = {}) {
+  // Two passes: sharp applies normalise late in its pipeline, after linear.
+  const spread = await sharp(note(file))
+    .resize({ width, withoutEnlargement: true })
+    .greyscale()
+    .normalise()
+    .toBuffer()
+  const result = await sharp(spread)
+    .linear(0.22, 200)
+    .webp({ quality: 80 })
+    .toFile(path.join(OUT, out))
+  console.log(`paper ${out}  ${result.width}x${result.height}`)
 }
 
 async function notes() {
@@ -344,6 +363,7 @@ async function notes() {
   await noteOnBlack('StickyNote-Wrinkled-1-04-PNG_Image-Isolated_Object.webp', 'note-blue.png')
   // Wide torn sheet of lined paper: the DIMELU note in the hub.
   await noteReady('torn-lined.webp', 'note-lined-torn.webp')
+  await wrinkle('paper-wrinkle.jfif', 'paper-wrinkle.webp')
   await noteOnBlack(
     'StickyNote-Wrinkled-Ripped-1-04-PNG_Image-Isolated_Object.webp',
     'note-blue-torn.png',
@@ -364,6 +384,158 @@ async function evidence() {
   await photo('NYC40671.jpg', 'mugshot-monitor.webp')
   await photo('preview (1).jpg', 'scene-desk.webp', { bw: true })
   await photo('preview.jpg', 'scene-bucket.webp', { bw: true })
+}
+
+// ---- Newspaper scans and the case folder ------------------------------------
+
+const NEWS = path.join(SRC, 'news')
+const newsSrc = (name) => path.join(NEWS, name)
+
+/**
+ * Torn cuttings with a blank patch for the headline, photographed on white
+ * (knocked out like the notes) or already on alpha. The tall one is tinted
+ * tan for the worn cutting. The manila folder is the carousel's file.
+ */
+/**
+ * Paper exported over a dark checkerboard (the "transparent" preview baked
+ * into a JPEG): the background is the neutral dark region connected to the
+ * border, flood-filled so dark print inside the paper survives.
+ */
+async function noteOnChecker(file, out, { width = 700, src = note } = {}) {
+  const { data, info } = await sharp(src(file))
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width: w, height: h } = info
+  const luma = (p) => 0.299 * data[p * 3] + 0.587 * data[p * 3 + 1] + 0.114 * data[p * 3 + 2]
+  const neutral = (p) =>
+    Math.max(data[p * 3], data[p * 3 + 1], data[p * 3 + 2]) -
+      Math.min(data[p * 3], data[p * 3 + 1], data[p * 3 + 2]) <
+    12
+  const bg = floodBackground(w, h, (p) => neutral(p) && luma(p) < 96)
+  const rgba = Buffer.alloc(w * h * 4)
+  for (let p = 0; p < w * h; p++) {
+    rgba[p * 4] = data[p * 3]
+    rgba[p * 4 + 1] = data[p * 3 + 1]
+    rgba[p * 4 + 2] = data[p * 3 + 2]
+    rgba[p * 4 + 3] = bg[p] ? 0 : 255
+  }
+  const result = await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+    .trim({ threshold: 8 })
+    .resize({ width, withoutEnlargement: true })
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(OUT, out))
+  console.log(`note  ${out}  ${result.width}x${result.height}`)
+}
+
+/**
+ * Grey smoke exported over a light checkerboard that was baked in (the file
+ * has no real alpha). Where the smoke is thin the checker shows through at
+ * full contrast; where it is thick the squares vanish. So the local contrast
+ * of the board, measured over a window a little wider than one square, is
+ * the inverse of the smoke's alpha. The result is a dry tan at that alpha,
+ * softened.
+ */
+async function smokeOnChecker(file, out, { width = 640, src = note } = {}) {
+  const { data, info } = await sharp(src(file))
+    .removeAlpha()
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width: w, height: h } = info
+  // The checker's two greys and its square size, read off the top row.
+  let lo = 255
+  let hi = 0
+  for (let x = 0; x < w; x++) {
+    lo = Math.min(lo, data[x])
+    hi = Math.max(hi, data[x])
+  }
+  const mid = (lo + hi) / 2
+  let runs = 0
+  for (let x = 1; x < w; x++) if (data[x] > mid !== data[x - 1] > mid) runs++
+  const square = Math.max(4, Math.round(w / Math.max(1, runs)))
+  // A window of at least two squares always sees both board colours, even at the edges.
+  const r = square + 1
+  // Separable min and max over a (2r+1) window: rows, then columns.
+  const pass = (srcBuf, pick, horizontal) => {
+    const outBuf = new Uint8Array(w * h)
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let v = srcBuf[y * w + x]
+        for (let k = -r; k <= r; k++) {
+          const xx = horizontal ? x + k : x
+          const yy = horizontal ? y : y + k
+          if (xx < 0 || xx >= w || yy < 0 || yy >= h) continue
+          v = pick(v, srcBuf[yy * w + xx])
+        }
+        outBuf[y * w + x] = v
+      }
+    }
+    return outBuf
+  }
+  const mn = pass(pass(data, Math.min, true), Math.min, false)
+  const mx = pass(pass(data, Math.max, true), Math.max, false)
+  const contrast = hi - lo
+  const alpha = Buffer.alloc(w * h)
+  for (let q = 0; q < w * h; q++) alpha[q] = clamp((1 - (mx[q] - mn[q]) / contrast) * 255)
+  // The window is clipped at the image edge, so the edge reads as smoke: blank a margin.
+  const edge = r + 2
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (x < edge || y < edge || x >= w - edge || y >= h - edge) alpha[y * w + x] = 0
+    }
+  }
+  // Soften the alpha past the window, then marry it to white.
+  // Keep the blur in one channel: sharp would otherwise hand back three.
+  const soft = await sharp(alpha, { raw: { width: w, height: h, channels: 1 } })
+    .blur(square * 1.1)
+    .toColourspace('b-w')
+    .raw()
+    .toBuffer()
+  // The smoke never quite hides the board, so stretch the densest part (the
+  // 99.5th percentile, so a stray pixel cannot set it) to near opaque.
+  const hist = new Uint32Array(256)
+  for (let q = 0; q < w * h; q++) hist[soft[q]]++
+  let peak = 255
+  for (let seen = 0; peak > 1; peak--) {
+    seen += hist[peak]
+    if (seen > w * h * 0.005) break
+  }
+  const stretch = 235 / peak
+  const rgba = Buffer.alloc(w * h * 4)
+  // Dust off a desk, not smoke: the cloud is a dry tan rather than white.
+  const [dr, dg, db] = [206, 180, 140]
+  for (let q = 0; q < w * h; q++) {
+    rgba[q * 4] = dr
+    rgba[q * 4 + 1] = dg
+    rgba[q * 4 + 2] = db
+    // A gentle gamma lifts the thin fringes so the cloud reads as one body.
+    rgba[q * 4 + 3] = clamp(255 * Math.pow(Math.min(1, (soft[q] * stretch) / 255), 0.8))
+  }
+  const result = await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+    .trim({ threshold: 10 })
+    .resize({ width, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toFile(path.join(OUT, out))
+  console.log(`smoke ${out}  ${result.width}x${result.height}  square ${square}px`)
+}
+
+async function news() {
+  await smokeOnChecker('dust.png', 'dust.webp', { src: newsSrc })
+  // Four more cuttings, buried behind the zone as clutter.
+  await noteOnWhite('news-bg-1.jpg', 'news-bg-1.png', { width: 520, bgLuma: 230, src: newsSrc })
+  await noteOnChecker('news-bg-2.jpg', 'news-bg-2.png', { width: 900, src: newsSrc })
+  await noteReady('news-bg-3.png', 'news-bg-3.webp', { width: 700, src: newsSrc })
+  await noteOnChecker('news-bg-4.jpg', 'news-bg-4.png', { width: 800, src: newsSrc })
+  await noteReady('news-square.png', 'news-square.webp', { width: 700, src: newsSrc })
+  await noteOnWhite('news-wide.jpg', 'news-wide.png', { width: 760, bgLuma: 238, src: newsSrc })
+  await noteOnWhite('news-tall.jpg', 'news-tall.png', {
+    width: 620,
+    bgLuma: 238,
+    tint: { r: 206, g: 168, b: 112 },
+    src: newsSrc,
+  })
+  await noteReady('folder.png', 'folder.webp', { width: 1100, src: newsSrc })
 }
 
 // ---- Photos of John -----------------------------------------------------------
@@ -637,4 +809,5 @@ async function me() {
 await tape()
 await evidence()
 await notes()
+await news()
 await me()

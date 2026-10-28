@@ -52,6 +52,57 @@ describe('EvidenceItem', () => {
     expect(screen.getByText(/quiet engineer/)).toBeInTheDocument()
   })
 
+  it('prints a dateline instead of the masthead on an inside-page cutting', () => {
+    const { container } = render(
+      <EvidenceItem
+        item={{
+          id: 'c',
+          kind: 'clipping',
+          placement: { x: 0, y: 0 },
+          dateline: 'The Daily · Metro · 2022',
+          text: 'Intern leaves codebase cleaner',
+        }}
+      />,
+    )
+    expect(screen.getByText('The Daily · Metro · 2022')).toBeInTheDocument()
+    expect(container.querySelector('.evidence__masthead')).toBeNull()
+  })
+
+  it('prints the headline on a scanned cutting instead of drawing the paper', () => {
+    const { container } = render(
+      <EvidenceItem
+        item={{
+          id: 'c',
+          kind: 'clipping',
+          placement: { x: 0, y: 0 },
+          media: { src: '/evidence/news-wide.png', alt: 'Torn newspaper cutting' },
+          dateline: 'The Daily · Metro · 2022',
+          text: 'Intern leaves codebase cleaner',
+        }}
+      />,
+    )
+    expect(screen.getByRole('img', { name: 'Torn newspaper cutting' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Intern leaves codebase cleaner' }),
+    ).toBeInTheDocument()
+    expect(container.querySelector('.evidence__masthead')).toBeNull()
+    expect(container.querySelector('.evidence__column')).toBeNull()
+  })
+
+  it('tears each clipping to its own outline and marks a worn one', () => {
+    const clip = (id: string, worn?: boolean) => (
+      <EvidenceItem
+        item={{ id, kind: 'clipping', placement: { x: 0, y: 0 }, text: 'Headline', worn }}
+      />
+    )
+    const a = render(clip('clip-a')).container.querySelector<HTMLElement>('.evidence')!
+    const b = render(clip('clip-b', true)).container.querySelector<HTMLElement>('.evidence')!
+    expect(a.style.getPropertyValue('--torn')).toMatch(/^polygon\(/)
+    expect(a.style.getPropertyValue('--torn')).not.toBe(b.style.getPropertyValue('--torn'))
+    expect(a).not.toHaveClass('evidence--worn')
+    expect(b).toHaveClass('evidence--worn')
+  })
+
   it('holds the paper with a red pin by default', () => {
     const { container } = render(<EvidenceItem item={postit} />)
     const pin = container.querySelector<SVGElement>('.evidence__pin')

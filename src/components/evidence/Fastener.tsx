@@ -1,15 +1,9 @@
 import { useId, type CSSProperties } from 'react'
 import type { Fastener as FastenerData, PinColor } from '@/types/evidence'
+import { hash } from './torn'
 
 const BASE = import.meta.env.BASE_URL
 const TAPE_COUNT = 8
-
-/** Stable small hash so each item always gets the same tape strips. */
-function hash(text: string): number {
-  let h = 0
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0
-  return h
-}
 
 const tapeSrc = (n: number) =>
   `${BASE}props/tape/tape-${String((n % TAPE_COUNT) + 1).padStart(2, '0')}.png`

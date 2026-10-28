@@ -89,6 +89,37 @@ describe('EvidenceLayer', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Core strengths' })).toBeInTheDocument()
   })
 
+  it('opens one shared selected-work carousel from any clipping, keeping its place', async () => {
+    const user = userEvent.setup()
+    const clips: EvidenceItem[] = [
+      {
+        id: 'c1',
+        kind: 'clipping',
+        placement: { x: 0, y: 0 },
+        text: 'First cutting',
+        opens: 'work',
+      },
+      {
+        id: 'c2',
+        kind: 'clipping',
+        placement: { x: 50, y: 0 },
+        text: 'Second cutting',
+        opens: 'work',
+      },
+    ]
+    render(<EvidenceLayer items={clips} threads={[]} />)
+    await user.click(screen.getByRole('button', { name: 'First cutting' }))
+    const dialog = screen.getByRole('dialog', { name: 'Selected work' })
+    expect(dialog).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Next exhibit' }))
+    await user.click(screen.getByRole('button', { name: 'Next exhibit' }))
+    expect(screen.getByText('03 / 08')).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await user.click(screen.getByRole('button', { name: 'Second cutting' }))
+    expect(screen.getByText('03 / 08')).toBeInTheDocument()
+  })
+
   it('lifts a clicked note into a dialog and sends it back on Escape', async () => {
     const user = userEvent.setup()
     render(<EvidenceLayer items={items} />)

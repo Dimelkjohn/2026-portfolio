@@ -230,7 +230,7 @@ reduced motion. The sprite is `public/sprites/fly.png`, made from
 
 - [x] Initial load: cork board, night overlay, torchlight
 - [x] Evidence items pinned to the board with hover tooltips (fun facts)
-- [ ] Board content, zone by zone: centre hub, bottom-left and top-left in, the rest to come
+- [ ] Board content, zone by zone: centre hub, bottom-left, top-left and top-right (known employment: a press cutting per job opening the selected-work carousel, a service-record receipt) in, the rest to come
 - [x] Red thread between items converging on "who is John Dimelu?"
 - [ ] Clickable items open a carousel for a closer look
 

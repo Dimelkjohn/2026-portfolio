@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { EvidenceItem as EvidenceItemData, EvidenceMedia } from '@/types/evidence'
 import { cn } from '@/lib/cn'
 import { Fastener } from './Fastener'
+import { creases, tornOutline } from './torn'
 import './evidence.css'
 
 export type Lift = {
@@ -55,6 +56,10 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
     media,
     text,
     body,
+    dateline,
+    worn,
+    footer,
+    size,
     inset,
     hand,
     headline,
@@ -71,6 +76,9 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
     '--w': `${placement.width ?? DEFAULT_WIDTH[kind]}%`,
     '--rotate': `${placement.rotate ?? 0}deg`,
     '--z': placement.z ?? 1,
+    ...(kind === 'clipping' && !media && tornStyle(id)),
+    ...(kind === 'receipt' && creaseStyle(id)),
+    ...(size && { '--print-scale': size }),
     ...(lift && {
       '--lift-dx': `${lift.dx.toFixed(1)}px`,
       '--lift-dy': `${lift.dy.toFixed(1)}px`,
@@ -83,8 +91,19 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
 
   const paper = (
     <>
-      {kind === 'clipping' && <Clipping headline={text} body={body} />}
-      {kind === 'receipt' && <Receipt header={text} body={body} />}
+      {kind === 'clipping' && media && (
+        <>
+          <img className="evidence__cutout" src={media.src} alt={media.alt} draggable={false} />
+          <div className="evidence__print" style={inset ? { inset } : undefined}>
+            {dateline && <span className="evidence__dateline">{dateline}</span>}
+            {text && <h2 className="evidence__headline">{text}</h2>}
+          </div>
+        </>
+      )}
+      {kind === 'clipping' && !media && (
+        <Clipping headline={text} body={body} dateline={dateline} />
+      )}
+      {kind === 'receipt' && <Receipt header={text} body={body} footer={footer} />}
       {kind === 'fingerprint' && <Fingerprint media={media} label={text} />}
       {(kind === 'photo' || kind === 'polaroid') && <Print media={media} caption={text} />}
       {kind === 'cutout' && media && (
@@ -133,6 +152,8 @@ export function EvidenceItem({ item, onOpen, lift, ghost }: EvidenceItemProps) {
         'evidence',
         `evidence--${kind}`,
         `evidence--held-${fastener.kind}`,
+        worn && 'evidence--worn',
+        kind === 'clipping' && media && 'evidence--scan',
         interactive && 'evidence--clickable',
         lift && 'evidence--lifted',
         lift?.entered && 'evidence--entered',
@@ -237,25 +258,61 @@ function Print({ media, caption }: { media?: EvidenceMedia; caption?: string }) 
   )
 }
 
-function Clipping({ headline, body }: { headline?: string; body?: string }) {
+function Clipping({
+  headline,
+  body,
+  dateline,
+}: {
+  headline?: string
+  body?: string
+  dateline?: string
+}) {
   return (
     <>
-      <span className="evidence__masthead" aria-hidden="true">
-        The Daily
-      </span>
+      {dateline ? (
+        <span className="evidence__dateline">{dateline}</span>
+      ) : (
+        <span className="evidence__masthead" aria-hidden="true">
+          The Daily
+        </span>
+      )}
       {headline && <h2 className="evidence__headline">{headline}</h2>}
       {body && <p className="evidence__column">{body}</p>}
     </>
   )
 }
 
-function Receipt({ header, body }: { header?: string; body?: string }) {
+/** Till paper: a header, typed lines (a line of dashes prints as a dotted rule), a centred footer. */
+function Receipt({ header, body, footer }: { header?: string; body?: string; footer?: string }) {
+  const lines = body ? body.split('\n') : []
   return (
     <>
       {header && <span className="evidence__receipt-header">{header}</span>}
-      {body && <pre className="evidence__receipt-lines">{body}</pre>}
+      {lines.length > 0 && (
+        <pre className="evidence__receipt-lines">
+          {lines.map((line, i) =>
+            /^-{3,}$/.test(line) ? (
+              <span key={i} className="evidence__receipt-rule" aria-hidden="true" />
+            ) : (
+              <span key={i}>{line + '\n'}</span>
+            ),
+          )}
+        </pre>
+      )}
+      {footer && <span className="evidence__receipt-footer">{footer}</span>}
     </>
   )
+}
+
+/** Where this paper's creases fall, from its id, so no two sheets match. */
+function creaseStyle(id: string) {
+  const c = creases(id)
+  return { '--crease-x': c.x, '--crease-y': c.y, '--crease-size': c.size }
+}
+
+/** A clipping's own tear as well as its creases. */
+function tornStyle(id: string) {
+  return { '--torn': tornOutline(id), ...creaseStyle(id) }
 }
 
 /** A card of ink: the supplied print, or a procedural one when there is no media. */

@@ -5,6 +5,7 @@ import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
+import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { startPinLighting } from './pinLighting'
 import { Threads } from './Threads'
 
@@ -21,6 +22,7 @@ type EvidenceLayerProps = {
 const LIFTS = new Set<EvidenceItemData['kind']>(['note'])
 const lifts = (item: EvidenceItemData) =>
   item.clickable ?? (LIFTS.has(item.kind) || Boolean(item.labels?.length))
+const interactive = (item: EvidenceItemData) => Boolean(item.opens) || lifts(item)
 
 /** The lifted item fills at most this much of the viewport. */
 const MAX_WIDTH_FRACTION = 0.46
@@ -69,13 +71,35 @@ export function EvidenceLayer({
   const [lifted, setLifted] = useState<Lifted | null>(null)
   const [entered, setEntered] = useState(false)
   const [closing, setClosing] = useState(false)
+  // The selected-work carousel: open or not, and which file is at the front.
+  // The index lives here, not in the carousel, so it survives closing.
+  const [workOpen, setWorkOpen] = useState(false)
+  const [workIndex, setWorkIndex] = useState(0)
+  const workOpener = useRef<HTMLElement | null>(null)
+  const [workOrigin, setWorkOrigin] = useState<{ x: number; y: number }>()
 
   useEffect(
     () => startPinLighting({ container: document, animate: !reducedMotion }),
     [reducedMotion, items],
   )
 
+  // When the carousel closes, focus goes back to the paper that opened it.
+  useEffect(() => {
+    if (workOpen || !workOpener.current) return
+    workOpener.current
+      .querySelector<HTMLElement>('.evidence__paper')
+      ?.focus({ preventScroll: true })
+    workOpener.current = null
+  }, [workOpen])
+
   const open = useCallback((item: EvidenceItemData, el: HTMLElement) => {
+    if (item.opens === 'work') {
+      workOpener.current = el
+      const r = el.getBoundingClientRect()
+      setWorkOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      setWorkOpen(true)
+      return
+    }
     const box = {
       left: el.offsetLeft,
       top: el.offsetTop,
@@ -145,12 +169,19 @@ export function EvidenceLayer({
           <EvidenceItem
             key={item.id}
             item={item}
-            onOpen={lifts(item) ? open : undefined}
+            onOpen={interactive(item) ? open : undefined}
             ghost={lifted?.item.id === item.id}
           />
         ))}
         <Threads threads={threads} within={within} />
       </section>
+      <WorkCarousel
+        open={workOpen}
+        index={workIndex}
+        origin={workOrigin}
+        onIndexChange={setWorkIndex}
+        onClose={() => setWorkOpen(false)}
+      />
       {lifted &&
         createPortal(
           <dialog

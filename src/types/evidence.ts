@@ -81,7 +81,11 @@ export type EvidenceItem = {
   kind: EvidenceKind
   placement: BoardPlacement
   fastener?: Fastener
-  /** Shown as the pinned thumbnail on the board. */
+  /**
+   * Shown as the pinned thumbnail on the board. On a clipping, a scanned
+   * cutting with a blank patch for the headline; without it the clipping is
+   * drawn (torn and creased) from CSS.
+   */
   media?: EvidenceMedia
   /**
    * Short text on the paper itself: a post-it note, a polaroid caption,
@@ -91,9 +95,28 @@ export type EvidenceItem = {
   /** Longer copy: clipping body, receipt lines (newline separated). */
   body?: string
   /**
+   * Clippings only: the small line above the headline (paper, place, date),
+   * for a cutting taken from inside the paper. Without it the clipping is
+   * the front page, with the masthead.
+   */
+  dateline?: string
+  /** Clippings only: an old cutting, browned and beaten rather than fresh newsprint. */
+  worn?: boolean
+  /** Receipts only: the centred closing lines under the last rule (the thank-you). */
+  footer?: string
+  /**
+   * What a click opens instead of lifting the paper. 'work' is the
+   * selected-work carousel, one shared stack of files that keeps its place
+   * between visits whichever item opened it.
+   */
+  opens?: 'work'
+  /** Clippings on a scan: multiplier on the printed headline's size. Default 1. */
+  size?: number
+  /**
    * Notes: where the writing may go, as a CSS inset in percent of the paper
    * (top right bottom left), clear of any tape or tab baked into the photo.
-   * Default '14% 10%'. Framed cutouts: where the caption sits on the frame's
+   * Default '14% 10%'. Clippings on a scan (`media`): the blank patch of the
+   * cutting where the dateline and headline print. Default '12%'. Framed cutouts: where the caption sits on the frame's
    * bottom margin. Default 'auto 8% 5% 8%'.
    */
   inset?: string

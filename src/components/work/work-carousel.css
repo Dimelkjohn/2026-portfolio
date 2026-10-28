@@ -1,0 +1,529 @@
+/*
+  The selected-work carousel: a stack of case files in a fixed overlay above
+  the night layers (z 50, like the lift), below the sound switches (60). Each
+  file is placed from --offset, its signed distance from the front of the
+  stack: files behind step back and to the right, the one just before sits
+  pulled out to the left.
+*/
+.dossier {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-mono-type);
+}
+
+.dossier__backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(7 7 14 / 0.6);
+  cursor: none;
+}
+
+/* The typed label at the top, like the lift's exhibit label. */
+.dossier__label {
+  position: absolute;
+  top: clamp(16px, 4vh, 40px);
+  left: 50%;
+  margin: 0;
+  padding: 6px 14px 7px;
+  transform: translateX(-50%);
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dossier__label::before {
+  content: 'Exhibits';
+  margin-right: 0.9em;
+  padding-right: 0.9em;
+  border-right: 1px solid rgb(27 27 31 / 0.4);
+  color: var(--color-thread);
+}
+
+.dossier__stack {
+  --rest: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(680px, 76vw);
+  /* The folder scan's own proportions. */
+  aspect-ratio: 1100 / 899;
+  transform: var(--rest);
+  pointer-events: none;
+}
+
+/* The pile's shadow on the desk: wide and faint in the air, tight and dark once landed. */
+.dossier__shadow {
+  position: absolute;
+  inset: 12% 4% -6%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 55%,
+    rgb(0 0 0 / 0.6),
+    rgb(0 0 0 / 0.25) 55%,
+    transparent 72%
+  );
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+/* A manila folder (a scan, with its tab top right); the sheet inside carries the notes. */
+.dossier__file {
+  --o: var(--offset, 0);
+  position: absolute;
+  inset: 0;
+  transform: translateX(calc(var(--o) * 7%)) translateY(calc(var(--o) * -2.4%))
+    scale(calc(1 - var(--o) * 0.06)) rotate(calc(var(--o) * 1.4deg));
+  transform-origin: 50% 100%;
+  z-index: calc(10 - var(--o));
+  opacity: 1;
+  filter: brightness(calc(1 - var(--o) * 0.08)) drop-shadow(0 14px 30px rgb(0 0 0 / 0.5));
+  transition:
+    transform 440ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 300ms ease,
+    filter 440ms ease;
+  pointer-events: auto;
+}
+
+/* The file just taken off the front: pulled out, left and low. */
+.dossier__file:not(.dossier__file--front, .dossier__file--hidden) {
+  pointer-events: none;
+}
+
+.dossier__file--prev {
+  transform: translateX(-13%) translateY(5%) scale(0.94) rotate(-4deg);
+  z-index: 9;
+  filter: brightness(0.9);
+}
+
+.dossier__file--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dossier--still .dossier__file {
+  transition: none;
+}
+
+.dossier__folder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+/* Typed on the folder's own tab, top right of the scan. */
+.dossier__tab {
+  position: absolute;
+  top: 1.6%;
+  left: 54%;
+  width: 40%;
+  overflow: hidden;
+  font-size: clamp(0.5rem, 0.78vw, 0.78rem);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #4a3a1e;
+}
+
+.dossier__sheet {
+  position: absolute;
+  top: 13%;
+  right: 8%;
+  bottom: 8%;
+  left: 8%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45em;
+  padding: 3.5% 5% 4%;
+  overflow: hidden;
+  background: var(--color-paper);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.25),
+    0 6px 14px rgb(0 0 0 / 0.25);
+}
+
+.dossier__photo {
+  width: 100%;
+  aspect-ratio: 16 / 5;
+  object-fit: cover;
+  background: #2b2a2e;
+}
+
+.dossier__photo--none {
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgb(27 27 31 / 0.4);
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(27 27 31 / 0.04) 0 8px,
+    rgb(27 27 31 / 0.08) 8px 16px
+  );
+  font-size: clamp(0.6rem, 0.85vw, 0.8rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(27 27 31 / 0.55);
+}
+
+.dossier__title {
+  margin: 0;
+  font-family: var(--font-news);
+  font-size: clamp(1.2rem, 2vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.dossier__meta {
+  margin: 0;
+  font-size: clamp(0.62rem, 0.85vw, 0.82rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(27 27 31 / 0.7);
+}
+
+.dossier__summary {
+  margin: 0;
+  font-size: clamp(0.62rem, 0.86vw, 0.86rem);
+  line-height: 1.4;
+}
+
+.dossier__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  margin: 0.2em 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dossier__tags li {
+  padding: 0.2em 0.6em;
+  border: 1px solid rgb(27 27 31 / 0.5);
+  font-size: clamp(0.55rem, 0.75vw, 0.72rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dossier__link {
+  justify-self: start;
+  margin-top: auto;
+  font-size: clamp(0.65rem, 0.9vw, 0.85rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-thread);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Arrows at the screen's edges: paper tags with a big typed chevron. */
+.dossier__arrow {
+  position: absolute;
+  top: 50%;
+  width: clamp(44px, 4.6vw, 64px);
+  height: clamp(60px, 6.4vw, 88px);
+  padding: 0 0 0.15em;
+  transform: translateY(-50%);
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.5);
+  font-family: var(--font-news);
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 1;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.dossier__arrow:hover,
+.dossier__arrow:focus-visible {
+  transform: translateY(-50%) scale(1.06);
+  outline: 2px solid var(--color-thread);
+  outline-offset: 3px;
+}
+
+.dossier__arrow--prev {
+  left: clamp(12px, 4vw, 64px);
+}
+
+.dossier__arrow--next {
+  right: clamp(12px, 4vw, 64px);
+}
+
+.dossier__count {
+  position: absolute;
+  bottom: clamp(14px, 4vh, 36px);
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  font-size: clamp(0.75rem, 1vw, 0.95rem);
+  letter-spacing: 0.2em;
+  color: rgb(255 255 255 / 0.8);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+}
+
+@media (max-width: 720px) {
+  .dossier__stack {
+    width: 86vw;
+    aspect-ratio: 4 / 5;
+  }
+
+  .dossier__arrow {
+    top: auto;
+    bottom: clamp(44px, 9vh, 72px);
+    transform: none;
+  }
+
+  .dossier__arrow:hover,
+  .dossier__arrow:focus-visible {
+    transform: scale(1.06);
+  }
+}
+
+/* ---- The drop and the snatch -----------------------------------------------
+   Phase classes on the dialog drive everything: .dossier--entering plays the
+   drop (the pile falls in from close to the camera, lands hard, bounces once,
+   the shadow tightens and the dust lifts; label, arrows and count follow once
+   the dust has settled), .dossier--settled is the resting state, and
+   .dossier--leaving plays the snatch (the pile lifts a touch, then flies off
+   toward whatever opened it, set by --exit-x/--exit-y/--exit-rot). */
+
+@keyframes dossier-drop {
+  0% {
+    transform: translate(-50%, -62%) scale(1.42) rotate(-5deg);
+    opacity: 0.4;
+    filter: blur(3px);
+    animation-timing-function: cubic-bezier(0.6, 0, 1, 0.55);
+  }
+  68% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+    filter: blur(0);
+    animation-timing-function: ease-out;
+  }
+  80% {
+    transform: translate(-50%, -49.2%) scale(0.983);
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Each file arrives a little above and more tilted than where it rests, in
+   order. The motion is on an inner wrapper that ends at identity, so the
+   file's resting pose (set on the file itself) is exactly where the fall
+   ends: no seam when the animation releases. */
+@keyframes dossier-file-drop {
+  from {
+    transform: translate(-3%, -9%) scale(1.08) rotate(-7deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes dossier-shadow-land {
+  from {
+    transform: scale(1.5);
+    opacity: 0.15;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* A cloud of dust from under the pile: it bursts out thin and fast, swells
+   past the pile's edges, then keeps spreading as it thins. The growth slows
+   (ease-out) while the fade lingers, which reads as settling, not vanishing.
+   --dx/--dy/--flip set each copy's direction. */
+@keyframes dossier-puff {
+  0% {
+    transform: translate(-50%, 24%) scale(calc(var(--flip, 1) * 0.45), 0.4);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  40% {
+    opacity: 0.38;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0%)), var(--dy, -30%))
+      scale(calc(var(--flip, 1) * 1.65), 1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes dossier-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dossier-snatch {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+    animation-timing-function: ease-out;
+  }
+  22% {
+    transform: translate(-50%, -53%) scale(1.03) rotate(0deg);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--exit-x, 0px)), calc(-50% + var(--exit-y, 60vh)))
+      scale(0.5) rotate(var(--exit-rot, 8deg));
+    opacity: 0;
+  }
+}
+
+/* The drop runs from mount: the pile is remounted on every opening. The
+   phase class only gates the snatch, so nothing here is cut off when the
+   pile settles. Fill is backwards only: once landed, the resting rules
+   (offsets, hidden files, transitions for stepping) take over. */
+.dossier__stack {
+  animation: dossier-drop 400ms backwards;
+}
+
+/* Files are all down by the moment of impact (68% of the 400ms drop), so the
+   bounce and the dust are the end of one motion, not a second one. */
+.dossier__fall {
+  position: absolute;
+  inset: 0;
+  animation: dossier-file-drop 200ms cubic-bezier(0.55, 0, 1, 0.6) backwards;
+  animation-delay: calc(var(--drop-order, 0) * 20ms);
+}
+
+.dossier__shadow {
+  animation: dossier-shadow-land 400ms cubic-bezier(0.6, 0, 1, 0.55) backwards;
+}
+
+.dossier__backdrop {
+  animation: dossier-fade-in 320ms ease backwards;
+  animation-delay: 260ms;
+}
+
+.dossier__label,
+.dossier__arrow,
+.dossier__count {
+  animation: dossier-fade-in 240ms ease backwards;
+  animation-delay: 640ms;
+}
+
+/* The dust: three big copies of one cloud behind the pile (above the shadow,
+   below the files), released at the moment of impact, so what shows is
+   whatever squeezes out past the pile's edges. */
+.dossier__dust {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.dossier__puff {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 190%;
+  height: auto;
+  transform-origin: 50% 75%;
+  /* Plain white, not screened: it has to read on the dark desk and against the folder's edge. */
+  filter: blur(2px);
+  opacity: 0;
+  animation: dossier-puff 1050ms cubic-bezier(0.15, 0.6, 0.3, 1) backwards;
+  animation-delay: calc(268ms + var(--late, 0ms));
+}
+
+/* The side clouds are centred on the pile's edges, so half of each is already clear of it. */
+.dossier__puff--left {
+  --dx: -20%;
+  --dy: -10%;
+  --flip: -1;
+  left: 24%;
+}
+
+.dossier__puff--right {
+  --dx: 20%;
+  --dy: -10%;
+  --flip: -1;
+  --late: 50ms;
+  left: 76%;
+}
+
+.dossier__puff--up {
+  --dx: 0%;
+  --dy: -70%;
+  --late: 90ms;
+  bottom: 30%;
+  width: 210%;
+  animation-duration: 1250ms;
+}
+
+/* Leaving: the snatch. Nothing takes input while the pile is in the air. */
+.dossier--leaving {
+  pointer-events: none;
+}
+
+.dossier--leaving .dossier__stack {
+  animation: dossier-snatch 300ms both;
+}
+
+.dossier--leaving .dossier__backdrop,
+.dossier--leaving .dossier__label,
+.dossier--leaving .dossier__arrow,
+.dossier--leaving .dossier__count {
+  animation: dossier-fade-in 220ms ease both reverse;
+}
+
+/* A wisp as it is lifted off the desk. */
+.dossier--leaving .dossier__puff {
+  animation: dossier-puff 500ms ease-out both;
+  animation-delay: calc(var(--late, 0ms) * 0.3);
+}
+
+/* Reduced motion: no fall, no dust, no bounce; the pile fades in and out in place. */
+.dossier--still .dossier__stack,
+.dossier--still .dossier__fall,
+.dossier--still .dossier__shadow,
+.dossier--still .dossier__backdrop,
+.dossier--still .dossier__label,
+.dossier--still .dossier__arrow,
+.dossier--still .dossier__count {
+  animation-duration: 1ms;
+  animation-delay: 0ms;
+}
+
+.dossier--still .dossier__puff {
+  display: none;
+}
+
+.dossier--still.dossier--entering {
+  animation: dossier-fade-in 180ms ease both;
+}

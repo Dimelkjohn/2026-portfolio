@@ -20,11 +20,15 @@ Evidence items with hover tooltips (fun facts) are built
 (`src/components/evidence/`); the board is being filled zone by zone, with the
 bottom-left (identifying marks, notes written as the office's reads on John,
 handprint with five strengths) and the top-left photos (vintage B&W, three
-in instant-film frames), the centre hub (one torn sheet asking "who is John Dimelu") and
-the red thread (`src/components/evidence/Threads.tsx`, endpoints measured
-from the DOM) in place. Next: the other zones (top centre logistics, top
-right exhibits, right design work, bottom centre contact and résumé), a
-carousel for exhibits, facts on hover for the photos, and a mobile layout. Data model in
+in instant-film frames), the centre hub (one torn sheet asking "who is John Dimelu"), the top-right
+known employment (a press cutting per job, each opening the selected-work
+carousel in `src/components/work/`, a stack of files on a scanned
+manila folder; each cutting is a scanned torn newspaper with its headline
+printed on the blank patch, the oldest tinted tan; and a service record
+receipt on creased till paper) and the red thread (`src/components/evidence/Threads.tsx`, endpoints measured
+from the DOM) in place. Next: the other zones (top centre logistics,
+right design work, bottom centre contact and résumé), media and copy for
+the exhibits in the carousel, facts on hover for the photos, and a mobile layout. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Before the repo goes public
@@ -56,7 +60,13 @@ as references. Do not make the repo public with that folder present.
   `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
   it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
   layers); anything with `labels` (lab tags shown only when lifted) lifts too,
-  and `clickable: true | false` on an item overrides both ways. Handwriting on notes
+  and `clickable: true | false` on an item overrides both ways. `opens: 'work'`
+  makes a click open the selected-work carousel instead (`WorkCarousel`, one
+  shared stack of case files from `src/data/work.ts`; its index lives in
+  `EvidenceLayer` so it keeps its place between visits). It opens by being
+  dropped onto the desk and closes by being snatched toward its opener, all
+  CSS keyframes keyed off `dossier--entering|settled|leaving`; reduced motion
+  fades instead. Handwriting on notes
   uses two Google fonts via tokens in `src/index.css`: `--font-note`
   (Swanky and Moo Moo, loose script) and `--font-note-caps` (Rock Salt,
   capitals only), chosen per note with `hand: 'script' | 'caps'`; a note's
