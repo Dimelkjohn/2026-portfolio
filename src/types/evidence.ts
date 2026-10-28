@@ -123,9 +123,9 @@ export type EvidenceItem = {
   /** Receipts only: the centred closing lines under the last rule (the thank-you). */
   footer?: string
   /**
-   * Sits inside a bag: place it under the bag's z, and it is drawn softened
-   * and rippled as if seen through the plastic. It still rises on hover (under
-   * the bag) and lifts out clear when clicked.
+   * Sits inside a bag: place it under the bag's z. Its image should already
+   * look as it does through the plastic (the pipeline bakes that for the photo
+   * pile); the page only keeps it under the bag on hover.
    */
   bagged?: boolean
   /**

@@ -346,7 +346,9 @@ export const boardData: BoardData = {
       kind: 'cutout',
       bagged: true,
       clickable: true,
-      placement: { x: 63, y: 54, width: 30, rotate: -8, z: 3 },
+      // The image carries 90px of padding a side for its baked shadow, so the box is 18% wider
+      // and starts up and left of where the prints themselves sit (at x 63, y 54, width 30).
+      placement: { x: 60.3, y: 48.4, width: 35.4, rotate: -8, z: 3 },
       fastener: { kind: 'none' },
       media: {
         src: '/evidence/photo-stack.webp',
@@ -358,13 +360,32 @@ export const boardData: BoardData = {
       kind: 'bag',
       // Fills the zone under the cuttings and runs off the bottom of the viewport; the record, the
       // worn cutting and the note sit on top of it.
-      placement: { x: 62, y: 48, width: 36, rotate: -1.5, z: 4 },
+      // The image carries 50px of padding a side for its baked shadow, so the box is wider and
+      // starts up and left of where the plastic itself sits (at x 62, y 48, width 36).
+      placement: { x: 60.5, y: 44.9, width: 39, rotate: -1.5, z: 4 },
       // Held by the pin through the "examine photos" note, which sits over its top-left.
       fastener: { kind: 'none' },
       media: {
         src: '/evidence/bag.webp',
         alt: 'A clear zip-seal evidence bag, pinned to the board',
       },
+    },
+    {
+      // The zone's label, taped over the bag a little below the examine-photos note: the
+      // design jobs, mockups, films and animations he does by night.
+      id: 'note-moonlighting',
+      kind: 'note',
+      placement: { x: 61.5, y: 76, width: 7, rotate: -4, z: 12 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/note-yellow-taped.png', alt: 'Yellow note held by a strip of tape' },
+      // Broken by hand: one word runs off the note's edge in the caps hand.
+      text: 'moon-\nlighting',
+      hand: 'caps',
+      inset: '26% 12% 12%',
+      // A marker moon and stars under the words.
+      annotations: [
+        { src: '/evidence/mark-moon.png', alt: '', x: 50, y: 76, width: 30, rotate: -8 },
+      ],
     },
     {
       // Pinned through the bag's top-left: the one pin holds note and bag, and takes the threads.
@@ -377,7 +398,7 @@ export const boardData: BoardData = {
       hand: 'caps',
       // A marker arrow under the words, pointing into the bag.
       annotations: [
-        { src: '/evidence/mark-arrow-red.png', alt: '', x: 52, y: 76, width: 62, rotate: 28 },
+        { src: '/evidence/mark-arrow-red.png', alt: '', x: 52, y: 70, width: 62, rotate: 15 },
       ],
     },
     {

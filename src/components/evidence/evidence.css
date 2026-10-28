@@ -495,18 +495,24 @@
 
 /*
   A flat bag on cork throws almost no shadow of its own: what there is sits
-  at its edges, its zip and its folds, where the plastic is solid. Drop
-  shadows follow the plastic's alpha, so they land exactly there; two tight
-  ones compound where the plastic is clear, and a wider one softens the lot.
+  at its edges, its zip and its folds, where the plastic is solid. That
+  shadow is baked into the image by the pipeline, so nothing is filtered here.
   The weight of the shadow in this zone comes from what is inside the bag.
+  The bag and the bagged paper get their own compositor layers (will-change):
+  the pin lighting repaints the items around them every frame, and that must
+  not re-run the bagged paper's filter or re-rasterise the big plastic.
 */
+.evidence--bag,
+.evidence--bagged {
+  will-change: transform;
+}
+
 .evidence--bag .evidence__paper {
   overflow: visible;
   background: none;
   box-shadow: none;
   opacity: 0.8;
-  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6)) drop-shadow(0 3px 5px rgb(0 0 0 / 0.5))
-    drop-shadow(0 12px 18px rgb(0 0 0 / 0.45));
+  filter: none;
 }
 
 .evidence--bag .evidence__paper::after {
@@ -527,24 +533,15 @@
 }
 
 /*
-  Paper inside a bag: frosted and rippled through the plastic (the bag-glass
-  filter in EvidenceLayer), softened a little, like a print under a layer of
-  plastic. Hover adds the ordinary scale and white halo on top of that look
-  but leaves it under the bag's layer; the plastic only comes off once the
-  paper is lifted out. After the cutout rules above, which it must outrank.
+  Paper inside a bag. Everything the plastic does to it (the softening, the
+  bend along the creases, their shade, the tone, the pile's shadow) is baked
+  into its image by the pipeline, so nothing is filtered here per frame. It
+  still rises on hover with the ordinary halo, but stays under the bag's layer.
 */
 .evidence--bagged .evidence__paper {
-  /* Through the plastic: bent along its folds, a touch soft, darks deeper and whites dulled. */
-  --bag-look: url('#bag-glass') blur(0.6px) brightness(0.88) contrast(1.1) saturate(0.9);
-  /*
-    A thick pile's shadow, thrown through the bag's back sheet onto the cork:
-    a tight dark contact shadow at its edges, a softer one from its thickness,
-    and a wide faint penumbra from the front plastic tented over it. Drawn with
-    the pile, under the bag, so the plastic dims it as it would.
-  */
-  --bag-shadow: drop-shadow(0 2px 3px rgb(0 0 0 / 0.55)) drop-shadow(0 12px 20px rgb(0 0 0 / 0.45))
-    drop-shadow(0 28px 44px rgb(0 0 0 / 0.25));
-  filter: var(--bag-look) var(--bag-shadow);
+  filter: none;
+  /* The halo swaps in at once: interpolating three drop-shadows over an image this big costs every frame. */
+  transition: none;
 }
 
 .evidence--bagged.evidence--clickable:is(:hover, :focus-within) {
@@ -552,15 +549,15 @@
 }
 
 .evidence--bagged.evidence--clickable:is(:hover, :focus-within) .evidence__paper {
-  filter: var(--bag-look) drop-shadow(0 0 2px rgb(255 255 255 / 1))
-    drop-shadow(0 0 9px rgb(255 255 255 / 0.85)) drop-shadow(0 0 22px rgb(255 255 255 / 0.5))
-    var(--bag-shadow);
+  filter: drop-shadow(0 0 2px rgb(255 255 255 / 1)) drop-shadow(0 0 9px rgb(255 255 255 / 0.85))
+    drop-shadow(0 0 22px rgb(255 255 255 / 0.5));
 }
 
-/* Handwriting on a note: the loose script by default, the caps marker on request. */
+/* Handwriting on a note: the loose script by default, the caps marker on request. A newline in the text breaks the line. */
 .evidence__scrawl {
   position: absolute;
   inset: 14% 10%;
+  white-space: pre-line;
   margin: 0;
   /* Visible so a ring around the last word is not cut off; copy is sized to fit. */
   overflow: visible;

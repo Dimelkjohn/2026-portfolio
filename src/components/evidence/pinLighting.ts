@@ -26,7 +26,10 @@ export function glintStrength(distance: number, radius: number): number {
   return Math.min(1, Math.max(0.15, t))
 }
 
-type PinRecord = { el: HTMLElement; x: number; y: number }
+type PinRecord = { el: HTMLElement; x: number; y: number; angle?: string; glint?: string }
+
+/** Beyond this many beam radii the glint sits at its floor and the pin is in the dark: nothing to redraw. */
+const REACH = 2.4
 
 /** Milliseconds between re-measuring pin positions (they only move on resize/hover). */
 const MEASURE_EVERY = 400
@@ -73,10 +76,19 @@ export function startPinLighting({ container, animate }: PinLightingOptions): ()
     lastX = t.x
     lastY = t.y
     for (const pin of pins) {
-      const angle = lightAngle(pin.x, pin.y, t.x, t.y)
-      const glint = glintStrength(Math.hypot(t.x - pin.x, t.y - pin.y), radius)
-      pin.el.style.setProperty('--pin-angle', `${angle.toFixed(1)}deg`)
-      pin.el.style.setProperty('--pin-glint', glint.toFixed(2))
+      const distance = Math.hypot(t.x - pin.x, t.y - pin.y)
+      // A pin the beam cannot reach keeps whatever it last showed; every write repaints its SVG.
+      if (distance > radius * REACH && pin.glint === '0.15') continue
+      const angle = `${lightAngle(pin.x, pin.y, t.x, t.y).toFixed(0)}deg`
+      const glint = glintStrength(distance, radius).toFixed(2)
+      if (angle !== pin.angle) {
+        pin.el.style.setProperty('--pin-angle', angle)
+        pin.angle = angle
+      }
+      if (glint !== pin.glint) {
+        pin.el.style.setProperty('--pin-glint', glint)
+        pin.glint = glint
+      }
     }
   }
 

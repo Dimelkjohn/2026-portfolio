@@ -69,8 +69,9 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   typed by `src/types/evidence.ts`, not in components. Every item has a
   `fastener` (pin colour and position, or tape); a `kind: 'bag'` item is
   see-through plastic that never takes the pointer, and an item with
-  `bagged: true` placed under it is drawn through the plastic (the
-  `bag-glass` SVG filter) yet stays clickable; new media goes through
+  `bagged: true` placed under it stays under the plastic on hover yet is
+  clickable (the through-the-plastic look is baked into its image by the
+  pipeline's `bag` step, nothing is filtered per frame); new media goes through
   `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
   it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
   layers); anything with `labels` (lab tags shown only when lifted) lifts too,

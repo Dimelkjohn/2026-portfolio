@@ -76,8 +76,8 @@ function Pin({ color, x, y }: { color: PinColor; x: number; y?: number }) {
   const id = useId()
   const face = `${id}-face`
   const rim = `${id}-rim`
-  const blur = `${id}-blur`
-  const soft = `${id}-soft`
+  const shade = `${id}-shade`
+  const glint = `${id}-glint`
   const { light, base, dark } = PIN_PALETTE[color]
   const style = {
     '--pin-x': `${x}%`,
@@ -104,23 +104,23 @@ function Pin({ color, x, y }: { color: PinColor; x: number; y?: number }) {
           <stop offset="0.5" stopColor={base} />
           <stop offset="1" stopColor={dark} />
         </linearGradient>
-        <filter id={blur} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.4" />
-        </filter>
-        <filter id={soft} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="0.5" />
-        </filter>
+        {/*
+          Soft edges come from gradients rather than blur filters: the pins
+          turn to face the torch every frame, and a filter would be re-run on
+          each of them on every frame, which weighed the whole board down.
+        */}
+        <radialGradient id={shade}>
+          <stop offset="0.55" stopColor="rgb(0 0 0 / 0.55)" />
+          <stop offset="1" stopColor="rgb(0 0 0 / 0)" />
+        </radialGradient>
+        <radialGradient id={glint}>
+          <stop offset="0.35" stopColor="#fff" />
+          <stop offset="1" stopColor="rgb(255 255 255 / 0)" />
+        </radialGradient>
       </defs>
       <g className="evidence__pin-turn">
         {/* Contact shadow, offset away from the light. */}
-        <ellipse
-          cx="20"
-          cy="22.5"
-          rx="14"
-          ry="12.5"
-          fill="rgb(0 0 0 / 0.55)"
-          filter={`url(#${blur})`}
-        />
+        <ellipse cx="20" cy="22.5" rx="16" ry="14.5" fill={`url(#${shade})`} />
         <circle cx="20" cy="20" r="13" fill={`url(#${rim})`} />
         <circle cx="20" cy="20" r="11.2" fill={base} />
         <circle cx="20" cy="20" r="11.2" fill={`url(#${face})`} />
@@ -133,10 +133,9 @@ function Pin({ color, x, y }: { color: PinColor; x: number; y?: number }) {
           className="evidence__pin-glint"
           cx="20"
           cy="8.6"
-          rx="4.2"
-          ry="1.3"
-          fill="#fff"
-          filter={`url(#${soft})`}
+          rx="4.8"
+          ry="1.6"
+          fill={`url(#${glint})`}
         />
       </g>
     </svg>

@@ -12,15 +12,20 @@
  *                                   papers (assets-src/evidence/notes) cut out
  *   public/evidence/bag.webp        the evidence bag (assets-src/evidence/bag.png,
  *                                   already cut out), its flat plastic made
- *                                   see-through so the cork shows inside it
+ *                                   see-through so the cork shows inside it,
+ *                                   with its shadow on the cork baked in
  *   public/evidence/mark-arrow-red.png the marker arrow drawn on the "examine
- *                                   photos" note (its own step, `marks`, so
- *                                   adding a mark does not regrind the notes)
- *   public/evidence/bag-folds.png   a displacement map of the bag's creases
- *                                   (R = slope across, G = slope down), which
- *                                   the sheet uses to bend whatever is bagged
+ *                                   photos" note, and mark-moon.png the moon
+ *                                   on the "moonlighting" label (their own
+ *                                   step, `marks`, so adding a mark does not
+ *                                   regrind the notes)
  *   public/evidence/photo-stack.webp the pile of prints that goes in the bag,
- *                                   resized
+ *                                   finished here as seen through the plastic:
+ *                                   softened, bent along the bag's creases,
+ *                                   shaded by them, darks deeper and whites
+ *                                   dulled, with its three-layer shadow under
+ *                                   it. All of it is baked so the page draws a
+ *                                   plain image and filters nothing per frame.
  *   public/evidence/work-*.webp     the photograph in each selected-work file
  *                                   (assets-src/evidence/work), resized whole;
  *                                   the sheet crops it to the print box from
@@ -855,6 +860,43 @@ async function exhibits() {
 // ---- The evidence bag ---------------------------------------------------------
 
 /**
+ * Bakes a shadow under a cut-out: the canvas grows by `pad` on every side,
+ * then each layer is the image's own alpha, as black at `opacity`, dropped
+ * `dy` pixels and blurred by `blur`, laid beneath the image. Transparent
+ * plastic throws a fainter shadow than solid paper, since the alpha carries
+ * through. Returns a sharp pipeline of the result.
+ */
+async function withShadow(input, { pad, layers }) {
+  const clear = { r: 0, g: 0, b: 0, alpha: 0 }
+  const base = await sharp(input)
+    .ensureAlpha()
+    .extend({ top: pad, bottom: pad, left: pad, right: pad, background: clear })
+    .png()
+    .toBuffer()
+  const { data: alpha, info } = await sharp(base)
+    .extractChannel('alpha')
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width, height } = info
+  const shadows = []
+  for (const { dy, blur, opacity } of layers) {
+    const rgba = Buffer.alloc(width * height * 4)
+    for (let y = dy; y < height; y++) {
+      const srcRow = (y - dy) * width
+      const dstRow = y * width
+      for (let x = 0; x < width; x++)
+        rgba[(dstRow + x) * 4 + 3] = Math.round(alpha[srcRow + x] * opacity)
+    }
+    const layer = await sharp(rgba, { raw: { width, height, channels: 4 } })
+      .blur(blur)
+      .png()
+      .toBuffer()
+    shadows.push({ input: layer, blend: 'dest-over' })
+  }
+  return sharp(base).composite(shadows)
+}
+
+/**
  * The zip bag is photographed on white and already cut out, but its body is
  * opaque. Real bag plastic is clear: only the creases, the highlights and
  * the blue zip are solid. So alpha follows how far a pixel strays from the
@@ -882,61 +924,205 @@ async function bag() {
     const solid = Math.min(1, FLOOR + (1 - FLOOR) * (Math.abs(lum - BODY) / SPREAD))
     data[i + 3] = Math.round(a * solid)
   }
-  const result = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+  const plastic = await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  })
     .resize({ width: 1200 })
+    .png()
+    .toBuffer()
+  // Its shadow: at the edges, zip and folds, where the plastic is solid; faint where it is clear.
+  const result = await (
+    await withShadow(plastic, {
+      pad: 50,
+      layers: [
+        { dy: 5, blur: 3, opacity: 0.6 },
+        { dy: 5, blur: 4, opacity: 0.5 },
+        { dy: 21, blur: 16, opacity: 0.45 },
+      ],
+    })
+  )
     .webp({ quality: 85, alphaQuality: 90 })
     .toFile(path.join(OUT, 'bag.webp'))
   console.log(`bag  bag.webp  ${result.width}x${result.height}`)
-  await bagFolds()
+  const maps = await bagMaps()
 
-  // What goes in it: already cut out, only resized.
-  const stack = await sharp(src('photo-stack.png'))
-    .resize({ width: 1000, withoutEnlargement: true })
+  // What goes in it: already cut out. Softened a touch, as a print under plastic
+  // is, and given a thick pile's shadow: tight contact, its own thickness, and the
+  // wide faint penumbra of the plastic tented over it.
+  const prints = await throughPlastic(
+    await sharp(src('photo-stack.png'))
+      .resize({ width: 1000, withoutEnlargement: true })
+      .blur(1)
+      .png()
+      .toBuffer(),
+    maps,
+  )
+  const stack = await (
+    await withShadow(prints, {
+      pad: 90,
+      layers: [
+        { dy: 3, blur: 3, opacity: 0.55 },
+        { dy: 20, blur: 18, opacity: 0.45 },
+        { dy: 48, blur: 40, opacity: 0.25 },
+      ],
+    })
+  )
     .webp({ quality: 85, alphaQuality: 90 })
     .toFile(path.join(OUT, 'photo-stack.webp'))
   console.log(`bag  photo-stack.webp  ${stack.width}x${stack.height}`)
 }
 
 /**
- * The bag's creases as a displacement map, so a print inside it bends where
- * the plastic folds rather than everywhere at once. The bag's brightness is
- * read as a height field (ridges catch the light); its slope across and down
- * goes into the red and green channels around 128, which is "no shift" to
- * feDisplacementMap. Outside the bag, and on the flat body, the map is 128.
+ * The bag's creases, read off the bag photo, as two maps the pile is finished
+ * with. Its brightness is a height field: ridges (folds standing up off the
+ * print) catch the light, troughs (plastic pressed into a fold) are dark.
+ *   folds: the slope across and down, in [-1, 1], which bends the print the way
+ *          plastic lying on it would.
+ *   shade: how dark each pixel is under the plastic, 0 to 1: a ridge throws a
+ *          soft shadow a little below itself (the board is lit from above),
+ *          a trough darkens where it is.
+ * Both at the same small size, stretched over the pile when applied.
  */
-async function bagFolds() {
+async function bagMaps() {
   const WIDTH = 600
+  const BODY = 197
   const { data, info } = await sharp(src('bag.png'))
     .resize({ width: WIDTH })
     .ensureAlpha()
     .toColourspace('b-w')
-    .blur(2)
+    .blur(1.6)
     .raw()
     .toBuffer({ resolveWithObject: true })
   const { width, height, channels } = info
-  const h = (x, y) => {
+  const lum = (x, y) => {
     x = clamp(x, 0, width - 1)
     y = clamp(y, 0, height - 1)
     const i = (y * width + x) * channels
     // Transparent pixels count as the flat body, so the edge of the bag is no cliff.
-    return data[i + channels - 1] < 128 ? 197 : data[i]
+    return data[i + channels - 1] < 128 ? BODY : data[i]
   }
-  const GAIN = 2.2 // how many map units one unit of brightness slope is worth
-  const out = Buffer.alloc(width * height * 3)
+  const GAIN = 2.2 / 128 // slope per unit of brightness, into [-1, 1]
+  const dx = new Float32Array(width * height)
+  const dy = new Float32Array(width * height)
+  const ridge = new Float32Array(width * height)
+  const trough = new Float32Array(width * height)
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const dx = (h(x + 1, y) - h(x - 1, y)) * GAIN
-      const dy = (h(x, y + 1) - h(x, y - 1)) * GAIN
-      const o = (y * width + x) * 3
-      out[o] = clamp(Math.round(128 + dx))
-      out[o + 1] = clamp(Math.round(128 + dy))
-      out[o + 2] = 128
+      const i = y * width + x
+      dx[i] = Math.max(-1, Math.min(1, (lum(x + 1, y) - lum(x - 1, y)) * GAIN))
+      dy[i] = Math.max(-1, Math.min(1, (lum(x, y + 1) - lum(x, y - 1)) * GAIN))
+      const l = lum(x, y)
+      ridge[i] = Math.min(1, Math.max(0, (l - BODY - 14) / 38))
+      trough[i] = Math.min(1, Math.max(0, (BODY - l - 10) / 40))
     }
   }
-  const result = await sharp(out, { raw: { width, height, channels: 3 } })
-    .png({ compressionLevel: 9 })
-    .toFile(path.join(OUT, 'bag-folds.png'))
-  console.log(`bag  bag-folds.png  ${result.width}x${result.height}`)
+  const DROP = 6
+  const rawShade = Buffer.alloc(width * height)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const above = y - DROP >= 0 ? ridge[(y - DROP) * width + x] : 0
+      rawShade[y * width + x] = Math.round(
+        255 * Math.min(1, 0.5 * above + 0.35 * trough[y * width + x]),
+      )
+    }
+  }
+  // sharp hands a blurred one-channel image back with more channels than one, so take the first of each.
+  const { data: blurred, info: blurredInfo } = await sharp(rawShade, {
+    raw: { width, height, channels: 1 },
+  })
+    .blur(2.5)
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const shade = new Uint8Array(width * height)
+  for (let i = 0; i < width * height; i++) shade[i] = blurred[i * blurredInfo.channels]
+  return { width, height, dx, dy, shade }
+}
+
+/**
+ * Finishes a cut-out as seen through the bag: bent along the creases (each
+ * pixel is fetched from where the plastic's slope points, bilinearly, in
+ * premultiplied colour so clear edges stay clean), darkened by the crease
+ * shade, then toned (darks deeper, whites dulled, a little less colour).
+ * `bend` is the furthest a pixel moves, in pixels of the image.
+ */
+async function throughPlastic(input, maps, { bend = 30 } = {}) {
+  const { data, info } = await sharp(input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width, height } = info
+  // Premultiply, so sampling never bleeds the colour of transparent pixels.
+  const pre = new Float32Array(width * height * 4)
+  for (let i = 0; i < width * height; i++) {
+    const a = data[i * 4 + 3] / 255
+    pre[i * 4] = data[i * 4] * a
+    pre[i * 4 + 1] = data[i * 4 + 1] * a
+    pre[i * 4 + 2] = data[i * 4 + 2] * a
+    pre[i * 4 + 3] = a
+  }
+  const sample = (fx, fy, c) => {
+    const x0 = Math.floor(fx)
+    const y0 = Math.floor(fy)
+    const tx = fx - x0
+    const ty = fy - y0
+    const at = (x, y) =>
+      x < 0 || y < 0 || x >= width || y >= height ? 0 : pre[(y * width + x) * 4 + c]
+    return (
+      at(x0, y0) * (1 - tx) * (1 - ty) +
+      at(x0 + 1, y0) * tx * (1 - ty) +
+      at(x0, y0 + 1) * (1 - tx) * ty +
+      at(x0 + 1, y0 + 1) * tx * ty
+    )
+  }
+  // The maps are small and stretched over the image, so read them bilinearly:
+  // nearest-neighbour steps would print as bands across the print.
+  const mapAt = (arr, x, y) => {
+    const fx = Math.min(maps.width - 1.001, (x / width) * maps.width)
+    const fy = Math.min(maps.height - 1.001, (y / height) * maps.height)
+    const x0 = Math.floor(fx)
+    const y0 = Math.floor(fy)
+    const tx = fx - x0
+    const ty = fy - y0
+    const w = maps.width
+    return (
+      arr[y0 * w + x0] * (1 - tx) * (1 - ty) +
+      arr[y0 * w + x0 + 1] * tx * (1 - ty) +
+      arr[(y0 + 1) * w + x0] * (1 - tx) * ty +
+      arr[(y0 + 1) * w + x0 + 1] * tx * ty
+    )
+  }
+  const out = Buffer.alloc(width * height * 4)
+  const BRIGHT = 0.88
+  const CONTRAST = 1.1
+  const SAT = 0.9
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const sx = x + mapAt(maps.dx, x, y) * bend
+      const sy = y + mapAt(maps.dy, x, y) * bend
+      const a = sample(sx, sy, 3)
+      const o = (y * width + x) * 4
+      if (a <= 0.002) continue
+      let r = sample(sx, sy, 0) / a
+      let g = sample(sx, sy, 1) / a
+      let b = sample(sx, sy, 2) / a
+      // The crease shade, then the tone.
+      const dark = 1 - mapAt(maps.shade, x, y) / 255
+      r *= dark
+      g *= dark
+      b *= dark
+      const l = 0.299 * r + 0.587 * g + 0.114 * b
+      r = l + (r - l) * SAT
+      g = l + (g - l) * SAT
+      b = l + (b - l) * SAT
+      out[o] = clamp(Math.round((r * BRIGHT - 128) * CONTRAST + 128))
+      out[o + 1] = clamp(Math.round((g * BRIGHT - 128) * CONTRAST + 128))
+      out[o + 2] = clamp(Math.round((b * BRIGHT - 128) * CONTRAST + 128))
+      out[o + 3] = Math.round(a * 255)
+    }
+  }
+  return sharp(out, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer()
 }
 
 // ---- Marker marks added after the notes were cut --------------------------------
@@ -948,6 +1134,9 @@ async function marks() {
     ink: [179, 18, 27],
     gain: 1.05,
   })
+  // A yellow crayon moon and stars, turned to black marker at three-quarter strength:
+  // the source already carries its own alpha, so the gain only stops the yellow reading as pale.
+  await ink('notes/moon.png', 'mark-moon.png', { trim: true, gain: 6, alphaGain: 0.72 })
 }
 
 const steps = { tape, evidence, notes, marks, news, me, bag, exhibits }
