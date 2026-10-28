@@ -8,6 +8,7 @@ import {
   type WheelEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { sfx as siteSfx, type Sfx } from '@/audio/sfx'
 import { selectedWork, type Work } from '@/data/work'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
@@ -23,6 +24,8 @@ type WorkCarouselProps = {
   /** Where on screen the pile was opened from, in viewport pixels; the close heads back there. */
   origin?: { x: number; y: number }
   items?: Work[]
+  /** The effects to play: the thud on landing, the flip on stepping, the whoosh on leaving. */
+  sfx?: Sfx
 }
 
 /** Files further back than this in the stack are not drawn. */
@@ -33,6 +36,8 @@ const WHEEL_LOCK_MS = 480
 /** Longest the drop or the snatch may take before the phase moves on regardless. */
 const DROP_FALLBACK_MS = 1000
 const LEAVE_FALLBACK_MS = 420
+/** When the pile hits the desk, into the drop (68% of its 400ms). */
+const IMPACT_MS = 268
 
 type Phase = 'entering' | 'settled' | 'leaving'
 
@@ -55,15 +60,20 @@ const PUFFS = ['left', 'right', 'up'] as const
  * it. Both are CSS animations keyed off the phase class; under reduced
  * motion the pile fades in and out in place.
  */
-export function WorkCarousel({ open, items = selectedWork, ...rest }: WorkCarouselProps) {
+export function WorkCarousel({
+  open,
+  items = selectedWork,
+  sfx = siteSfx,
+  ...rest
+}: WorkCarouselProps) {
   // Mounted only while open, so every opening starts fresh at the drop.
   if (!open || items.length === 0) return null
-  return <Pile items={items} {...rest} />
+  return <Pile items={items} sfx={sfx} {...rest} />
 }
 
-type PileProps = Omit<WorkCarouselProps, 'open' | 'items'> & { items: Work[] }
+type PileProps = Omit<WorkCarouselProps, 'open' | 'items' | 'sfx'> & { items: Work[]; sfx: Sfx }
 
-function Pile({ index, onIndexChange, onClose, origin, items }: PileProps) {
+function Pile({ index, onIndexChange, onClose, origin, items, sfx }: PileProps) {
   const reducedMotion = useReducedMotion()
   const n = items.length
   const current = wrap(index, n)
@@ -71,17 +81,30 @@ function Pile({ index, onIndexChange, onClose, origin, items }: PileProps) {
   const front = useRef<HTMLButtonElement>(null)
   const [phase, setPhase] = useState<Phase>('entering')
 
-  const step = (by: number) => onIndexChange(wrap(current + by, n))
+  const step = useCallback(
+    (by: number) => {
+      sfx.play('flip')
+      onIndexChange(wrap(current + by, n))
+    },
+    [sfx, current, n, onIndexChange],
+  )
+
+  // The thud lands with the pile.
+  useEffect(() => {
+    const t = window.setTimeout(() => sfx.play('thud'), reducedMotion ? 0 : IMPACT_MS)
+    return () => window.clearTimeout(t)
+  }, [sfx, reducedMotion])
 
   // The way out: play the snatch, then tell the owner; or go at once.
   const leave = useCallback(() => {
     if (phase === 'leaving') return
+    sfx.play('whoosh')
     if (reducedMotion) {
       onClose()
       return
     }
     setPhase('leaving')
-  }, [phase, reducedMotion, onClose])
+  }, [phase, reducedMotion, onClose, sfx])
 
   useEffect(() => {
     if (phase === 'entering') {
@@ -98,12 +121,12 @@ function Pile({ index, onIndexChange, onClose, origin, items }: PileProps) {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') leave()
       else if (phase === 'leaving') return
-      else if (event.key === 'ArrowRight') onIndexChange(wrap(current + 1, n))
-      else if (event.key === 'ArrowLeft') onIndexChange(wrap(current - 1, n))
+      else if (event.key === 'ArrowRight') step(1)
+      else if (event.key === 'ArrowLeft') step(-1)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, current, n, leave, onIndexChange])
+  }, [phase, leave, step])
 
   useEffect(() => {
     front.current?.focus({ preventScroll: true })

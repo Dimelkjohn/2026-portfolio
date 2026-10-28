@@ -19,6 +19,8 @@
   background: transparent;
   color: var(--color-ink);
   font-family: var(--font-mono-type);
+  /* The page hides the cursor behind the torch beam; over the open files it comes back. */
+  cursor: auto;
 }
 
 .dossier__backdrop {
@@ -27,7 +29,7 @@
   padding: 0;
   border: 0;
   background: rgb(7 7 14 / 0.6);
-  cursor: none;
+  cursor: auto;
 }
 
 /* The typed label at the top, like the lift's exhibit label. */
@@ -133,17 +135,22 @@
 /* Typed on the folder's own tab, top right of the scan. */
 .dossier__tab {
   position: absolute;
-  top: 1.6%;
+  /* 2.9% less the half-leading the taller line box added, so the caps sit where they did. */
+  top: 2.9%;
   left: 54%;
   width: 40%;
   overflow: hidden;
-  font-size: clamp(0.5rem, 0.78vw, 0.78rem);
+  font-size: clamp(0.52rem, 0.8vw, 0.8rem);
+  /* The typewriter face has no bold cut: a synthetic bold plus a hairline stroke stands in. */
+  font-weight: 700;
+  -webkit-text-stroke: 0.3px #3a2b14;
   letter-spacing: 0.1em;
-  line-height: 1;
+  /* Room above and below the caps: overflow is hidden for the ellipsis, and a tight line box clipped the tops. */
+  line-height: 1.5;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: #4a3a1e;
+  color: #3a2b14;
 }
 
 .dossier__sheet {

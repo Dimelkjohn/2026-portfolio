@@ -25,12 +25,12 @@ describe('createSoundPreferences', () => {
   it('starts from the defaults and pushes them to the engine buses', () => {
     const { engine, levels } = fakeEngine()
     const prefs = createSoundPreferences(engine, fakeStorage())
-    expect(prefs.isOn('torch')).toBe(true)
+    expect(prefs.isOn('sfx')).toBe(true)
     expect(prefs.isOn('fly')).toBe(true)
     expect(levels).toEqual([
-      ['torch', 1],
-      ['fly', 1],
       ['music', 1],
+      ['sfx', 1],
+      ['fly', 1],
     ])
   })
 
@@ -40,12 +40,12 @@ describe('createSoundPreferences', () => {
     const prefs = createSoundPreferences(engine, storage)
     const listener = vi.fn<() => void>()
     prefs.subscribe(listener)
-    prefs.toggle('torch')
-    expect(prefs.isOn('torch')).toBe(false)
-    expect(levels.at(-1)).toEqual(['torch', 0])
-    expect(JSON.parse(storage.stored!)).toMatchObject({ torch: false })
+    prefs.toggle('sfx')
+    expect(prefs.isOn('sfx')).toBe(false)
+    expect(levels.at(-1)).toEqual(['sfx', 0])
+    expect(JSON.parse(storage.stored!)).toMatchObject({ sfx: false })
     expect(listener).toHaveBeenCalledTimes(1)
-    prefs.setOn('torch', false)
+    prefs.setOn('sfx', false)
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
@@ -53,12 +53,12 @@ describe('createSoundPreferences', () => {
     const { engine } = fakeEngine()
     const restored = createSoundPreferences(
       engine,
-      fakeStorage(JSON.stringify({ torch: false, fly: 'yes', bogus: 1 })),
+      fakeStorage(JSON.stringify({ sfx: false, fly: 'yes', bogus: 1 })),
     )
-    expect(restored.isOn('torch')).toBe(false)
+    expect(restored.isOn('sfx')).toBe(false)
     expect(restored.isOn('fly')).toBe(true)
     const junk = createSoundPreferences(engine, fakeStorage('{not json'))
-    expect(junk.isOn('torch')).toBe(true)
+    expect(junk.isOn('sfx')).toBe(true)
   })
 
   it('works without storage', () => {
@@ -89,11 +89,11 @@ describe('master switch', () => {
     levels.length = 0
     prefs.setMasterOn(false)
     expect(levels).toEqual([
-      ['torch', 0],
-      ['fly', 0],
       ['music', 0],
+      ['sfx', 0],
+      ['fly', 0],
     ])
-    expect(JSON.parse(storage.stored!)).toEqual({ torch: false, fly: false, music: false })
+    expect(JSON.parse(storage.stored!)).toEqual({ sfx: false, fly: false, music: false })
   })
 
   it('toggling from a mixed state turns everything on first', () => {

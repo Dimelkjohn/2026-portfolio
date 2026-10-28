@@ -76,10 +76,12 @@ as references. Do not make the repo public with that folder present.
 - All sound goes through the shared engine in `src/audio/engine.ts` (one
   AudioContext, master gain, clip cache, one autoplay unlock). New sounds
   take `audio.channel(volume, bus)` and `audio.load()`; never create another
-  AudioContext. Each object has a bus (`torch`, `fly`, `music`) with an
+  AudioContext. Each sound has a bus (`sfx` for the flashlight and the
+  one-shot effects, `fly`, `music`) with an
   on/off switch in `src/audio/preferences.ts`, shown top-right by
   `SoundControls` under a master "All sound" switch that turns every sound on
-  or off together. Clips live in `public/audio/`. See README "How the sound works".
+  or off together. One-shot effects go through `src/audio/sfx.ts` (`sfx.play('thud')`,
+  the carousel's thud, flip and whoosh) on the `sfx` bus. Clips live in `public/audio/`. See README "How the sound works".
 - Tests sit next to the code as `*.test.tsx`, using Testing Library queries
   by role/text first, `data-testid` only for presentational layers.
 - Prettier: no semicolons, single quotes, width 100. Husky runs lint-staged on commit.

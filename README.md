@@ -169,7 +169,8 @@ are queued on the audio clock with a 0.35 s equal-power crossfade between
 them, so there is no audible seam and no dependence on timers firing on
 time. The first pass can start earlier in the clip than the loop (a lead-in).
 
-Each object plays into its own bus of the engine (`torch`, `fly`, `music`),
+Each sound plays into a bus of the engine (`sfx`, which carries the
+flashlight and the one-shot effects in `src/audio/sfx.ts`, `fly`, `music`),
 and `src/audio/preferences.ts` holds one on/off switch per bus, remembered
 in localStorage and shown as the switches in the top-right corner
 (`src/components/sound/SoundControls.tsx`), under a master "All sound"

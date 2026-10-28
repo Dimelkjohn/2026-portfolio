@@ -6,7 +6,7 @@ import { SoundControls } from './SoundControls'
 
 describe('SoundControls', () => {
   beforeEach(() => {
-    soundPreferences.setOn('torch', true)
+    soundPreferences.setOn('sfx', true)
     soundPreferences.setOn('fly', false)
   })
 
@@ -14,10 +14,7 @@ describe('SoundControls', () => {
     render(<SoundControls />)
     const group = screen.getByRole('group', { name: 'Sound' })
     expect(group).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /flashlight/i })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    expect(screen.getByRole('button', { name: /sfx/i })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Fly (Gus)' })).toHaveAttribute(
       'aria-pressed',
       'false',
@@ -27,13 +24,13 @@ describe('SoundControls', () => {
   it('toggles a sound and reflects it', async () => {
     const user = userEvent.setup()
     render(<SoundControls />)
-    const torch = screen.getByRole('button', { name: /flashlight/i })
+    const torch = screen.getByRole('button', { name: /sfx/i })
     await user.click(torch)
     expect(torch).toHaveAttribute('aria-pressed', 'false')
-    expect(soundPreferences.isOn('torch')).toBe(false)
+    expect(soundPreferences.isOn('sfx')).toBe(false)
     await user.click(torch)
     expect(torch).toHaveAttribute('aria-pressed', 'true')
-    expect(soundPreferences.isOn('torch')).toBe(true)
+    expect(soundPreferences.isOn('sfx')).toBe(true)
   })
 
   it('offers a music switch', () => {
@@ -59,7 +56,7 @@ describe('master switch', () => {
     )
     await user.click(all)
     expect(all).toHaveAttribute('aria-pressed', 'false')
-    for (const name of [/flashlight/i, 'Fly (Gus)', /music/i]) {
+    for (const name of [/sfx/i, 'Fly (Gus)', /music/i]) {
       expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false')
     }
   })

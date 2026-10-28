@@ -92,6 +92,36 @@ describe('WorkCarousel', () => {
   })
 })
 
+describe('WorkCarousel sound', () => {
+  it('thuds on landing, flips on stepping and whooshes on leaving', () => {
+    vi.useFakeTimers()
+    try {
+      const sfx = { play: vi.fn<(name: string) => void>(), preload: vi.fn<() => void>() }
+      render(
+        <WorkCarousel
+          open
+          index={0}
+          onIndexChange={() => {}}
+          onClose={() => {}}
+          items={items}
+          sfx={sfx}
+        />,
+      )
+      expect(sfx.play).not.toHaveBeenCalled()
+      act(() => {
+        vi.advanceTimersByTime(300)
+      })
+      expect(sfx.play).toHaveBeenLastCalledWith('thud')
+      fireEvent.click(screen.getByRole('button', { name: 'Next exhibit' }))
+      expect(sfx.play).toHaveBeenLastCalledWith('flip')
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(sfx.play).toHaveBeenLastCalledWith('whoosh')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('wrap', () => {
   it('keeps an index inside the stack from either end', () => {
     expect(wrap(3, 3)).toBe(0)

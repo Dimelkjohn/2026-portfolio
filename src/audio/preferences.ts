@@ -1,14 +1,15 @@
 import { audio, type AudioEngine } from './engine'
 
 /**
- * Which sounds the visitor wants on. One switch per object; each drives a
- * bus of the audio engine, so a sound keeps running (and keeps the light in
+ * Which sounds the visitor wants on. One switch per bus of the audio engine
+ * (SFX carries the flashlight and the one-shot effects); each switch drives
+ * its bus's level, so a sound keeps running (and keeps the light in
  * sync, in the torch's case) while muted. The master switch is simply all
  * of them at once: on turns every sound on, off turns every sound off.
  * Remembered in localStorage.
  */
 
-export type SoundId = 'torch' | 'fly' | 'music'
+export type SoundId = 'sfx' | 'fly' | 'music'
 
 export type SoundInfo = {
   id: SoundId
@@ -18,13 +19,13 @@ export type SoundInfo = {
 }
 
 export const SOUNDS: readonly SoundInfo[] = [
-  { id: 'torch', label: 'Flashlight', available: true },
-  { id: 'fly', label: 'Fly (Gus)', available: true },
   { id: 'music', label: 'Music', available: true },
+  { id: 'sfx', label: 'SFX', available: true },
+  { id: 'fly', label: 'Fly (Gus)', available: true },
 ]
 
 /** Everything on unless the visitor switches it off. */
-const DEFAULTS: Record<SoundId, boolean> = { torch: true, fly: true, music: true }
+const DEFAULTS: Record<SoundId, boolean> = { music: true, sfx: true, fly: true }
 const STORAGE_KEY = 'dimelu.sounds'
 
 export type SoundPreferences = {

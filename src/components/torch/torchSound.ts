@@ -30,7 +30,7 @@ export type TorchSoundCues = {
 
 export const TORCH_SOUND_CUES: TorchSoundCues = { switchOnEnd: 1, ambienceEnd: 11 }
 
-/** The torch's level on the master bus, 0-1. */
+/** The torch's level on the sfx bus (shared with the one-shot effects), 0-1. */
 const VOLUME = 0.43
 
 export type TorchSoundOutcome = 'playing' | 'silent'
@@ -76,7 +76,7 @@ export function createTorchSound({
         if (!stopped) onNeedsGesture?.()
       })
       if (stopped) return 'silent'
-      channel = engine.channel(volume, 'torch')
+      channel = engine.channel(volume, 'sfx')
       // Switch-on followed by the ambience as one uncut piece, then the ambience repeats.
       loop = createLoop({
         context,
