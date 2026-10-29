@@ -1,0 +1,83 @@
+/*
+  The clue count, bottom left. The same dark panel as the sound switches,
+  above the torch layers (z 60 > 43) so it reads in the dark; the page hides
+  the cursor, so it brings it back.
+*/
+.clues {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgb(243 236 217 / 0.14);
+  border-radius: 6px;
+  background: rgb(7 7 14 / 0.72);
+  backdrop-filter: blur(4px);
+  font-family: var(--font-mono-type);
+  color: var(--color-paper);
+  cursor: auto;
+}
+
+/* The number itself, so its jolt can grow out of the line without taking the label with it. */
+.clues__number {
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+
+/* A clue found: the number flashes red, swells hard and twists, then settles back. */
+.clues__number--jolt {
+  animation:
+    clues-jolt 620ms cubic-bezier(0.2, 0.9, 0.2, 1) both,
+    clues-flash 620ms ease-out both;
+}
+
+@keyframes clues-jolt {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  28% {
+    transform: scale(1.7) rotate(-9deg);
+  }
+  55% {
+    transform: scale(0.94) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes clues-flash {
+  0%,
+  45% {
+    color: var(--color-thread);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clues__number--jolt {
+    animation: clues-flash 620ms ease-out both;
+  }
+}
+
+.clues__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(243 236 217 / 0.7);
+}
+
+.clues__count {
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Every clue found: the count is gone and the verdict stands alone in the thread red. */
+.clues--complete .clues__label {
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  color: var(--color-thread);
+}

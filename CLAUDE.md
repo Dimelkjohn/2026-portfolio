@@ -97,6 +97,10 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   `headline` is written big in `--font-marker` (Permanent Marker). Pins are lit from
   the torch by `src/components/evidence/pinLighting.ts` (per-frame custom
   properties, same pattern as `useTorch`).
+- A clue count sits bottom-left over the board (`src/components/clues`):
+  every item a click does something with counts once when first opened
+  (`interactive` in `src/components/evidence/interactive.ts` decides what
+  counts; the view switch is not an item and does not).
 - The site has two views, switched by the paper tag top-left (`ViewToggle`,
   remembered in localStorage by `src/components/view/viewPreference.ts`):
   the board, and `SimplifiedView`, one plain typed sheet built from the same

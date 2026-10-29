@@ -5,7 +5,9 @@ import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
+import { clues } from '@/components/clues/clues'
 import { ContactSheet } from '@/components/contact/ContactSheet'
+import { interactive } from '@/components/evidence/interactive'
 import { PhotoCarousel } from '@/components/work/PhotoCarousel'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { selectedWork } from '@/data/work'
@@ -23,10 +25,6 @@ type EvidenceLayerProps = {
  * Which kinds lift to the centre when clicked. Anything with labels lifts
  * too, and `clickable` on an item overrides either way.
  */
-const LIFTS = new Set<EvidenceItemData['kind']>(['note'])
-const lifts = (item: EvidenceItemData) =>
-  item.clickable ?? (LIFTS.has(item.kind) || Boolean(item.labels?.length))
-const interactive = (item: EvidenceItemData) => Boolean(item.opens) || lifts(item)
 
 /** The lifted item fills at most this much of the viewport. */
 const MAX_WIDTH_FRACTION = 0.46
@@ -102,6 +100,7 @@ export function EvidenceLayer({
   }, [workOpen, photosOpen, contactOpen])
 
   const open = useCallback((item: EvidenceItemData, el: HTMLElement) => {
+    clues.found(item.id)
     if (item.opens === 'contact') {
       pileOpener.current = el
       setContactOpen(true)

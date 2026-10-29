@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { EvidenceItem } from '@/types/evidence'
 import { boardData } from '@/data/board'
 import { selectedWork } from '@/data/work'
+import { clues } from '@/components/clues/clues'
 import { EvidenceLayer, liftFor } from './EvidenceLayer'
 
 const items: EvidenceItem[] = [
@@ -88,6 +89,27 @@ describe('EvidenceLayer', () => {
     const dialog = screen.getByRole('dialog', { name: 'Core strengths' })
     expect(dialog).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Core strengths' })).toBeInTheDocument()
+  })
+
+  it('counts a piece as a clue the first time it is opened, whatever it opens', async () => {
+    clues.reset()
+    const user = userEvent.setup()
+    const pieces: EvidenceItem[] = [
+      { id: 'c1', kind: 'clipping', placement: { x: 0, y: 0 }, text: 'A cutting', opens: 'work' },
+      { id: 'n1', kind: 'note', placement: { x: 50, y: 0 }, text: 'A note' },
+    ]
+    render(<EvidenceLayer items={pieces} threads={[]} />)
+    await user.click(screen.getByRole('button', { name: 'A cutting' }))
+    expect(clues.count()).toBe(1)
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await user.click(screen.getByRole('button', { name: 'A cutting' }))
+    expect(clues.count()).toBe(1)
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await user.click(screen.getByRole('button', { name: 'A note' }))
+    expect(clues.count()).toBe(2)
+    clues.reset()
   })
 
   it('opens the carousel on the file a cutting names, and elsewhere where it was left', async () => {
