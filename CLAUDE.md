@@ -88,13 +88,20 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   evidence bag); a print with a `video` (YouTube id) shows its still until it
   is at the front, then plays in the frame, and the pile lands and flips with
   paper sounds (`paperThud`, `paperFlip`). Print sources live in
-  `assets-src/evidence/photos` and build with the `photos` step. Handwriting on notes
+  `assets-src/evidence/photos` and build with the `photos` step.
+  `opens: 'contact'` (the handshake, bottom centre) deals out the ways to
+  reach John from `src/data/contact.ts` as typed tags (`ContactSheet`). Handwriting on notes
   uses two Google fonts via tokens in `src/index.css`: `--font-note`
   (Swanky and Moo Moo, loose script) and `--font-note-caps` (Rock Salt,
   capitals only), chosen per note with `hand: 'script' | 'caps'`; a note's
   `headline` is written big in `--font-marker` (Permanent Marker). Pins are lit from
   the torch by `src/components/evidence/pinLighting.ts` (per-frame custom
   properties, same pattern as `useTorch`).
+- The site has two views, switched by the paper tag top-left (`ViewToggle`,
+  remembered in localStorage by `src/components/view/viewPreference.ts`):
+  the board, and `SimplifiedView`, one plain typed sheet built from the same
+  data files (service record, selected work, moonlighting prints, contact).
+  Anything added to the board's data should show up there too.
 - All sound goes through the shared engine in `src/audio/engine.ts` (one
   AudioContext, master gain, clip cache, one autoplay unlock). New sounds
   take `audio.channel(volume, bus)` and `audio.load()`; never create another

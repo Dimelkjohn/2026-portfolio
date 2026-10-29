@@ -1,0 +1,84 @@
+/*
+  The view switch: the exhibit label's paper tag with the two views side by
+  side and a hairline between, held up by a strip of the same masking tape
+  as the notes (Fastener; its styles are in evidence.css) and hung a touch
+  askew. On the board it sits in the scene, below the torch layers, so it is
+  found the way everything else is: by the light. The page hides the cursor
+  over the board, so it brings it back.
+*/
+.view-toggle {
+  display: flex;
+  /* A fieldset for the semantics; none of its default box. */
+  margin: 0;
+  min-width: 0;
+  padding: 0 4px;
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 6px 14px rgb(0 0 0 / 0.45);
+  font-family: var(--font-mono-type);
+  overflow: visible;
+  cursor: auto;
+}
+
+/* Taped to the cork in the empty spot at the top centre, among the evidence (z under the torch's 41). */
+.view-toggle--board {
+  position: absolute;
+  top: 4%;
+  left: 45%;
+  z-index: 30;
+  transform: translateX(-50%) rotate(-2deg);
+  transform-origin: 50% 0;
+}
+
+/* Above the simplified sheet, centred, where there is no torch to find it by. */
+.view-toggle--sheet {
+  position: relative;
+  width: max-content;
+  margin: 0 auto 28px;
+  transform: rotate(-2deg);
+}
+
+.view-toggle__option {
+  position: relative;
+  padding: 6px 10px 7px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.view-toggle__option + .view-toggle__option {
+  border-left: 1px solid rgb(27 27 31 / 0.4);
+}
+
+.view-toggle__option--on {
+  color: var(--color-thread);
+}
+
+/* The view that is on is ringed in marker, a loose loop a little wider than the word. */
+.view-toggle__circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 124%;
+  height: auto;
+  transform: translate(-50%, -52%) rotate(7deg);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.view-toggle__option:hover:not(.view-toggle__option--on) {
+  color: rgb(27 27 31 / 0.65);
+}
+
+.view-toggle__option:focus-visible {
+  outline: 2px solid var(--color-thread);
+  outline-offset: -4px;
+}

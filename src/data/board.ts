@@ -340,6 +340,15 @@ export const boardData: BoardData = {
       media: { src: '/evidence/note-blue-square.webp', alt: 'Crumpled blue note' },
       text: 'went solo in 2026. app, backend, all his.',
     },
+    // ---- Bottom centre: make contact. A handshake, pinned; a click deals out the ways in. ----
+    {
+      id: 'handshake',
+      kind: 'photo',
+      opens: 'contact',
+      placement: { x: 43, y: 83, width: 14, rotate: -3, z: 6 },
+      fastener: { kind: 'pin', color: 'red', x: 50 },
+      media: { src: '/evidence/handshake.jpg', alt: 'Two people in suits shaking hands' },
+    },
     // ---- Right, below the cuttings: the design work, bagged as evidence. ----
     {
       id: 'design-photos',
@@ -608,6 +617,9 @@ export const boardData: BoardData = {
     // Right: the design work, bagged below the record
     { from: 'q-4', to: 'note-examine' },
     { from: 'note-examine', to: 'note-ci' },
+    // Bottom centre
+    { from: 'note-heights', to: 'handshake' },
+    { from: 'handshake', to: 'handprint' },
     // Bottom left
     { from: 'hub', to: 'handprint' },
     { from: 'hub', to: 'tenprint' },

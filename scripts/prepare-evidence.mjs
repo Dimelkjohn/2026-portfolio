@@ -30,6 +30,8 @@
  *                                   hover: its silhouette blurred four ways,
  *                                   faded in as a texture instead of being
  *                                   blurred live, which stalled the frame
+ *   public/evidence/handshake.jpg   the make-contact print (assets-src/evidence/me),
+ *                                   the same vintage pass as John's photos
  *   public/evidence/photos/*.webp   the prints in the moonlighting pile
  *                                   (assets-src/evidence/photos: the designs
  *                                   and the film stills), resized whole
@@ -582,12 +584,15 @@ const FRAME_WIDTH = 800
  */
 /**
  * How hard a black-and-white print reads: 'punchy' stretches the tones to
- * full range, 'soft' fades them, 'faded' more so, like a print left in the sun.
+ * full range, 'soft' fades them, 'faded' more so, like a print left in the sun,
+ * 'deep' sinks the darks and takes the top off the whites, a print that came
+ * out dense.
  */
 const TONES = {
   punchy: (img) => img.normalise({ lower: 1, upper: 99 }).linear(1.02, -4),
   soft: (img) => img.linear(0.78, 34),
   faded: (img) => img.linear(0.62, 62),
+  deep: (img) => img.linear(0.9, -10),
 }
 
 async function vintage(img, { colour = false, tone = 'soft' } = {}) {
@@ -1187,6 +1192,12 @@ async function marks() {
   // A yellow crayon moon and stars, turned to black marker at three-quarter strength:
   // the source already carries its own alpha, so the gain only stops the yellow reading as pale.
   await ink('notes/moon.png', 'mark-moon.png', { trim: true, gain: 6, alphaGain: 0.72 })
+  // A wide marker loop in the thread red, drawn round the view that is on.
+  await ink('notes/circle-wide.png', 'mark-circle-wide-red.png', {
+    trim: true,
+    ink: [179, 18, 27],
+    gain: 1.6,
+  })
 }
 
 // ---- The moonlighting prints ----------------------------------------------------
@@ -1208,7 +1219,14 @@ async function photos() {
   }
 }
 
-const steps = { tape, evidence, notes, marks, news, me, bag, exhibits, photos }
+// ---- Make contact ---------------------------------------------------------------
+
+/** The handshake, printed like the rest of the photographs on the board. */
+async function contact() {
+  await print('handshake.jpg', 'handshake.jpg', { width: 900, tone: 'deep' })
+}
+
+const steps = { tape, evidence, notes, marks, news, me, bag, exhibits, photos, contact }
 const only = process.argv[2]
 if (only && !(only in steps)) {
   console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)

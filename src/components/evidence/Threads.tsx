@@ -16,6 +16,9 @@ type ThreadsProps = {
  * can see. (elementFromPoint skips pointer-transparent layers, so the thread
  * SVG and the torch do not get in the way of the test.)
  */
+/** How far down a piece of taped paper the thread ties, as a share of its height. */
+const PAPER_TIE = 0.08
+
 function anchorsOf(container: HTMLElement, id: string): Point[] {
   const item = container.querySelector<HTMLElement>(`[data-evidence-id="${id}"]`)
   if (!item) return []
@@ -29,10 +32,14 @@ function anchorsOf(container: HTMLElement, id: string): Point[] {
       return { x: box.left + box.width / 2, y: box.top + box.height / 2 }
     })
   } else {
+    // Taped paper ties at the tape, a little below the box's top: the top
+    // few pixels of a taped note's image are clear around the tape, so a hit
+    // test right at the edge falls through to whatever lies beneath.
     const box = (
       item.querySelector<HTMLElement>('.evidence__paper') ?? item
     ).getBoundingClientRect()
-    spots = [{ x: box.left + box.width / 2, y: box.top + 2, top: box.top }]
+    const y = box.top + box.height * PAPER_TIE
+    spots = [{ x: box.left + box.width / 2, y, top: y }]
   }
   const origin = container.getBoundingClientRect()
   return spots

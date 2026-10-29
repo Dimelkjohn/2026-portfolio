@@ -5,6 +5,7 @@ import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
+import { ContactSheet } from '@/components/contact/ContactSheet'
 import { PhotoCarousel } from '@/components/work/PhotoCarousel'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { selectedWork } from '@/data/work'
@@ -81,6 +82,7 @@ export function EvidenceLayer({
   const [workIndex, setWorkIndex] = useState(0)
   const [photosOpen, setPhotosOpen] = useState(false)
   const [photosIndex, setPhotosIndex] = useState(0)
+  const [contactOpen, setContactOpen] = useState(false)
   /** Whatever opened the pile that is open; focus goes back to it on close. */
   const pileOpener = useRef<HTMLElement | null>(null)
   const [pileOrigin, setPileOrigin] = useState<{ x: number; y: number }>()
@@ -90,16 +92,21 @@ export function EvidenceLayer({
     [reducedMotion, items],
   )
 
-  // When a pile closes, focus goes back to the paper that opened it.
+  // When a pile (or the contact sheet) closes, focus goes back to the paper that opened it.
   useEffect(() => {
-    if (workOpen || photosOpen || !pileOpener.current) return
+    if (workOpen || photosOpen || contactOpen || !pileOpener.current) return
     pileOpener.current
       .querySelector<HTMLElement>('.evidence__paper')
       ?.focus({ preventScroll: true })
     pileOpener.current = null
-  }, [workOpen, photosOpen])
+  }, [workOpen, photosOpen, contactOpen])
 
   const open = useCallback((item: EvidenceItemData, el: HTMLElement) => {
+    if (item.opens === 'contact') {
+      pileOpener.current = el
+      setContactOpen(true)
+      return
+    }
     if (item.opens === 'work' || item.opens === 'photos') {
       pileOpener.current = el
       const r = el.getBoundingClientRect()
@@ -203,6 +210,7 @@ export function EvidenceLayer({
         onIndexChange={setPhotosIndex}
         onClose={() => setPhotosOpen(false)}
       />
+      <ContactSheet open={contactOpen} onClose={() => setContactOpen(false)} />
       {lifted &&
         createPortal(
           <dialog

@@ -1,0 +1,139 @@
+/*
+  Make contact: typed tags dealt onto the desk, one under the other, in the
+  style of the exhibit labels (paper, a hairline border, the channel in the
+  thread red). A fixed overlay above the night layers (z 50, like the lift),
+  below the sound switches (60).
+*/
+.contact {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-mono-type);
+  cursor: auto;
+}
+
+.contact__backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(7 7 14 / 0.6);
+  cursor: auto;
+  animation: contact-fade var(--fade) ease both;
+}
+
+.contact__tags {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: clamp(12px, 1.6vw, 20px);
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  list-style: none;
+}
+
+/* Each tag is dealt a beat after the one above it. The timings come from ContactSheet. */
+.contact__item {
+  animation: contact-deal var(--deal) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--deal-delay) + var(--i, 0) * var(--deal-stagger));
+}
+
+/*
+  The way out is the deal run backwards: the last tag dealt is the first
+  gathered up, each a beat after the one below it, and the backdrop clears
+  once the last of them has gone. Different keyframes, not a reversed
+  direction, so the browser starts them afresh.
+*/
+.contact--leaving .contact__item {
+  animation: contact-gather var(--deal) cubic-bezier(0.8, 0.2, 0.8, 0.2) both;
+  animation-delay: calc((var(--n, 1) - 1 - var(--i, 0)) * var(--deal-stagger));
+  pointer-events: none;
+}
+
+.contact--leaving .contact__backdrop {
+  animation: contact-clear var(--fade) ease both;
+  animation-delay: calc(var(--deal-delay) + (var(--n, 1) - 1) * var(--deal-stagger) + var(--deal));
+}
+
+/* Dealt by hand: each tag lands a little askew, the next one the other way. */
+.contact__item:nth-child(odd) {
+  --tilt: -2deg;
+}
+
+.contact__item:nth-child(even) {
+  --tilt: 2deg;
+}
+
+.contact__tag {
+  display: inline-flex;
+  align-items: baseline;
+  transform: rotate(var(--tilt, 0deg));
+  padding: 7px 16px 8px;
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--color-ink);
+  transition: transform 160ms ease;
+}
+
+.contact__tag:hover,
+.contact__tag:focus-visible {
+  transform: translateY(-2px) scale(1.03) rotate(var(--tilt, 0deg));
+  outline: 2px solid var(--color-thread);
+  outline-offset: 3px;
+}
+
+.contact__channel {
+  margin-right: 0.9em;
+  padding-right: 0.9em;
+  border-right: 1px solid rgb(27 27 31 / 0.4);
+  color: var(--color-thread);
+}
+
+@keyframes contact-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes contact-deal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes contact-gather {
+  to {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes contact-clear {
+  to {
+    opacity: 0;
+  }
+}
+
+.contact--still .contact__backdrop,
+.contact--still .contact__item {
+  animation: none;
+}
