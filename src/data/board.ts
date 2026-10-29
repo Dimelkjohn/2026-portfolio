@@ -613,15 +613,17 @@ export const boardData: BoardData = {
     { from: 'note-aquarium', to: 'me-kid' },
     { from: 'me-kid', to: 'me-passport' },
     { from: 'note-earliest', to: 'me-passport' },
+    { from: 'me-passport', to: 'q-1' },
     // Top right
     { from: 'hub', to: 'clip-obsessed' },
     { from: 'clip-obsessed', to: 'clip-chess' },
-    { from: 'clip-chess', to: 'service-record' },
     { from: 'clip-tier1', to: 'service-record' },
     { from: 'clip-obsessed', to: 'clip-tier1' },
+    { from: 'q-3', to: 'clip-tier1' },
     { from: 'note-polygraph-job', to: 'clip-chess' },
     { from: 'note-midnight', to: 'clip-obsessed' },
     { from: 'note-ci', to: 'service-record' },
+    { from: 'service-record', to: 'q-4' },
     { from: 'clip-obsessed', to: 'note-frontend' },
     // Right: the design work, bagged below the record
     { from: 'q-4', to: 'note-examine' },
@@ -629,6 +631,7 @@ export const boardData: BoardData = {
     // Bottom centre
     { from: 'note-heights', to: 'handshake' },
     { from: 'handshake', to: 'handprint' },
+    { from: 'handshake', to: 'note-examine' },
     // Bottom left
     { from: 'hub', to: 'handprint' },
     { from: 'hub', to: 'tenprint' },
@@ -637,7 +640,6 @@ export const boardData: BoardData = {
     { from: 'tenprint', to: 'note-prints' },
     { from: 'bucket', to: 'tenprint' },
     { from: 'palm', to: 'note-sedentary' },
-    { from: 'note-heights', to: 'smudges' },
     { from: 'hub', to: 'note-sedentary' },
   ],
 }
