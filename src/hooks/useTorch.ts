@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { attract, centresOf, type MagnetOptions, type Point } from './magnet'
 import { useReducedMotion } from './useReducedMotion'
 
 export type TorchOptions = {
@@ -15,7 +16,18 @@ export type TorchOptions = {
    * Defaults to true.
    */
   lit?: boolean
+  /**
+   * The pull of the nearest clickable piece on the beam (see magnet.ts), or
+   * false for none. On by default, with the magnet's own reach and pull.
+   */
+  magnet?: MagnetOptions | false
 }
+
+/** One shared default, so the effect does not restart on every render. */
+const DEFAULT_MAGNET: MagnetOptions = {}
+
+/** What the beam is drawn to: the paper of every piece on the board that a click does something with. */
+const MAGNET_SELECTOR = 'section[aria-label="Evidence"] .evidence--clickable .evidence__paper'
 
 const DEFAULT_LAG = 85
 
@@ -102,7 +114,12 @@ const PROPERTIES = ['--torch-x', '--torch-y', '--torch-scale', '--torch-intensit
  * re-renders for pointer movement. Under reduced motion the loop only runs
  * for the switch-on fade: the beam snaps to the pointer and the light holds steady.
  */
-export function useTorch({ lag = DEFAULT_LAG, flicker = true, lit = true }: TorchOptions = {}) {
+export function useTorch({
+  lag = DEFAULT_LAG,
+  flicker = true,
+  lit = true,
+  magnet = DEFAULT_MAGNET,
+}: TorchOptions = {}) {
   const reducedMotion = useReducedMotion()
   /** Timestamp the switch was pressed; -Infinity = on since before the loop started. */
   const litAt = useRef<number | null>(lit ? Number.NEGATIVE_INFINITY : null)
@@ -169,9 +186,23 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true, lit = true }: Torc
       })
     }
 
+    // The clickables' centres, measured once the pointer first moves and again
+    // after a resize: the pieces do not move otherwise. Nothing pulls while a
+    // pile or the contact sheet is open over the board.
+    let centres: Point[] | null = null
+    const forgetCentres = () => {
+      centres = null
+    }
+    const aim = (x: number, y: number): Point => {
+      if (!magnet || document.querySelector('dialog[open]')) return { x, y }
+      centres ??= centresOf(MAGNET_SELECTOR)
+      return attract({ x, y }, centres, magnet)
+    }
+
     const onPointerMove = (event: PointerEvent) => {
-      target.x = event.clientX
-      target.y = event.clientY
+      const aimed = aim(event.clientX, event.clientY)
+      target.x = aimed.x
+      target.y = aimed.y
       if (!animate) paint(target.x, target.y, 1, 1, power(performance.now()))
     }
 
@@ -188,6 +219,7 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true, lit = true }: Torc
     paint(current.x, current.y, 1, 1, power(performance.now()))
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerdown', onPointerMove, { passive: true })
+    window.addEventListener('resize', forgetCentres)
     document.addEventListener('visibilitychange', onVisibility)
     if (animate) resume()
 
@@ -196,10 +228,11 @@ export function useTorch({ lag = DEFAULT_LAG, flicker = true, lit = true }: Torc
       if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerMove)
+      window.removeEventListener('resize', forgetCentres)
       document.removeEventListener('visibilitychange', onVisibility)
       for (const name of PROPERTIES) root.style.removeProperty(name)
     }
-  }, [lag, flicker, reducedMotion])
+  }, [lag, flicker, reducedMotion, magnet])
 
   // Declared after the main effect so `kick` is wired before the first switch-on.
   useEffect(() => {

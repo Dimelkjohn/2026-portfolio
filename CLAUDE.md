@@ -68,7 +68,10 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   co-located `.css` file next to the component (board.css, torchlight.css).
   Design tokens go in the `@theme` block in `src/index.css`.
 - Per-frame visual updates write CSS custom properties directly to the DOM
-  (see `useTorch`); never route pointer movement through React state.
+  (see `useTorch`); never route pointer movement through React state. The
+  beam leans a little toward the nearest clickable piece (`src/hooks/magnet.ts`,
+  the `magnet` option of `useTorch`; centres measured once per resize, no pull
+  while a pile or the contact sheet is open).
 - Respect `prefers-reduced-motion` for any new animation (`useReducedMotion`).
 - Board content (items, fun facts, threads) belongs in `src/data/board.ts`,
   typed by `src/types/evidence.ts`, not in components. Every item has a
