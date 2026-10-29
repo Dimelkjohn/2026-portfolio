@@ -5,7 +5,8 @@ import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
-import { clues } from '@/components/clues/clues'
+import { sfx } from '@/audio/sfx'
+import { clues, STAMP_IMPACT_MS } from '@/components/clues/clues'
 import { ContactSheet } from '@/components/contact/ContactSheet'
 import { interactive } from '@/components/evidence/interactive'
 import { PhotoCarousel } from '@/components/work/PhotoCarousel'
@@ -100,7 +101,11 @@ export function EvidenceLayer({
   }, [workOpen, photosOpen, contactOpen])
 
   const open = useCallback((item: EvidenceItemData, el: HTMLElement) => {
-    clues.found(item.id)
+    // A new clue ticks the counter up; the last one also brings the stamp down, a beat later.
+    if (clues.found(item.id)) {
+      sfx.play('clueTick')
+      if (clues.complete()) window.setTimeout(() => sfx.play('caseClosed'), STAMP_IMPACT_MS)
+    }
     if (item.opens === 'contact') {
       pileOpener.current = el
       setContactOpen(true)

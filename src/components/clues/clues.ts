@@ -9,8 +9,8 @@ import { boardData } from '@/data/board'
  * not count. Kept for the visit only.
  */
 export type Clues = {
-  /** Note that a piece was opened. */
-  found(id: string): void
+  /** Note that a piece was opened. True the first time for that piece, when the count goes up. */
+  found(id: string): boolean
   count(): number
   total(): number
   /** Every clue found. */
@@ -27,9 +27,10 @@ export function createClues(total: number): Clues {
   }
   return {
     found(id) {
-      if (found.has(id)) return
+      if (found.has(id)) return false
       found.add(id)
       notify()
+      return true
     },
     count: () => found.size,
     total: () => total,
@@ -45,6 +46,13 @@ export function createClues(total: number): Clues {
     },
   }
 }
+
+/**
+ * When the CASE CLOSED stamp hits the counter, in ms after the last clue:
+ * the number's jolt first, then the stamp's drop to its impact (its 420ms
+ * delay plus the 45% mark of its 460ms slam, in clues.css).
+ */
+export const STAMP_IMPACT_MS = 630
 
 /** The board's clues: every item a click does something with. */
 export const clues = createClues(boardData.items.filter(interactive).length)

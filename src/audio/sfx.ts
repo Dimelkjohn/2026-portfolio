@@ -22,6 +22,10 @@ export const SFX_URLS = {
   paperThud: `${BASE}audio/paper-thud.mp3`,
   /** A print flipped over. */
   paperFlip: `${BASE}audio/paper-flip.mp3`,
+  /** The clue count ticking up: one click of a dial. */
+  clueTick: `${BASE}audio/clue-tick.mp3`,
+  /** CASE CLOSED stamped down: a soft drop on the worktop. */
+  caseClosed: `${BASE}audio/case-closed.mp3`,
 } as const
 
 export type SfxName = keyof typeof SFX_URLS
@@ -39,6 +43,8 @@ const LEVELS: Record<SfxName, number> = {
   whoosh: 0.1,
   paperThud: 0.3,
   paperFlip: 0.3,
+  clueTick: 0.3,
+  caseClosed: 0.35,
 }
 
 export type Sfx = {

@@ -122,7 +122,8 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   `SoundControls` under a master "All sound" switch that turns every sound on
   or off together; each switch is a marker tick (on) or red cross (off),
   ink marks from the pipeline's `marks` step, stamped down on change. One-shot effects go through `src/audio/sfx.ts` (`sfx.play('thud')`,
-  the carousel's thud, flip and whoosh) on the `sfx` bus. Clips live in `public/audio/`. See README "How the sound works".
+  the carousel's thud, flip and whoosh, the paper pile's thud and flip, the
+  clue count's tick and the CASE CLOSED slam) on the `sfx` bus. Clips live in `public/audio/`. See README "How the sound works".
 - Tests sit next to the code as `*.test.tsx`, using Testing Library queries
   by role/text first, `data-testid` only for presentational layers.
 - Prettier: no semicolons, single quotes, width 100. Husky runs lint-staged on commit.

@@ -16,8 +16,18 @@ function setup() {
       whoosh: '/whoosh.mp3',
       paperThud: '/paper-thud.mp3',
       paperFlip: '/paper-flip.mp3',
+      clueTick: '/clue-tick.mp3',
+      caseClosed: '/case-closed.mp3',
     },
-    levels: { thud: 0.9, flip: 0.7, whoosh: 0.6, paperThud: 0.5, paperFlip: 0.5 },
+    levels: {
+      thud: 0.9,
+      flip: 0.7,
+      whoosh: 0.6,
+      paperThud: 0.5,
+      paperFlip: 0.5,
+      clueTick: 0.5,
+      caseClosed: 0.5,
+    },
     skips: { paperFlip: 0.2 },
   })
   return { engine, sfx, ctx: () => instances[0] as FakeAudioContext }
