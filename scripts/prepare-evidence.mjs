@@ -1246,6 +1246,17 @@ async function contact() {
   await print('handshake.jpg', 'handshake.jpg', { width: 900, tone: 'deep' })
 }
 
+// ---- The simplified view -------------------------------------------------------
+
+/** The sheet's hero: a shot of the board's top-left corner, as is. */
+async function simplified() {
+  const info = await sharp(src('simplified-hero.png'))
+    .resize({ width: 1440, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(path.join(OUT, 'simplified-hero.webp'))
+  console.log(`hero  simplified-hero.webp  ${info.width}x${info.height}`)
+}
+
 /**
  * The tall strip of newsprint down the board's right edge: the fourth scan
  * turned a quarter turn to the left so its column reads upright, its own
@@ -1255,7 +1266,20 @@ async function newsSide() {
   await noteOnChecker('news-bg-4.jpg', 'news-bg-4.png', { width: 600, src: newsSrc, rotate: -90 })
 }
 
-const steps = { tape, evidence, notes, marks, news, newsSide, me, bag, exhibits, photos, contact }
+const steps = {
+  tape,
+  evidence,
+  notes,
+  marks,
+  news,
+  newsSide,
+  me,
+  bag,
+  exhibits,
+  photos,
+  contact,
+  simplified,
+}
 const only = process.argv[2]
 if (only && !(only in steps)) {
   console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)

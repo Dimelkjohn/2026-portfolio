@@ -9,7 +9,7 @@ describe('SimplifiedView', () => {
   it('lays the board out as one sheet: employment, the work, the moonlighting and contact', () => {
     render(<SimplifiedView />)
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Who is John Dimelu' }),
+      screen.getByRole('heading', { level: 1, name: 'who is John Dimelu' }),
     ).toBeInTheDocument()
 
     // The service record, read from the board data.
@@ -28,7 +28,7 @@ describe('SimplifiedView', () => {
     )
 
     // Every print, films pointing at YouTube.
-    const moonlighting = screen.getByRole('region', { name: 'Moonlighting' })
+    const moonlighting = screen.getByRole('region', { name: 'Creative work: design and film' })
     expect(within(moonlighting).getAllByRole('listitem')).toHaveLength(moonlightingPhotos.length)
     const film = moonlightingPhotos.find((photo) => photo.video)!
     expect(within(moonlighting).getByRole('link', { name: film.caption! })).toHaveAttribute(

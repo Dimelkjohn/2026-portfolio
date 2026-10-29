@@ -150,7 +150,9 @@ export const selectedWork: Work[] = [
         alt: 'The old dimelu.me: a scribbled-out name and a pixel headline on yellow paper, with glasses doodled around it',
       },
     ],
-    link: 'https://dimelu.me/',
+    // The old address will carry this board once it is published, so the exhibit
+    // is the print itself: the one screenshot that survives of the old site.
+    link: '/evidence/work-old-portfolio.webp',
   },
   {
     id: 'this-portfolio',

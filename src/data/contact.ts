@@ -8,6 +8,12 @@ export type ContactLink = {
   href: string
 }
 
+/**
+ * The résumé as a PDF, served from public/ under this name. Until the file
+ * is dropped in, the link leads nowhere.
+ */
+export const RESUME_URL = '/John-Dimelu-Resume.pdf'
+
 /** The ways in, in the order the tags are dealt out when the handshake is clicked. */
 export const contactLinks: ContactLink[] = [
   {
@@ -29,5 +35,11 @@ export const contactLinks: ContactLink[] = [
     channel: 'GitHub',
     label: 'Dimelkjohn',
     href: 'https://github.com/Dimelkjohn',
+  },
+  {
+    id: 'resume',
+    channel: 'Résumé',
+    label: 'download the PDF',
+    href: RESUME_URL,
   },
 ]

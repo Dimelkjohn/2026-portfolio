@@ -1,10 +1,13 @@
 /*
-  The simplified view: one typed sheet of paper on the dark desk, scrolling
-  normally. Same faces as the board (marker for names, typewriter for the
-  rest), none of the staging.
+  The simplified view: one typed sheet of paper on the dark desk. The page
+  itself never scrolls (the board is pinned to the viewport), so the view is
+  its own scroller. Same faces as the board (marker for names, typewriter
+  for the rest), none of the staging.
 */
 .simplified {
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 28px 16px 64px;
   background: var(--color-night);
   color: var(--color-ink);
@@ -13,13 +16,29 @@
 }
 
 .simplified__sheet {
+  --sheet-top: clamp(24px, 4vw, 48px);
+  --sheet-x: clamp(20px, 4vw, 44px);
   max-width: 720px;
   margin: 0 auto;
-  padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 44px) clamp(32px, 5vw, 56px);
+  padding: var(--sheet-top) var(--sheet-x) clamp(32px, 5vw, 56px);
+  /* The loose threads off the pinned sheet stop at the paper's edges. */
+  overflow: hidden;
   background: var(--color-paper);
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.4),
     0 18px 40px rgb(0 0 0 / 0.55);
+}
+
+/* A strip of the board across the top of the sheet, edge to edge of the paper, kept short. */
+.simplified__hero {
+  display: block;
+  width: calc(100% + 2 * var(--sheet-x));
+  /* Past the base rule that keeps images inside their box: this one bleeds. */
+  max-width: none;
+  height: clamp(180px, 29vw, 252px);
+  margin: calc(-1 * var(--sheet-top)) calc(-1 * var(--sheet-x)) 1.8rem;
+  object-fit: cover;
+  object-position: 50% 45%;
 }
 
 .simplified__head {
@@ -30,18 +49,79 @@
 
 .simplified__eyebrow {
   margin: 0 0 0.6rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-thread);
 }
 
-.simplified__title {
-  margin: 0 0 0.8rem;
-  font-family: var(--font-marker);
-  font-size: clamp(2rem, 5vw, 3rem);
+/*
+  The title is the board's own centrepiece: the torn lined sheet with its red
+  pin, placed as a piece of evidence (absolute, in percent of this box), so
+  the box takes the sheet's proportions and a little room for its lean.
+*/
+.simplified__hub {
+  position: relative;
+  z-index: 2;
+  width: min(470px, 82%);
+  aspect-ratio: 693 / 345;
+  /* Pulled up over the hero's bottom edge by about a tenth of its own height. */
+  margin: calc(-1.8rem - 5%) auto 1.4rem;
+}
+
+/*
+  The loose threads: drawn from the pin (the sheet's centre line, a little
+  down from the top, which is where it turns, so the lean barely moves it) in px, the same red and
+  shadow as the board's thread, above the sheet as thread over paper would be.
+*/
+.simplified__threads {
+  position: absolute;
+  top: var(--pin-y, 6px);
+  left: 50%;
+  z-index: 2;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.simplified__thread-shadow {
+  fill: none;
+  stroke: rgb(0 0 0 / 0.35);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform: translate(1px, 2px);
+}
+
+.simplified__thread {
+  fill: none;
+  stroke: var(--color-thread);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* The pin, drawn apart from the sheet so it sits on the thread; the same spot it would have on the sheet. */
+.simplified__pin {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* A lighter shadow than on the board: it lies on paper here, not on cork in the dark. */
+.simplified__hub .evidence__paper {
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.2)) drop-shadow(0 5px 9px rgb(0 0 0 / 0.22));
+}
+
+/* The three words over the summary, typed small and spaced, in the thread red like the eyebrows. */
+.simplified__tagline {
+  margin: 0 0 0.7rem;
+  font-size: 0.8rem;
   font-weight: 400;
-  line-height: 1.05;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-thread);
 }
 
 .simplified__lede {
@@ -51,6 +131,12 @@
   color: rgb(27 27 31 / 0.8);
 }
 
+/* The résumé, one line under the summary. */
+.simplified__resume {
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+}
+
 .simplified__section + .simplified__section {
   margin-top: 2.4rem;
 }
@@ -58,7 +144,7 @@
 .simplified__heading {
   margin: 0 0 1rem;
   font-size: 0.85rem;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-thread);
@@ -68,6 +154,36 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* A pinned item: room on the left for the pin head, which sits by the item's first line. */
+.simplified__pinned {
+  position: relative;
+  padding-left: 1.7rem;
+}
+
+/*
+  The bullet: one of the board's pin heads, drawn by the same Fastener and
+  told to sit still (on the board it is placed absolutely and turned to face
+  the torch; here there is no torch).
+*/
+.simplified__bullet {
+  position: absolute;
+  top: 0.1em;
+  left: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.simplified__bullet .evidence__pin {
+  position: static;
+  width: 100%;
+  transform: none;
+}
+
+/* The pins stand still in the dark: no torch to turn to, so lit from above. */
+.simplified__bullet .evidence__pin-turn {
+  transform: none;
 }
 
 .simplified__list--tight > li + li {
@@ -132,14 +248,6 @@
   color: var(--color-thread);
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.simplified__sealed {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgb(27 27 31 / 0.5);
 }
 
 .simplified__channel {

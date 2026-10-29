@@ -12,6 +12,7 @@ describe('ContactSheet', () => {
       'Emailpaul.johndim@gmail.com',
       'LinkedInjohn-dimelu',
       'GitHubDimelkjohn',
+      'Résumédownload the PDF',
     ])
     // A plain mailto: an encoded display name makes some mail handlers open nothing.
     expect(links[0]).toHaveAttribute('href', 'mailto:paul.johndim@gmail.com')
@@ -25,11 +26,11 @@ describe('ContactSheet', () => {
     const onClose = vi.fn<() => void>()
     const { rerender } = render(<ContactSheet open onClose={onClose} />)
     fireEvent.keyDown(window, { key: 'Escape' })
-    // The deal runs backwards first; the owner hears nothing until it is done.
+    // The deal runs backwards first (four tags, just under a second); the owner hears nothing until it is done.
     expect(document.querySelector('.contact--leaving')).not.toBeNull()
     expect(onClose).not.toHaveBeenCalled()
     act(() => {
-      vi.advanceTimersByTime(900)
+      vi.advanceTimersByTime(1100)
     })
     expect(onClose).toHaveBeenCalledTimes(1)
     rerender(<ContactSheet open={false} onClose={onClose} />)
@@ -39,7 +40,7 @@ describe('ContactSheet', () => {
     expect(document.querySelector('.contact--leaving')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
     act(() => {
-      vi.advanceTimersByTime(900)
+      vi.advanceTimersByTime(1100)
     })
     expect(onClose).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
