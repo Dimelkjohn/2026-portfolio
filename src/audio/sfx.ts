@@ -18,12 +18,28 @@ export const SFX_URLS = {
   flip: `${BASE}audio/folder-flip.mp3`,
   /** The pile snatched off the desk. */
   whoosh: `${BASE}audio/folder-whoosh.mp3`,
+  /** A pile of prints set down on the desk. */
+  paperThud: `${BASE}audio/paper-thud.mp3`,
+  /** A print flipped over. */
+  paperFlip: `${BASE}audio/paper-flip.mp3`,
 } as const
 
 export type SfxName = keyof typeof SFX_URLS
 
+/**
+ * Seconds to skip at the start of a clip, for one that opens with a pause:
+ * the paper flip sits a fifth of a second behind the click otherwise.
+ */
+const SKIPS: Partial<Record<SfxName, number>> = { paperFlip: 0.2 }
+
 /** Level of each effect on the sfx bus, 0-1. */
-const LEVELS: Record<SfxName, number> = { thud: 0.2, flip: 0.2, whoosh: 0.1 }
+const LEVELS: Record<SfxName, number> = {
+  thud: 0.2,
+  flip: 0.2,
+  whoosh: 0.1,
+  paperThud: 0.3,
+  paperFlip: 0.3,
+}
 
 export type Sfx = {
   play(name: SfxName): void
@@ -35,6 +51,7 @@ export type SfxOptions = {
   engine?: AudioEngine
   urls?: Record<SfxName, string>
   levels?: Record<SfxName, number>
+  skips?: Partial<Record<SfxName, number>>
 }
 
 const noop = () => {}
@@ -43,6 +60,7 @@ export function createSfx({
   engine = audio,
   urls = SFX_URLS,
   levels = LEVELS,
+  skips = SKIPS,
 }: SfxOptions = {}): Sfx {
   return {
     preload() {
@@ -59,7 +77,7 @@ export function createSfx({
         const out = engine.channel(levels[name], 'sfx')
         source.connect(out)
         source.onended = () => out.disconnect()
-        source.start()
+        source.start(0, skips[name] ?? 0)
       }, noop)
     },
   }

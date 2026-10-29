@@ -5,6 +5,7 @@ import { boardData } from '@/data/board'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { cn } from '@/lib/cn'
 import { EvidenceItem, type Lift } from './EvidenceItem'
+import { PhotoCarousel } from '@/components/work/PhotoCarousel'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { selectedWork } from '@/data/work'
 
@@ -73,32 +74,40 @@ export function EvidenceLayer({
   const [lifted, setLifted] = useState<Lifted | null>(null)
   const [entered, setEntered] = useState(false)
   const [closing, setClosing] = useState(false)
-  // The selected-work carousel: open or not, and which file is at the front.
-  // The index lives here, not in the carousel, so it survives closing.
+  // The two piles (the case files, the photographs from the bag): open or
+  // not, and which card is at the front. The index lives here, not in the
+  // pile, so it survives closing.
   const [workOpen, setWorkOpen] = useState(false)
   const [workIndex, setWorkIndex] = useState(0)
-  const workOpener = useRef<HTMLElement | null>(null)
-  const [workOrigin, setWorkOrigin] = useState<{ x: number; y: number }>()
+  const [photosOpen, setPhotosOpen] = useState(false)
+  const [photosIndex, setPhotosIndex] = useState(0)
+  /** Whatever opened the pile that is open; focus goes back to it on close. */
+  const pileOpener = useRef<HTMLElement | null>(null)
+  const [pileOrigin, setPileOrigin] = useState<{ x: number; y: number }>()
 
   useEffect(
     () => startPinLighting({ container: document, animate: !reducedMotion }),
     [reducedMotion, items],
   )
 
-  // When the carousel closes, focus goes back to the paper that opened it.
+  // When a pile closes, focus goes back to the paper that opened it.
   useEffect(() => {
-    if (workOpen || !workOpener.current) return
-    workOpener.current
+    if (workOpen || photosOpen || !pileOpener.current) return
+    pileOpener.current
       .querySelector<HTMLElement>('.evidence__paper')
       ?.focus({ preventScroll: true })
-    workOpener.current = null
-  }, [workOpen])
+    pileOpener.current = null
+  }, [workOpen, photosOpen])
 
   const open = useCallback((item: EvidenceItemData, el: HTMLElement) => {
-    if (item.opens === 'work') {
-      workOpener.current = el
+    if (item.opens === 'work' || item.opens === 'photos') {
+      pileOpener.current = el
       const r = el.getBoundingClientRect()
-      setWorkOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      setPileOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      if (item.opens === 'photos') {
+        setPhotosOpen(true)
+        return
+      }
       // A cutting with a file of its own opens the pile on it; the rest pick up where it was left.
       const at = selectedWork.findIndex((work) => work.id === item.opensAt)
       if (at >= 0) setWorkIndex(at)
@@ -183,9 +192,16 @@ export function EvidenceLayer({
       <WorkCarousel
         open={workOpen}
         index={workIndex}
-        origin={workOrigin}
+        origin={pileOrigin}
         onIndexChange={setWorkIndex}
         onClose={() => setWorkOpen(false)}
+      />
+      <PhotoCarousel
+        open={photosOpen}
+        index={photosIndex}
+        origin={pileOrigin}
+        onIndexChange={setPhotosIndex}
+        onClose={() => setPhotosOpen(false)}
       />
       {lifted &&
         createPortal(

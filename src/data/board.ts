@@ -345,7 +345,7 @@ export const boardData: BoardData = {
       id: 'design-photos',
       kind: 'cutout',
       bagged: true,
-      clickable: true,
+      opens: 'photos',
       // The image carries 90px of padding a side for its baked shadow, so the box is 18% wider
       // and starts up and left of where the prints themselves sit (at x 63, y 54, width 30).
       placement: { x: 60.3, y: 48.4, width: 35.4, rotate: -8, z: 3 },
@@ -375,7 +375,7 @@ export const boardData: BoardData = {
       // design jobs, mockups, films and animations he does by night.
       id: 'note-moonlighting',
       kind: 'note',
-      placement: { x: 61.5, y: 76, width: 7, rotate: -4, z: 12 },
+      placement: { x: 61.5, y: 70, width: 7, rotate: 8, z: 4 },
       fastener: { kind: 'none' },
       media: { src: '/evidence/note-yellow-taped.png', alt: 'Yellow note held by a strip of tape' },
       // Broken by hand: one word runs off the note's edge in the caps hand.

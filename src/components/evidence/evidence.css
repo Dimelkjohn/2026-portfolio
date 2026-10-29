@@ -27,9 +27,14 @@
   transition: transform 220ms ease;
 }
 
-/* Only paper that does something lifts under the pointer. */
+/*
+  Only paper that does something lifts under the pointer, or under keyboard
+  focus. Focus counts only when it is visible (:focus-visible): closing a
+  lifted note or the carousel hands focus back to the paper that opened it,
+  and after a mouse close that paper must not stay lifted and haloed.
+*/
 .evidence--clickable:hover,
-.evidence--clickable:focus-within {
+.evidence--clickable:has(:focus-visible) {
   z-index: 20;
   transform: rotate(var(--rotate)) scale(1.03);
 }
@@ -49,13 +54,13 @@
   transition: filter 160ms ease;
 }
 
-.evidence--clickable:is(:hover, :focus-within) .evidence__paper {
+.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper {
   filter: drop-shadow(0 0 2px rgb(255 255 255 / 1)) drop-shadow(0 0 9px rgb(255 255 255 / 0.85))
     drop-shadow(0 0 22px rgb(255 255 255 / 0.5)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
 }
 
 /* Cards already carry a box-shadow for depth; while glowing, let the filter do all the shadowing. */
-.evidence--clickable:is(:hover, :focus-within):not(.evidence--cutout, .evidence--note)
+.evidence--clickable:is(:hover, :has(:focus-visible)):not(.evidence--cutout, .evidence--note)
   .evidence__paper {
   box-shadow: none;
 }
@@ -64,7 +69,10 @@
    The .lift ancestor keeps this ahead of the hover halo on specificity. */
 .lift .evidence--lifted .evidence__paper,
 .lift
-  .evidence--lifted:is(.evidence--cutout, .evidence--note, .evidence):is(:hover, :focus-within)
+  .evidence--lifted:is(.evidence--cutout, .evidence--note, .evidence):is(
+    :hover,
+    :has(:focus-visible)
+  )
   .evidence__paper {
   outline: none;
   box-shadow: none;
@@ -498,15 +506,7 @@
   at its edges, its zip and its folds, where the plastic is solid. That
   shadow is baked into the image by the pipeline, so nothing is filtered here.
   The weight of the shadow in this zone comes from what is inside the bag.
-  The bag and the bagged paper get their own compositor layers (will-change):
-  the pin lighting repaints the items around them every frame, and that must
-  not re-run the bagged paper's filter or re-rasterise the big plastic.
 */
-.evidence--bag,
-.evidence--bagged {
-  will-change: transform;
-}
-
 .evidence--bag .evidence__paper {
   overflow: visible;
   background: none;
@@ -540,17 +540,40 @@
 */
 .evidence--bagged .evidence__paper {
   filter: none;
-  /* The halo swaps in at once: interpolating three drop-shadows over an image this big costs every frame. */
   transition: none;
 }
 
-.evidence--bagged.evidence--clickable:is(:hover, :focus-within) {
-  z-index: var(--z, 1);
+/*
+  Its hover halo, brighter than the ordinary one so it burns through the
+  plastic. Not a live drop-shadow: blurring an image this size took the frame
+  down every time the pointer crossed it, and stalled the fly. The pipeline
+  bakes the same four-blur halo into an image of the pile's silhouette, and it
+  fades in here as a texture behind the pile.
+*/
+.evidence--bagged .evidence__paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('/evidence/photo-stack-glow.webp') center / 100% 100% no-repeat;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
 }
 
-.evidence--bagged.evidence--clickable:is(:hover, :focus-within) .evidence__paper {
-  filter: drop-shadow(0 0 2px rgb(255 255 255 / 1)) drop-shadow(0 0 9px rgb(255 255 255 / 0.85))
-    drop-shadow(0 0 22px rgb(255 255 255 / 0.5));
+.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper::before {
+  opacity: 1;
+}
+
+/* It rises more than other paper, since the plastic flattens the ordinary lift, but stays under the bag. */
+.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) {
+  z-index: var(--z, 1);
+  transform: rotate(var(--rotate)) scale(1.07) translateY(-1.5%);
+}
+
+/* Under the pointer the paper itself stays unfiltered; the halo is the ::before above. */
+.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper {
+  filter: none;
 }
 
 /* Handwriting on a note: the loose script by default, the caps marker on request. A newline in the text breaks the line. */
@@ -1063,7 +1086,7 @@
 }
 
 .evidence:hover .evidence__fact,
-.evidence:focus-within .evidence__fact {
+.evidence:has(:focus-visible) .evidence__fact {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, 0) rotate(-2deg);
@@ -1080,7 +1103,8 @@
   }
 
   .evidence--clickable:hover,
-  .evidence--clickable:focus-within {
+  .evidence--clickable:has(:focus-visible),
+  .evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) {
     transform: rotate(var(--rotate));
   }
 }

@@ -70,8 +70,8 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   `fastener` (pin colour and position, or tape); a `kind: 'bag'` item is
   see-through plastic that never takes the pointer, and an item with
   `bagged: true` placed under it stays under the plastic on hover yet is
-  clickable (the through-the-plastic look is baked into its image by the
-  pipeline's `bag` step, nothing is filtered per frame); new media goes through
+  clickable (the through-the-plastic look and its hover halo are baked into
+  images by the pipeline's `bag` step, so nothing is filtered at runtime); new media goes through
   `npm run evidence`, never hand-copied into `public/`. Clicking a note lifts
   it to the centre (`EvidenceLayer`, a `<dialog>` portal above the torch
   layers); anything with `labels` (lab tags shown only when lifted) lifts too,
@@ -82,7 +82,13 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   also names a file with `opensAt`, in which case it opens on that one). It opens by being
   dropped onto the desk and closes by being snatched toward its opener, all
   CSS keyframes keyed off `dossier--entering|settled|leaving`; reduced motion
-  fades instead. Handwriting on notes
+  fades instead. The mechanics live in `Pile` (`src/components/work/Pile.tsx`)
+  and are shared with `PhotoCarousel`, a pile of prints from
+  `src/data/photos.ts` opened by `opens: 'photos'` (the photographs in the
+  evidence bag); a print with a `video` (YouTube id) shows its still until it
+  is at the front, then plays in the frame, and the pile lands and flips with
+  paper sounds (`paperThud`, `paperFlip`). Print sources live in
+  `assets-src/evidence/photos` and build with the `photos` step. Handwriting on notes
   uses two Google fonts via tokens in `src/index.css`: `--font-note`
   (Swanky and Moo Moo, loose script) and `--font-note-caps` (Rock Salt,
   capitals only), chosen per note with `hand: 'script' | 'caps'`; a note's

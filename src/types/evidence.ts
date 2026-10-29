@@ -131,9 +131,10 @@ export type EvidenceItem = {
   /**
    * What a click opens instead of lifting the paper. 'work' is the
    * selected-work carousel, one shared stack of files that keeps its place
-   * between visits whichever item opened it.
+   * between visits whichever item opened it; 'photos' is the pile of prints
+   * from the evidence bag (src/data/photos.ts), the same mechanics.
    */
-  opens?: 'work'
+  opens?: 'work' | 'photos'
   /**
    * With `opens: 'work'`: the id of the file (src/data/work.ts) the pile
    * opens on, so a cutting tells its own story. Without it the pile opens

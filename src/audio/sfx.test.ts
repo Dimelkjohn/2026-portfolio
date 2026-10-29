@@ -10,8 +10,15 @@ function setup() {
   const engine = createAudioEngine(Ctx)
   const sfx = createSfx({
     engine,
-    urls: { thud: '/thud.mp3', flip: '/flip.mp3', whoosh: '/whoosh.mp3' },
-    levels: { thud: 0.9, flip: 0.7, whoosh: 0.6 },
+    urls: {
+      thud: '/thud.mp3',
+      flip: '/flip.mp3',
+      whoosh: '/whoosh.mp3',
+      paperThud: '/paper-thud.mp3',
+      paperFlip: '/paper-flip.mp3',
+    },
+    levels: { thud: 0.9, flip: 0.7, whoosh: 0.6, paperThud: 0.5, paperFlip: 0.5 },
+    skips: { paperFlip: 0.2 },
   })
   return { engine, sfx, ctx: () => instances[0] as FakeAudioContext }
 }
@@ -40,6 +47,19 @@ describe('createSfx', () => {
     expect(out.connections).toHaveLength(1)
     source.onended?.()
     expect(out.disconnected).toBe(true)
+  })
+
+  it('starts a clip past its leading pause when told to skip', async () => {
+    const { engine, sfx, ctx } = setup()
+    void engine.context
+    await engine.unlock()
+    sfx.play('paperFlip')
+    sfx.play('thud')
+    await flush()
+    await flush()
+    const [flip, thud] = ctx().sources
+    expect(flip?.started?.offset).toBe(0.2)
+    expect(thud?.started?.offset).toBe(0)
   })
 
   it('stays silent until the context is running', async () => {

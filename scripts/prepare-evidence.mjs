@@ -26,6 +26,13 @@
  *                                   dulled, with its three-layer shadow under
  *                                   it. All of it is baked so the page draws a
  *                                   plain image and filters nothing per frame.
+ *   public/evidence/photo-stack-glow.webp the white halo the pile shows on
+ *                                   hover: its silhouette blurred four ways,
+ *                                   faded in as a texture instead of being
+ *                                   blurred live, which stalled the frame
+ *   public/evidence/photos/*.webp   the prints in the moonlighting pile
+ *                                   (assets-src/evidence/photos: the designs
+ *                                   and the film stills), resized whole
  *   public/evidence/work-*.webp     the photograph in each selected-work file
  *                                   (assets-src/evidence/work), resized whole;
  *                                   the sheet crops it to the print box from
@@ -35,7 +42,7 @@
  *
  * Originals are never modified. Sources are git-ignored; outputs are committed.
  */
-import { mkdir } from 'node:fs/promises'
+import { mkdir, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
 
@@ -969,6 +976,7 @@ async function bag() {
   )
     .webp({ quality: 85, alphaQuality: 90 })
     .toFile(path.join(OUT, 'photo-stack.webp'))
+  await halo('photo-stack.webp', 'photo-stack-glow.webp')
   console.log(`bag  photo-stack.webp  ${stack.width}x${stack.height}`)
 }
 
@@ -1125,6 +1133,48 @@ async function throughPlastic(input, maps, { bend = 30 } = {}) {
     .toBuffer()
 }
 
+/**
+ * The white halo a clickable piece shows under the pointer, as an image: the
+ * finished cut-out's silhouette in white, blurred at four widths and summed,
+ * the same recipe as the CSS halo (drop-shadows of 3, 6, 16 and 34px at
+ * display size, here in the image's own pixels). Shown by fading it in behind
+ * the piece, so hovering costs a texture, not four live blurs of a big image.
+ */
+async function halo(finishedFile, out) {
+  const { data: alpha, info } = await sharp(path.join(OUT, finishedFile))
+    .extractChannel('alpha')
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const { width, height } = info
+  // Display is about 0.58 px per image px, so an on-screen radius r is r / 0.58 here; sigma is half the radius.
+  const layers = [
+    { sigma: 2.6, strength: 1 },
+    { sigma: 5.2, strength: 1 },
+    { sigma: 14, strength: 0.95 },
+    { sigma: 29, strength: 0.7 },
+  ]
+  const sum = new Float32Array(width * height)
+  for (const { sigma, strength } of layers) {
+    const blurred = await sharp(alpha, { raw: { width, height, channels: 1 } })
+      .blur(sigma)
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+    const step = blurred.info.channels
+    for (let i = 0; i < width * height; i++) sum[i] += (blurred.data[i * step] / 255) * strength
+  }
+  const rgba = Buffer.alloc(width * height * 4)
+  for (let i = 0; i < width * height; i++) {
+    rgba[i * 4] = 255
+    rgba[i * 4 + 1] = 255
+    rgba[i * 4 + 2] = 255
+    rgba[i * 4 + 3] = Math.round(255 * Math.min(1, sum[i]))
+  }
+  const result = await sharp(rgba, { raw: { width, height, channels: 4 } })
+    .webp({ quality: 80, alphaQuality: 90 })
+    .toFile(path.join(OUT, out))
+  console.log(`bag  ${out}  ${result.width}x${result.height}`)
+}
+
 // ---- Marker marks added after the notes were cut --------------------------------
 
 async function marks() {
@@ -1139,7 +1189,26 @@ async function marks() {
   await ink('notes/moon.png', 'mark-moon.png', { trim: true, gain: 6, alphaGain: 0.72 })
 }
 
-const steps = { tape, evidence, notes, marks, news, me, bag, exhibits }
+// ---- The moonlighting prints ----------------------------------------------------
+
+/** Every picture in assets-src/evidence/photos, resized to the print's width and no more. */
+async function photos() {
+  const dir = path.join(SRC, 'photos')
+  const outDir = path.join(OUT, 'photos')
+  await mkdir(outDir, { recursive: true })
+  const files = (await readdir(dir)).filter((f) => /\.(png|jpe?g|webp)$/i.test(f)).sort()
+  for (const file of files) {
+    const out = file.replace(/\.[^.]+$/, '.webp')
+    const result = await sharp(path.join(dir, file))
+      .rotate()
+      .resize({ width: 1400, height: 1400, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toFile(path.join(outDir, out))
+    console.log(`photo  photos/${out}  ${result.width}x${result.height}`)
+  }
+}
+
+const steps = { tape, evidence, notes, marks, news, me, bag, exhibits, photos }
 const only = process.argv[2]
 if (only && !(only in steps)) {
   console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)
