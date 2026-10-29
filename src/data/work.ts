@@ -56,7 +56,7 @@ export const selectedWork: Work[] = [
     title: 'Authentica',
     tab: 'Authentica',
     kind: 'dashboard',
-    year: '2023 to 2025',
+    year: '2023 to 2026',
     role: 'Frontend engineer, Chess Solutions',
     summary:
       'Deepfake detection for intelligence analysts at Chess Solutions: upload media, run a bench of detection plugins, read a report that leads with the verdict. I built the React front end and its reports.',

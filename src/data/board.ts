@@ -298,7 +298,7 @@ export const boardData: BoardData = {
       media: { src: '/evidence/news-square.webp', alt: 'Torn newspaper cutting' },
       inset: '19% 14% 20% 17%',
       size: 0.95,
-      dateline: 'The Daily · Technology · 2023 to 2025',
+      dateline: 'The Daily · Technology · 2023 to 2026',
       text: 'Polygraph Startup’s Live Dashboard Holds Steady Under Load, Thanks to Frontend Engineer',
     },
     {
@@ -324,12 +324,12 @@ export const boardData: BoardData = {
       body: [
         'FOUNDER         2026-',
         ' NOBULL SOLUTIONS',
-        'ENGINEER      2023-25',
+        'ENGINEER      2023-26',
         ' CHESS SOLUTIONS',
         'INTERN           2022',
         ' TIER 1 CONSULTING',
         '---',
-        'SUBTOTAL        3 YRS',
+        'SUBTOTAL        5 YRS',
       ].join('\n'),
       footer: 'thank you for\nstudying with\ntowson university',
     },
