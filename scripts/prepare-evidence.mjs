@@ -1205,6 +1205,13 @@ async function marks() {
     ink: [243, 236, 217],
     gain: 1.1,
   })
+  // A long marker stroke in the thread red, drawn under the prompt in the dark.
+  await ink('notes/underline.png', 'mark-underline-red.png', {
+    trim: true,
+    width: 900,
+    ink: [179, 18, 27],
+    gain: 1.2,
+  })
   await ink('notes/cross.webp', 'mark-cross-red.png', {
     trim: true,
     width: 160,

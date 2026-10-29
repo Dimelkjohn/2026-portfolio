@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useTorch, type TorchOptions } from '@/hooks/useTorch'
 import { createTorchSound } from './torchSound'
 import './torchlight.css'
@@ -22,6 +22,17 @@ export function Torchlight({ sound, ...torch }: TorchlightProps) {
   const [lit, setLit] = useState(sound === false)
   const [needsGesture, setNeedsGesture] = useState(false)
   useTorch({ ...torch, lit })
+
+  // The page's furniture (sound switches, clue count) reads this to stay out
+  // of sight until the board is lit; gone with the torch, so the simplified
+  // view shows it from the start. Written before the first paint, so the
+  // panels are never seen before they hide.
+  useLayoutEffect(() => {
+    document.documentElement.dataset.torch = lit ? 'lit' : 'unlit'
+    return () => {
+      delete document.documentElement.dataset.torch
+    }
+  }, [lit])
 
   useEffect(() => {
     if (sound === false) return
@@ -51,7 +62,9 @@ export function Torchlight({ sound, ...torch }: TorchlightProps) {
         // first gesture lands here and reaches the unlock listeners on window.
         <div className="torch-shield" data-testid="torch-shield">
           {needsGesture && (
-            <output className="torch-prompt">Click anywhere to switch on the torch</output>
+            <output className="torch-prompt">
+              Click anywhere to begin the <span className="torch-prompt__word">investigation</span>
+            </output>
           )}
         </div>
       )}
