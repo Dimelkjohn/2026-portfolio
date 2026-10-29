@@ -250,6 +250,15 @@ export const boardData: BoardData = {
       media: { src: '/evidence/news-bg-1.png', alt: 'Torn strip of a vintage newspaper' },
     },
     {
+      // A tall strip of newsprint buried down the right edge, running off the board.
+      id: 'news-bg-side',
+      kind: 'cutout',
+      clickable: false,
+      placement: { x: 80, y: 50, width: 22, rotate: -90, z: 0 },
+      fastener: { kind: 'none' },
+      media: { src: '/evidence/news-bg-4.png', alt: 'Torn column of old newsprint' },
+    },
+    {
       id: 'news-bg-quote',
       kind: 'cutout',
       placement: { x: 68.5, y: 20, width: 25, rotate: -4, z: 1 },

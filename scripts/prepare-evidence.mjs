@@ -432,7 +432,7 @@ const newsSrc = (name) => path.join(NEWS, name)
  * into a JPEG): the background is the neutral dark region connected to the
  * border, flood-filled so dark print inside the paper survives.
  */
-async function noteOnChecker(file, out, { width = 700, src = note } = {}) {
+async function noteOnChecker(file, out, { width = 700, src = note, rotate = 0 } = {}) {
   const { data, info } = await sharp(src(file))
     .removeAlpha()
     .raw()
@@ -452,6 +452,7 @@ async function noteOnChecker(file, out, { width = 700, src = note } = {}) {
     rgba[p * 4 + 3] = bg[p] ? 0 : 255
   }
   const result = await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+    .rotate(rotate, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .trim({ threshold: 8 })
     .resize({ width, withoutEnlargement: true })
     .png({ compressionLevel: 9 })
@@ -557,7 +558,6 @@ async function news() {
   await noteOnWhite('news-bg-1.jpg', 'news-bg-1.png', { width: 520, bgLuma: 230, src: newsSrc })
   await noteOnChecker('news-bg-2.jpg', 'news-bg-2.png', { width: 900, src: newsSrc })
   await noteReady('news-bg-3.png', 'news-bg-3.webp', { width: 700, src: newsSrc })
-  await noteOnChecker('news-bg-4.jpg', 'news-bg-4.png', { width: 800, src: newsSrc })
   await noteReady('news-square.png', 'news-square.webp', { width: 700, src: newsSrc })
   await noteOnWhite('news-wide.jpg', 'news-wide.png', { width: 760, bgLuma: 238, src: newsSrc })
   await noteOnWhite('news-tall.jpg', 'news-tall.png', {
@@ -1226,7 +1226,16 @@ async function contact() {
   await print('handshake.jpg', 'handshake.jpg', { width: 900, tone: 'deep' })
 }
 
-const steps = { tape, evidence, notes, marks, news, me, bag, exhibits, photos, contact }
+/**
+ * The tall strip of newsprint down the board's right edge: the fourth scan
+ * turned a quarter turn to the left so its column reads upright, its own
+ * step so it can be rebuilt without regrinding the other scans.
+ */
+async function newsSide() {
+  await noteOnChecker('news-bg-4.jpg', 'news-bg-4.png', { width: 600, src: newsSrc, rotate: -90 })
+}
+
+const steps = { tape, evidence, notes, marks, news, newsSide, me, bag, exhibits, photos, contact }
 const only = process.argv[2]
 if (only && !(only in steps)) {
   console.error(`Unknown step "${only}". One of: ${Object.keys(steps).join(', ')}`)
