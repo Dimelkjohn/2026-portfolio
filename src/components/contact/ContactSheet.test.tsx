@@ -13,11 +13,8 @@ describe('ContactSheet', () => {
       'LinkedInjohn-dimelu',
       'GitHubDimelkjohn',
     ])
-    // A mailto that names the recipient as well as the address.
-    expect(links[0]).toHaveAttribute(
-      'href',
-      'mailto:John%20Dimelu%20%3Cpaul.johndim%40gmail.com%3E',
-    )
+    // A plain mailto: an encoded display name makes some mail handlers open nothing.
+    expect(links[0]).toHaveAttribute('href', 'mailto:paul.johndim@gmail.com')
     expect(links[0]).not.toHaveAttribute('target')
     expect(links[1]).toHaveAttribute('target', '_blank')
     expect(links[0]).toHaveFocus()

@@ -14,8 +14,9 @@ export const contactLinks: ContactLink[] = [
     id: 'email',
     channel: 'Email',
     label: 'paul.johndim@gmail.com',
-    // The native mail app opens with John named as the recipient, not just the address.
-    href: 'mailto:' + encodeURIComponent('John Dimelu <paul.johndim@gmail.com>'),
+    // The bare address: a display name in the link ("John Dimelu <...>") has to
+    // be percent-encoded, and several mail handlers choke on it and open nothing.
+    href: 'mailto:paul.johndim@gmail.com',
   },
   {
     id: 'linkedin',
