@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SOUNDS, soundPreferences, type SoundId } from '@/audio/preferences'
 import { useMasterSoundOn, useSoundOn } from '@/hooks/useSoundOn'
 import { cn } from '@/lib/cn'
@@ -6,7 +7,9 @@ import './sound-controls.css'
 /**
  * A master switch and one on/off switch per sound, pinned to the top-right
  * corner above the torch layers so they can be found in the dark. The master
- * reads on when every sound is on, and sets all of them at once.
+ * reads on when every sound is on, and sets all of them at once. Each switch
+ * is a marker mark: a tick when the sound is on, a red cross when it is off,
+ * the new mark stamped down over the old one when it changes.
  */
 export function SoundControls() {
   const masterOn = useMasterSoundOn()
@@ -50,6 +53,11 @@ type SwitchProps = {
 }
 
 function Switch({ on, label, available = true, className, onToggle }: SwitchProps) {
+  // The mark is stamped only when the state changes, not on the way in: the
+  // last state seen is kept, and a change (from this switch or the master)
+  // turns the stamp on for every mark after it.
+  const [seen, setSeen] = useState({ on, stamped: false })
+  if (seen.on !== on) setSeen({ on, stamped: true })
   return (
     <button
       type="button"
@@ -59,7 +67,16 @@ function Switch({ on, label, available = true, className, onToggle }: SwitchProp
       title={available ? undefined : 'Coming soon'}
       onClick={onToggle}
     >
-      <span className="sound-switch__knob" aria-hidden="true" />
+      {/* Keyed on the state, so each change remounts the mark and replays its stamp. */}
+      <span
+        key={String(on)}
+        className={cn(
+          'sound-switch__mark',
+          on ? 'sound-switch__mark--tick' : 'sound-switch__mark--cross',
+          seen.stamped && 'sound-switch__mark--stamped',
+        )}
+        aria-hidden="true"
+      />
       <span className="sound-switch__label">{label}</span>
       {!available && <span className="sound-switch__soon">soon</span>}
     </button>

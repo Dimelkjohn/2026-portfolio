@@ -4,7 +4,7 @@ import { ClueCounter } from './ClueCounter'
 import { createClues } from './clues'
 
 describe('ClueCounter', () => {
-  it('shows the clues found out of the total, and closes the case when they all are', () => {
+  it('shows the clues found out of the total, and stamps the case closed over the full count', () => {
     const store = createClues(2)
     render(<ClueCounter store={store} />)
     const counter = screen.getByRole('status')
@@ -14,6 +14,6 @@ describe('ClueCounter', () => {
     expect(counter).toHaveTextContent('01 / 02')
     act(() => store.found('y'))
     expect(counter).toHaveTextContent('Case closed')
-    expect(counter).not.toHaveTextContent('02 / 02')
+    expect(counter).toHaveTextContent('02 / 02')
   })
 })

@@ -1198,6 +1198,19 @@ async function marks() {
     ink: [179, 18, 27],
     gain: 1.6,
   })
+  // The sound switches: a marker tick in paper white for on, a cross in the thread red for off.
+  await ink('notes/check.jpg', 'mark-check.png', {
+    trim: true,
+    width: 160,
+    ink: [243, 236, 217],
+    gain: 1.1,
+  })
+  await ink('notes/cross.webp', 'mark-cross-red.png', {
+    trim: true,
+    width: 160,
+    ink: [179, 18, 27],
+    gain: 1.3,
+  })
 }
 
 // ---- The moonlighting prints ----------------------------------------------------

@@ -56,12 +56,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .clues__number--jolt {
-    animation: clues-flash 620ms ease-out both;
-  }
-}
-
 .clues__label {
   font-size: 0.72rem;
   letter-spacing: 0.16em;
@@ -75,9 +69,79 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Every clue found: the count is gone and the verdict stands alone in the thread red. */
-.clues--complete .clues__label {
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
-  color: var(--color-thread);
+/*
+  Every clue found: the full count stays, dimmed under a rubber stamp in the
+  thread red, askew and unevenly inked like the SEALED stamp on the case
+  files. It comes down after the last number's jolt has settled.
+*/
+.clues--complete {
+  background: rgb(7 7 14 / 0.9);
+}
+
+.clues--complete .clues__label,
+.clues--complete .clues__count {
+  opacity: 0.3;
+}
+
+.clues__stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 0.2em 0.55em 0.15em;
+  border: 2px solid rgb(179 18 27 / 0.8);
+  border-radius: 3px;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(179 18 27 / 0.9);
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  transform: translate(-50%, -52%) rotate(-8deg);
+  -webkit-mask-image: radial-gradient(
+    ellipse at 40% 60%,
+    #000 55%,
+    rgb(0 0 0 / 0.55) 80%,
+    rgb(0 0 0 / 0.85) 100%
+  );
+  mask-image: radial-gradient(
+    ellipse at 40% 60%,
+    #000 55%,
+    rgb(0 0 0 / 0.55) 80%,
+    rgb(0 0 0 / 0.85) 100%
+  );
+  animation: clues-stamp 460ms 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes clues-stamp {
+  0% {
+    transform: translate(-50%, -52%) rotate(-20deg) scale(2.6);
+    opacity: 0;
+  }
+  45% {
+    transform: translate(-50%, -52%) rotate(-6deg) scale(0.94);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -52%) rotate(-8deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clues__number--jolt {
+    animation: clues-flash 620ms ease-out both;
+  }
+
+  .clues__stamp {
+    animation: clues-stamp-fade 300ms 420ms ease-out both;
+  }
+
+  @keyframes clues-stamp-fade {
+    from {
+      opacity: 0;
+    }
+  }
 }

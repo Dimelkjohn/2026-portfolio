@@ -113,7 +113,8 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   one-shot effects, `fly`, `music`) with an
   on/off switch in `src/audio/preferences.ts`, shown top-right by
   `SoundControls` under a master "All sound" switch that turns every sound on
-  or off together. One-shot effects go through `src/audio/sfx.ts` (`sfx.play('thud')`,
+  or off together; each switch is a marker tick (on) or red cross (off),
+  ink marks from the pipeline's `marks` step, stamped down on change. One-shot effects go through `src/audio/sfx.ts` (`sfx.play('thud')`,
   the carousel's thud, flip and whoosh) on the `sfx` bus. Clips live in `public/audio/`. See README "How the sound works".
 - Tests sit next to the code as `*.test.tsx`, using Testing Library queries
   by role/text first, `data-testid` only for presentational layers.
