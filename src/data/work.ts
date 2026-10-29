@@ -95,7 +95,7 @@ export const selectedWork: Work[] = [
     year: '2023',
     role: 'Design and build',
     summary:
-      'A redesign for a Baltimore collision centre with its own booking system: appointments saved to MongoDB, confirmed by email and cancellable, plus a staff login to see the list. Express and EJS.',
+      'A redesign for a Baltimore collision centre with its own booking system: appointments saved to MongoDB, confirmed by email and cancellable, plus a staff login to see the list. Express on Node, jQuery up front.',
     tags: ['Node.js', 'Express', 'MongoDB', 'Passport', 'jQuery'],
     media: [
       {
@@ -110,7 +110,7 @@ export const selectedWork: Work[] = [
     title: 'Webfruit',
     tab: 'Webfruit',
     kind: 'website',
-    year: '',
+    year: '2021 to 2022',
     role: 'Co-founder, design lead',
     summary:
       'A web studio I co-founded at college with a team of designers and developers, taking client sites on project by project. Customers followed their build on our portal; I led design and the CMS builds.',

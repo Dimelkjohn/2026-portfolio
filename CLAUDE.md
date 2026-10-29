@@ -30,9 +30,14 @@ from the DOM) in place. The carousel's seven files are filled (print, three-line
 blurb, one-line stack, link or SEALED stamp); each print is built by the
 pipeline's `exhibits` step and a file may hold several photographs that
 play through. Until the torch is lit a shield seals the board from the
-pointer. Next: the other zones (top centre logistics,
-right design work, bottom centre contact and résumé), facts on hover for
-the photos, and a mobile layout. Data model in
+pointer, with a typed prompt. The right zone (the evidence bag with the
+photo stack that opens the moonlighting pile) and the bottom centre (the
+handshake that deals out the contact tags, résumé included) are in. The
+top centre logistics zone is scrapped. A clue counter sits bottom-left and
+a BOARD | SIMPLIFIED switch is taped to the board; the simplified view is
+one typed sheet with a strip of the board, the hub sheet pinned over it and
+the same facts as the board. Next: the résumé PDF in public/, facts on
+hover for the photos, and a mobile layout. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Before the repo goes public
