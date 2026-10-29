@@ -85,8 +85,10 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   fades instead. The mechanics live in `Pile` (`src/components/work/Pile.tsx`)
   and are shared with `PhotoCarousel`, a pile of prints from
   `src/data/photos.ts` opened by `opens: 'photos'` (the photographs in the
-  evidence bag); a print with a `video` (YouTube id) shows its still until it
-  is at the front, then plays in the frame, and the pile lands and flips with
+  evidence bag); each print is the picture itself at its own shape (`ratio`,
+  width over height, in the data) with its caption on a tag under the pile;
+  a print with a `video` (YouTube id) shows its still until it
+  is at the front, then plays in its place, and the pile lands and flips with
   paper sounds (`paperThud`, `paperFlip`). Print sources live in
   `assets-src/evidence/photos` and build with the `photos` step.
   `opens: 'contact'` (the handshake, bottom centre) deals out the ways to

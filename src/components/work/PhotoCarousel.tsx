@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { sfx as siteSfx, type Sfx } from '@/audio/sfx'
 import { moonlightingPhotos, type Photo } from '@/data/photos'
 import { Pile } from './Pile'
@@ -20,15 +21,16 @@ type PhotoCarouselProps = {
 const PAPER_SOUNDS = { land: 'paperThud', step: 'paperFlip', leave: 'whoosh' } as const
 
 /**
- * One print: the picture in a white border, with its caption typed along the
- * bottom. A film shows its still like any other print; once it is the front
- * print, the film itself plays in the frame. A photograph at the front opens
- * full size in a new tab when clicked.
+ * One print: the picture itself, at its own proportions, as big as the pile's
+ * box allows. A film shows its still like any other print; once it is the
+ * front print, the film itself plays in its place. A photograph at the front
+ * opens full size in a new tab when clicked. The caption is not on the print:
+ * the pile shows it on a tag underneath.
  */
 function PrintCard({ photo, front }: { photo: Photo; front: boolean }) {
   const film = photo.video && front
   return (
-    <figure className="dossier__picture">
+    <div className="dossier__picture" style={{ '--ratio': photo.ratio } as CSSProperties}>
       {film ? (
         <iframe
           className="dossier__picture-film"
@@ -58,10 +60,7 @@ function PrintCard({ photo, front }: { photo: Photo; front: boolean }) {
           Photograph to follow
         </div>
       )}
-      {photo.caption && (
-        <figcaption className="dossier__picture-caption">{photo.caption}</figcaption>
-      )}
-    </figure>
+    </div>
   )
 }
 
@@ -88,6 +87,7 @@ export function PhotoCarousel({
       noun="photograph"
       variant="photos"
       renderCard={(photo, _i, offset) => <PrintCard photo={photo} front={offset === 0} />}
+      caption={(photo) => photo.caption}
       {...rest}
     />
   )

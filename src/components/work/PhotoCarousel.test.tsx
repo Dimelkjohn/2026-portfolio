@@ -5,14 +5,15 @@ import type { Photo } from '@/data/photos'
 import { PhotoCarousel } from './PhotoCarousel'
 
 const prints: Photo[] = [
-  { id: 'a', media: { src: '/a.webp', alt: 'A poster' }, caption: 'Poster, 2024' },
+  { id: 'a', ratio: 2 / 3, media: { src: '/a.webp', alt: 'A poster' }, caption: 'Poster, 2024' },
   {
     id: 'b',
+    ratio: 16 / 9,
     media: { src: '/b.webp', alt: 'A film still' },
     caption: 'Still, 2025',
     video: { youtube: 'abc123' },
   },
-  { id: 'c' },
+  { id: 'c', ratio: 1.5 },
 ]
 
 describe('PhotoCarousel', () => {

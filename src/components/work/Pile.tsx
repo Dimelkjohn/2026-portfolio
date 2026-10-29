@@ -37,6 +37,8 @@ export type PileProps<T extends { id: string }> = {
   variant: 'files' | 'photos'
   /** Draws the face of one card, given its place in the stack. */
   renderCard: (item: T, i: number, offset: number) => ReactNode
+  /** What to say on the tag under the pile for the front card, if anything. */
+  caption?: (item: T) => ReactNode
 }
 
 /** Cards further back than this in the stack are not drawn. */
@@ -90,10 +92,12 @@ export function Pile<T extends { id: string }>({
   noun,
   variant,
   renderCard,
+  caption,
 }: PileProps<T>) {
   const reducedMotion = useReducedMotion()
   const n = items.length
   const current = wrap(index, n)
+  const frontItem = items[current]
   const wheel = useRef({ travel: 0, lockedUntil: 0 })
   const front = useRef<HTMLButtonElement>(null)
   const [phase, setPhase] = useState<Phase>('entering')
@@ -234,6 +238,12 @@ export function Pile<T extends { id: string }>({
           ))}
         </span>
       </div>
+      {frontItem && caption?.(frontItem) && (
+        // Keyed on the card, so each flip brings in a fresh tag.
+        <p key={frontItem.id} className="dossier__caption">
+          {caption(frontItem)}
+        </p>
+      )}
       <button
         ref={front}
         type="button"

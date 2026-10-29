@@ -81,82 +81,94 @@
 }
 
 /*
-  One print: the picture inside a white border, wider at the bottom where
-  the caption is typed, like a photograph that came back from the lab. The
-  card fills the stack, so the Pile's offsets, drop and snatch apply as they
-  do to the files.
+  One print: the picture itself, at its own proportions, centred in the
+  pile's box and as big as the box allows (the box is 3:2, so a picture's
+  width is its ratio times two thirds of the box's width, capped at the box).
+  No border: a glossy print lying on the desk under a soft shadow. The card
+  fills the box, so the Pile's offsets, drop and snatch apply as they do to
+  the files, and the pictures behind peek out unevenly, like a heap.
 */
 .dossier__picture {
+  --ratio: 1.5;
   position: absolute;
   inset: 0;
-  margin: 0;
-  padding: 3% 3% 9%;
-  /* The same paper as the label and the arrow tags. */
-  background: var(--color-paper);
-  box-shadow:
-    inset 0 0 0 1px rgb(27 27 31 / 0.08),
-    0 2px 3px rgb(0 0 0 / 0.3);
+  display: grid;
+  place-items: center;
 }
 
-/* The picture is a link to itself, full size in a new tab; the frame is the whole picture area. */
+.dossier__picture-link,
+.dossier__picture-film,
+.dossier__picture-img--none {
+  position: relative;
+  width: min(100cqi, calc(66.667cqi * var(--ratio)));
+  aspect-ratio: var(--ratio);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 10px 28px rgb(0 0 0 / 0.5);
+}
+
+/* The picture is a link to itself, full size in a new tab. */
 .dossier__picture-link {
   display: block;
-  width: 100%;
-  height: 100%;
   cursor: zoom-in;
 }
 
-/* The whole picture shows, square cover art and all, on the print's own paper where it does not fill the frame. */
 .dossier__picture-img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  background: var(--color-paper);
+  object-fit: cover;
+  background: #2b2a2e;
 }
 
-/* A film at the front of the pile plays in the picture area, where its still was. */
+/* A film at the front of the pile plays in the still's place. */
 .dossier__picture-film {
-  position: absolute;
-  top: 3%;
-  right: 3%;
-  bottom: 9%;
-  left: 3%;
-  width: 94%;
-  height: 88%;
+  display: block;
   border: 0;
   background: #000;
 }
 
 .dossier__picture-img--none {
+  --ratio: 1.5;
   display: grid;
   place-items: center;
-  border: 1px dashed rgb(27 27 31 / 0.4);
+  border: 1px dashed rgb(243 236 217 / 0.5);
   background: repeating-linear-gradient(
     135deg,
-    rgb(27 27 31 / 0.04) 0 8px,
-    rgb(27 27 31 / 0.08) 8px 16px
+    rgb(243 236 217 / 0.06) 0 8px,
+    rgb(243 236 217 / 0.12) 8px 16px
   );
   font-size: 1.7cqi;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgb(27 27 31 / 0.55);
+  color: rgb(243 236 217 / 0.7);
 }
 
-.dossier__picture-caption {
+/*
+  The caption: a typed paper tag under the pile, like the label above it,
+  saying what the front print is. It comes in with the label after the drop,
+  and afresh on every flip.
+*/
+.dossier__caption {
   position: absolute;
-  right: 3%;
-  bottom: 0;
-  left: 3%;
-  height: 9%;
-  display: grid;
-  place-items: center;
-  font-size: 2.1cqi;
+  top: calc(50% + min(620px, 68vw) / 3 + 28px);
+  left: 50%;
+  max-width: min(620px, 76vw);
+  margin: 0;
+  padding: 6px 14px 7px;
+  transform: translateX(-50%);
+  border: 1px solid rgb(27 27 31 / 0.8);
+  background: var(--color-paper);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
+  font-size: clamp(0.72rem, 1vw, 0.9rem);
   letter-spacing: 0.08em;
-  color: rgb(27 27 31 / 0.75);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
+  color: rgb(27 27 31 / 0.85);
+  animation: dossier-fade-in 240ms ease backwards;
+}
+
+.dossier--entering .dossier__caption {
+  animation-delay: 640ms;
 }
 
 /* The pile's shadow on the desk: wide and faint in the air, tight and dark once landed. */
@@ -202,6 +214,19 @@
   transform: translateX(-13%) translateY(5%) scale(0.94) rotate(-4deg);
   z-index: 9;
   filter: brightness(0.9);
+}
+
+/*
+  In a heap of prints the ones behind fall into the front print's shadow:
+  each step back is a good deal darker than the last, and the one pulled
+  out to the left sits in half-light.
+*/
+.dossier--photos .dossier__file {
+  filter: brightness(calc(1 - var(--o) * 0.26)) drop-shadow(0 14px 30px rgb(0 0 0 / 0.5));
+}
+
+.dossier--photos .dossier__file--prev {
+  filter: brightness(0.6);
 }
 
 .dossier__file--hidden {
@@ -698,6 +723,7 @@ img.dossier__photo--shown {
 
 .dossier--leaving .dossier__backdrop,
 .dossier--leaving .dossier__label,
+.dossier--leaving .dossier__caption,
 .dossier--leaving .dossier__arrow,
 .dossier--leaving .dossier__count {
   animation: dossier-fade-in 220ms ease both reverse;

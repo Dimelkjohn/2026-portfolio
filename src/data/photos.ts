@@ -5,7 +5,9 @@ export type Photo = {
   id: string
   /** The picture: for a film, its still. Without one the print says a photograph is to follow. */
   media?: EvidenceMedia
-  /** Typed along the print's bottom border: what it is, where, when. */
+  /** The picture's width over its height: the print is the picture at its own shape. */
+  ratio: number
+  /** Shown on a tag under the pile while this print is at the front: what it is, where, when. */
   caption?: string
   /**
    * A film: the YouTube id. The print carries the still until it reaches the
@@ -27,6 +29,7 @@ const print = (name: string): string => `/evidence/photos/${name}.webp`
 export const moonlightingPhotos: Photo[] = [
   {
     id: 'obsessed-sketch-to-screen',
+    ratio: 517 / 691,
     media: {
       src: print('obsessed-sketch-to-screen'),
       alt: 'Three hand-drawn phone sketches above the three finished Obsessed screens they became',
@@ -35,6 +38,7 @@ export const moonlightingPhotos: Photo[] = [
   },
   {
     id: 'onecard-screens',
+    ratio: 1321 / 705,
     media: {
       src: print('onecard-screens'),
       alt: 'Six OneCard app screens in dark mode: an empty state, active cards, creating a card, an invite and a card in use',
@@ -43,6 +47,7 @@ export const moonlightingPhotos: Photo[] = [
   },
   {
     id: 'essessment-design',
+    ratio: 520 / 579,
     media: {
       src: print('essessment-design'),
       alt: 'eSSESSMENT interface: a multi-channel chart over an interview, and a camera calibration dialog',
@@ -51,6 +56,7 @@ export const moonlightingPhotos: Photo[] = [
   },
   {
     id: 'presage-site-design',
+    ratio: 846 / 1400,
     media: {
       src: print('presage-site-design'),
       alt: 'A full-page design for the Presage Technologies website: hero, feature list and a free-trial plan',
@@ -59,6 +65,7 @@ export const moonlightingPhotos: Photo[] = [
   },
   {
     id: 'public-worship',
+    ratio: 1,
     media: {
       src: print('public-worship'),
       alt: 'Public Worship 2025 poster: red PW letters over a collage of city landmarks and raised hands, with a list of New York dates',
@@ -67,50 +74,59 @@ export const moonlightingPhotos: Photo[] = [
   },
   {
     id: 'design-1',
+    ratio: 1,
     media: { src: print('design-1'), alt: 'Cover art, square format' },
     caption: 'Cover art · Adobe Creative Suite',
   },
   {
     id: 'design-2',
+    ratio: 1,
     media: { src: print('design-2'), alt: 'Cover art, square format' },
     caption: 'Cover art · Adobe Creative Suite',
   },
   {
     id: 'music-was-a-good-day',
+    ratio: 16 / 9,
     media: { src: print('yt-ZPWtfxaj3Yc'), alt: 'Still from the music video for Was a Good Day' },
     caption: '“Was a Good Day” · debut single and music video',
     video: { youtube: 'ZPWtfxaj3Yc' },
   },
   {
     id: 'film-skit-1',
+    ratio: 16 / 9,
     media: { src: print('yt-AzMlU86AP-s'), alt: 'Still from a short film skit' },
     caption: 'Skit for an album promotion · written and directed',
     video: { youtube: 'AzMlU86AP-s' },
   },
   {
     id: 'animation',
+    ratio: 16 / 9,
     media: { src: print('yt-j7XBMVEvy7g'), alt: 'Still from an animated short' },
     caption: 'Animated short · drawn and voiced',
     video: { youtube: 'j7XBMVEvy7g' },
   },
   {
     id: 'film-skit-2',
+    ratio: 16 / 9,
     media: { src: print('yt-DVcO-mRHDCw'), alt: 'Still from a second short film skit' },
     caption: 'Skit for an album promotion · written and directed',
     video: { youtube: 'DVcO-mRHDCw' },
   },
   {
     id: 'design-5',
+    ratio: 875 / 1400,
     media: { src: print('design-5'), alt: 'A flyer, portrait format' },
     caption: 'Flyer · Adobe Creative Suite',
   },
   {
     id: 'design-3',
+    ratio: 1,
     media: { src: print('design-3'), alt: 'Cover art, square format' },
     caption: 'Cover art · Adobe Creative Suite',
   },
   {
     id: 'design-4',
+    ratio: 1,
     media: { src: print('design-4'), alt: 'Cover art, square format' },
     caption: 'Cover art · Adobe Creative Suite',
   },
