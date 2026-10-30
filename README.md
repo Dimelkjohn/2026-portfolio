@@ -55,7 +55,6 @@ public/textures/          generated web-sized textures (committed)
 public/props/             masking-tape strips (committed)
 public/evidence/          prints and photos pinned to the board (committed)
 assets-src/               full-resolution originals, git-ignored (textures/, evidence/)
-docs/inspiration/         reference images for the look (see note below)
 ```
 
 ## How the board works
@@ -242,9 +241,3 @@ reduced motion. The sprite is `public/sprites/fly.png`, made from
 - [ ] Board content, zone by zone: centre hub, bottom-left, top-left and top-right (known employment: a press cutting per job opening the selected-work carousel, a service-record receipt) in, the rest to come
 - [x] Red thread between items converging on "who is John Dimelu?"
 - [ ] Clickable items open a carousel for a closer look
-
-## Before making the repo public
-
-- Delete `docs/inspiration/` (watermarked stock photos, reference only) and
-  commit the removal. The Figma draft in that folder can be kept elsewhere.
-- Then: `gh repo edit Dimelkjohn/2026-portfolio --visibility public --accept-visibility-change-consequences`
