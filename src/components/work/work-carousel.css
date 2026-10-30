@@ -35,15 +35,15 @@
 /* The typed label at the top, like the lift's exhibit label. */
 .dossier__label {
   position: absolute;
-  top: clamp(16px, 4vh, 40px);
+  top: calc(37 * var(--u));
   left: 50%;
   margin: 0;
-  padding: 6px 14px 7px;
+  padding: calc(6 * var(--u)) calc(14 * var(--u)) calc(7 * var(--u));
   transform: translateX(-50%);
   border: 1px solid rgb(27 27 31 / 0.8);
   background: var(--color-paper);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
-  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-size: calc(16 * var(--u));
   font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -62,12 +62,13 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(680px, 76vw);
+  width: calc(680 * var(--u));
   /* The folder scan's own proportions. */
   aspect-ratio: 1100 / 899;
   /*
     Every size on the files is in cqi, a percent of this width, so the pile
-    scales as one piece and the notes wrap the same at any window size.
+    scales as one piece and the notes wrap the same at any window size. The
+    width itself is a share of the window (--u), like everything on the board.
   */
   container-type: inline-size;
   transform: var(--rest);
@@ -76,7 +77,7 @@
 
 /* A pile of prints is a landscape photograph's shape, a little smaller than the files. */
 .dossier--photos .dossier__stack {
-  width: min(620px, 68vw);
+  width: calc(620 * var(--u));
   aspect-ratio: 3 / 2;
 }
 
@@ -151,16 +152,16 @@
 */
 .dossier__caption {
   position: absolute;
-  top: calc(50% + min(620px, 68vw) / 3 + 28px);
+  top: calc(50% + (620 / 3 + 28) * var(--u));
   left: 50%;
-  max-width: min(620px, 76vw);
+  max-width: calc(620 * var(--u));
   margin: 0;
-  padding: 6px 14px 7px;
+  padding: calc(6 * var(--u)) calc(14 * var(--u)) calc(7 * var(--u));
   transform: translateX(-50%);
   border: 1px solid rgb(27 27 31 / 0.8);
   background: var(--color-paper);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
-  font-size: clamp(0.72rem, 1vw, 0.9rem);
+  font-size: calc(14.4 * var(--u));
   letter-spacing: 0.08em;
   text-align: center;
   color: rgb(27 27 31 / 0.85);
@@ -183,7 +184,7 @@
     rgb(0 0 0 / 0.25) 55%,
     transparent 72%
   );
-  filter: blur(14px);
+  filter: blur(calc(14 * var(--u)));
   pointer-events: none;
 }
 
@@ -456,8 +457,8 @@ img.dossier__photo--shown {
   top: 50%;
   display: grid;
   place-items: center;
-  width: clamp(64px, 6.4vw, 92px);
-  height: clamp(44px, 4.6vw, 64px);
+  width: calc(92 * var(--u));
+  height: calc(64 * var(--u));
   padding: 0;
   transform: translateY(-50%);
   border: 1px solid rgb(27 27 31 / 0.8);
@@ -483,7 +484,7 @@ img.dossier__photo--shown {
 }
 
 .dossier__arrow--prev {
-  left: clamp(12px, 4vw, 64px);
+  left: calc(64 * var(--u));
 }
 
 /* The same arrow, pointing back. */
@@ -492,37 +493,19 @@ img.dossier__photo--shown {
 }
 
 .dossier__arrow--next {
-  right: clamp(12px, 4vw, 64px);
+  right: calc(64 * var(--u));
 }
 
 .dossier__count {
   position: absolute;
-  bottom: clamp(14px, 4vh, 36px);
+  bottom: calc(36 * var(--u));
   left: 50%;
   margin: 0;
   transform: translateX(-50%);
-  font-size: clamp(0.75rem, 1vw, 0.95rem);
+  font-size: calc(15.2 * var(--u));
   letter-spacing: 0.2em;
   color: rgb(255 255 255 / 0.8);
   text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
-}
-
-@media (max-width: 720px) {
-  .dossier__stack {
-    width: 86vw;
-    aspect-ratio: 4 / 5;
-  }
-
-  .dossier__arrow {
-    top: auto;
-    bottom: clamp(44px, 9vh, 72px);
-    transform: none;
-  }
-
-  .dossier__arrow:hover,
-  .dossier__arrow:focus-visible {
-    transform: scale(1.06);
-  }
 }
 
 /* ---- The drop and the snatch -----------------------------------------------

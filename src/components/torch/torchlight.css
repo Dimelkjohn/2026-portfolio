@@ -164,9 +164,9 @@
 .torch-prompt {
   position: relative;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 calc(16 * var(--u));
   font-family: var(--font-mono-type);
-  font-size: 0.95rem;
+  font-size: calc(15.2 * var(--u));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;

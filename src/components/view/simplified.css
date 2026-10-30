@@ -96,6 +96,12 @@
   position: relative;
   z-index: 2;
   width: min(470px, 82%);
+  /*
+    The sheet's own sizes (--u, see index.css) follow this box, as it was
+    drawn at 470 wide, not the window: on a phone it shrinks with the paper.
+  */
+  container-type: inline-size;
+  --u: calc(100cqi / 470);
   aspect-ratio: 693 / 345;
   /* Pulled up over the hero's bottom edge by about a tenth of its own height. */
   margin: calc(-1.8rem - 5%) auto 1.4rem;

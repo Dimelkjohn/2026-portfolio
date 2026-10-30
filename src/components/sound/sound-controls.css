@@ -4,21 +4,21 @@
 */
 .sound-controls {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: calc(16 * var(--u));
+  right: calc(16 * var(--u));
   z-index: 60;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(6 * var(--u));
   margin: 0;
-  padding: 8px;
+  padding: calc(8 * var(--u));
   min-width: 0;
   border: 1px solid rgb(243 236 217 / 0.14);
   border-radius: 6px;
   background: rgb(7 7 14 / 0.72);
   backdrop-filter: blur(4px);
   font-family: var(--font-mono-type);
-  font-size: 0.78rem;
+  font-size: calc(12.48 * var(--u));
   letter-spacing: 0.04em;
   color: var(--color-paper);
   cursor: auto;
@@ -27,8 +27,8 @@
 .sound-switch {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
+  gap: calc(8 * var(--u));
+  padding: calc(4 * var(--u)) calc(6 * var(--u));
   border: 0;
   border-radius: 4px;
   background: transparent;
@@ -59,8 +59,8 @@
   step, drawn as backgrounds so the swap is one class.
 */
 .sound-switch__mark {
-  width: 18px;
-  height: 18px;
+  width: calc(18 * var(--u));
+  height: calc(18 * var(--u));
   flex: none;
   background: center / contain no-repeat;
   transform-origin: 50% 50%;

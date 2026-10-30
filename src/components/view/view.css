@@ -32,6 +32,16 @@
   transform-origin: 50% 0;
 }
 
+/* On the board it is scaled with everything else (--u, see index.css); over the sheet it keeps its typed size. */
+.view-toggle--board {
+  padding: 0 calc(4 * var(--u));
+}
+
+.view-toggle--board .view-toggle__option {
+  padding: calc(6 * var(--u)) calc(10 * var(--u)) calc(7 * var(--u));
+  font-size: calc(16 * var(--u));
+}
+
 /* Above the simplified sheet, centred, where there is no torch to find it by. */
 .view-toggle--sheet {
   position: relative;

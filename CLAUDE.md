@@ -4,7 +4,7 @@ Portfolio site styled as a detective evidence board (cork board, pinned
 evidence, red thread, torchlight at night). See README.md for the stack,
 layout, and how the board and torch work.
 
-Remote: https://github.com/Dimelkjohn/2026-portfolio (private, branch `master`).
+Remote: https://github.com/Dimelkjohn/2026-portfolio (public, branch `master`). Live at https://www.dimelu.me, deployed by Vercel on every push.
 
 ## Status
 
@@ -36,8 +36,8 @@ handshake that deals out the contact tags, résumé included) are in. The
 top centre logistics zone is scrapped. A clue counter sits bottom-left and
 a BOARD | SIMPLIFIED switch is taped to the board; the simplified view is
 one typed sheet with a strip of the board, the hub sheet pinned over it and
-the same facts as the board. Next: the résumé PDF in public/, facts on
-hover for the photos, and a mobile layout. Data model in
+the same facts as the board, and is the whole site on phones and tablets. Next:
+facts on hover for the photos. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
 ## Favicon
@@ -62,6 +62,18 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
 - Styling: Tailwind utilities for layout; bespoke visual effects live in a
   co-located `.css` file next to the component (board.css, torchlight.css).
   Design tokens go in the `@theme` block in `src/index.css`.
+- The board is one fixed picture, 1920 by 919 CSS px (the desktop it was
+  drawn on), that every window shows scaled to cover it and centred, so the
+  same pieces sit on the same cork at the same relative size and run off the
+  window's edges where the desktop runs off them. `--u` in `src/index.css` is
+  one design pixel in the current window; lengths are written
+  `calc(N * var(--u))`, N being the px on the desktop, never a bare px, rem,
+  vw or clamp, and the evidence is placed in percent of the picture's box
+  (`--stage-w/h`, the board's layer and the lift's stage). JavaScript uses
+  `stageFrame()` / `boardScale()` from `src/components/view/layout.ts` for the
+  same fit (torch sway, magnet reach, the lifted note, the fly, which flies in
+  the 1920 by 919 space). Hairline borders and shadows stay in px; the
+  simplified sheet is typed in rem and sets its own `--u` on its hub.
 - Per-frame visual updates write CSS custom properties directly to the DOM
   (see `useTorch`); never route pointer movement through React state. The
   beam leans a little toward the nearest clickable piece (`src/hooks/magnet.ts`,

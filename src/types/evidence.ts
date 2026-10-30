@@ -3,7 +3,11 @@
  * Rendered by `src/components/evidence`; content lives in `src/data/board.ts`.
  */
 
-/** Position, size and rotation on the board, in percent of board width/height. */
+/**
+ * Position, size and rotation on the board, in percent of the board: one
+ * fixed picture, 1920 by 919 on the desktop it was drawn on, that every
+ * window shows scaled to cover it (see --u in src/index.css).
+ */
 export type BoardPlacement = {
   /** 0-100, left edge of the item. */
   x: number

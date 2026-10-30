@@ -28,12 +28,30 @@
 :root {
   /* Torch position/size are written to :root by useTorch so that the fixed
      torch layers can blend with the board without a wrapping stacking context. */
+  /*
+    The one scale for everything on the board. The board is a fixed picture
+    drawn on a window 1920 by 919 CSS px (the desktop it was designed on),
+    and --u is one of that picture's pixels in this window: the picture is
+    scaled to cover the window, so a size written calc(N * var(--u)) is N px
+    on that desktop and the same share of the picture anywhere else. Every
+    length on the board and over it (the beam, the pins, the piles, the
+    panels, the type) is written that way, and the evidence is placed in a
+    box of the picture's size centred on the window (--stage-w/h, the
+    board's layer and the lift's stage), so any screen shows the same board
+    with the same pieces running off its edges, never a different board.
+    stageFrame() in src/components/view/layout.ts is the same fit for the
+    JavaScript side.
+  */
+  --u: max(calc(100vw / 1920), calc(100vh / 919));
+  --stage-w: calc(1920 * var(--u));
+  --stage-h: calc(919 * var(--u));
+
   /* Rendered width of one cork tile. Smaller = finer grain. */
-  --cork-tile-size: 1000px;
+  --cork-tile-size: calc(1000 * var(--u));
 
   --torch-x: 50vw;
   --torch-y: 50vh;
-  --torch-radius: 240px;
+  --torch-radius: calc(240 * var(--u));
   --torch-darkness: 0.94;
 
   color-scheme: dark;
@@ -61,7 +79,7 @@ body {
 /* Touch devices have no hover: widen the beam and lift the darkness so the board stays readable. */
 @media (hover: none) {
   :root {
-    --torch-radius: 360px;
+    --torch-radius: calc(360 * var(--u));
     --torch-darkness: 0.8;
   }
 }

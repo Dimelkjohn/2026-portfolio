@@ -4,7 +4,7 @@ Portfolio for John Dimelu, frontend and full-stack engineer, UI/UX designer.
 The whole site is a detective evidence board: pinned photos, newspaper
 clippings and post-it notes joined by red thread, viewed at night by torchlight.
 
-Repo: https://github.com/Dimelkjohn/2026-portfolio (private while in progress).
+Repo: https://github.com/Dimelkjohn/2026-portfolio (public). Live at https://www.dimelu.me.
 
 ## Stack
 
@@ -67,6 +67,30 @@ bands. There is no mirroring. The CSS tiles it at `--cork-tile-size`
 (1000px, in `src/index.css`); smaller means finer grain. A large soft-light
 mottle layer sits on top to break any residual repetition, and a procedural
 noise layer underneath is the fallback if the photo fails to load.
+
+## How the board scales
+
+The board is one fixed picture. It was drawn on a window 1920 CSS px wide
+and 919 tall (the desktop it was built on), and every window shows that
+picture scaled to cover it and centred: the beam, the pins, the thread, the
+piles, the panels and the type all scale by the same factor, every piece
+sits on the same cork, and the pieces near the edges are cut off by the
+window exactly where the desktop cuts them. A window of a different shape
+crops a little more: at the sides when it is squarer than 1920 by 919, at
+the top and bottom when it is wider. Nothing ever stretches or moves.
+
+The CSS side is `--u` in `src/index.css`, one design pixel in the current
+window (the larger of width over 1920 and height over 919); a length is
+written `calc(N * var(--u))` where N is its size in px on the desktop, and
+the evidence lives in a box of the picture's size centred on the window
+(`--stage-w`/`--stage-h`: the board's layer and the lift's stage), placed
+in percent of that box. The JavaScript side is `stageFrame()` in
+`src/components/view/layout.ts` (scale and offset of the picture in the
+window), used for the torch sway, the magnet reach, the lifted note and the
+fly, which is modelled in the 1920 by 919 space and carried into the window
+through the same fit. Hairline borders and shadows stay in px. The
+simplified view sets its own `--u` on the pinned hub sheet, from that sheet
+width, and the rest of the sheet is typed in rem.
 
 ## How the evidence works
 

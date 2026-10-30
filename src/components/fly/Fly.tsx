@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { REFERENCE_HEIGHT, REFERENCE_WIDTH, stageFrame } from '@/components/view/layout'
 import { createFlight, type FlightOptions, type FlyPose } from './flight'
 import { createFlySound } from './flySound'
 import './fly.css'
 
 const SPRITE_URL = `${import.meta.env.BASE_URL}sprites/fly.png`
-/** Rendered body width in px, picked once per fly. */
+/**
+ * The fly lives in the board's design space, 1920 by 919 (see layout.ts):
+ * its flight is modelled there and every pose is carried into the window
+ * through the same fit as the board (stageFrame), so it crosses the same
+ * cork at the same size on any screen.
+ */
+const DESIGN = { width: REFERENCE_WIDTH, height: REFERENCE_HEIGHT }
+/** Rendered body width in design px, picked once per fly. */
 const SIZE: [number, number] = [42, 56]
 /** Speed (px/s) at which the body's own blur reaches full strength. */
 const BLUR_SPEED = 750
@@ -52,8 +60,16 @@ export function Fly({ rest, firstRest, sound }: FlyProps) {
     const shadow = el.querySelector<HTMLElement>('.fly__shadow')!
 
     const flight = createFlight({ rest, firstRest })
-    const size = SIZE[0] + Math.random() * (SIZE[1] - SIZE[0])
-    el.style.setProperty('--fly-size', `${size.toFixed(1)}px`)
+    // Its size, its shadow's offset and how far its buzz carries are all in
+    // design px; the fit is re-read every frame so a resize mid-flight keeps
+    // the fly in step with the board.
+    const designSize = SIZE[0] + Math.random() * (SIZE[1] - SIZE[0])
+    let placed = { scale: 0, left: 0, top: 0 }
+    const refit = (fit = stageFrame()) => {
+      placed = fit
+      el.style.setProperty('--fly-size', `${(designSize * fit.scale).toFixed(1)}px`)
+    }
+    refit()
 
     const buzz = sound === false ? null : createFlySound({ url: sound })
     void buzz?.start()
@@ -80,7 +96,7 @@ export function Fly({ rest, firstRest, sound }: FlyProps) {
       const light = torch()
       if (!light) return LEVEL_FLOOR
       const d = Math.hypot(pose.x - light.x, pose.y - light.y)
-      const t = Math.min(1, Math.max(0, (d - HEAR_NEAR) / (HEAR_FAR - HEAR_NEAR)))
+      const t = Math.min(1, Math.max(0, (d / placed.scale - HEAR_NEAR) / (HEAR_FAR - HEAR_NEAR)))
       return LEVEL_FLOOR + (LEVEL_PEAK - LEVEL_FLOOR) * (1 - t) ** 2
     }
 
@@ -88,7 +104,15 @@ export function Fly({ rest, firstRest, sound }: FlyProps) {
       // Cap dt so a stalled tab does not teleport the fly on the next frame.
       const dt = Math.min(0.05, last ? (now - last) / 1000 : 0.016)
       last = now
-      const pose = flight.step(dt, { width: window.innerWidth, height: window.innerHeight })
+      const fit = stageFrame()
+      if (fit.scale !== placed.scale || fit.left !== placed.left || fit.top !== placed.top)
+        refit(fit)
+      const flown = flight.step(dt, DESIGN)
+      const pose = {
+        ...flown,
+        x: flown.x * placed.scale + placed.left,
+        y: flown.y * placed.scale + placed.top,
+      }
 
       el.style.visibility = pose.visible ? 'visible' : 'hidden'
       if (pose.visible) {
@@ -99,7 +123,7 @@ export function Fly({ rest, firstRest, sound }: FlyProps) {
         // Shadow: straight behind the fly on the cork, bigger the higher it is.
         const a = pose.altitude
         const k = SHADOW_SCALE[0] + (SHADOW_SCALE[1] - SHADOW_SCALE[0]) * a
-        const off = SHADOW_OFFSET[0] + (SHADOW_OFFSET[1] - SHADOW_OFFSET[0]) * a
+        const off = (SHADOW_OFFSET[0] + (SHADOW_OFFSET[1] - SHADOW_OFFSET[0]) * a) * placed.scale
         const sx = pose.x + off * 0.5
         const sy = pose.y + off
         shadow.style.transform =

@@ -18,14 +18,14 @@
 .threads__shadow {
   fill: none;
   stroke: rgb(0 0 0 / 0.45);
-  stroke-width: 3;
+  stroke-width: calc(3 * var(--u));
   stroke-linecap: round;
-  transform: translate(1px, 2px);
+  transform: translate(calc(1 * var(--u)), calc(2 * var(--u)));
 }
 
 .threads__thread {
   fill: none;
   stroke: var(--color-thread);
-  stroke-width: 1.8;
+  stroke-width: calc(1.8 * var(--u));
   stroke-linecap: round;
 }

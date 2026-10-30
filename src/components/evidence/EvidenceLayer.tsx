@@ -9,6 +9,7 @@ import { sfx } from '@/audio/sfx'
 import { clues, STAMP_IMPACT_MS } from '@/components/clues/clues'
 import { ContactSheet } from '@/components/contact/ContactSheet'
 import { interactive } from '@/components/evidence/interactive'
+import { REFERENCE_HEIGHT, stageFrame } from '@/components/view/layout'
 import { PhotoCarousel } from '@/components/work/PhotoCarousel'
 import { WorkCarousel } from '@/components/work/WorkCarousel'
 import { selectedWork } from '@/data/work'
@@ -27,8 +28,9 @@ type EvidenceLayerProps = {
  * too, and `clickable` on an item overrides either way.
  */
 
-/** The lifted item fills at most this much of the viewport. */
-const MAX_WIDTH_FRACTION = 0.46
+/** The lifted item is at most this wide on the 1920 design (scaled to the window, like everything on the board) ... */
+const LIFT_WIDTH = 620
+/** ... and fills at most this much of the board's height (or the window's, if that is shorter). */
 const MAX_HEIGHT_FRACTION = 0.72
 /** Longest the return trip may take before the overlay is torn down regardless. */
 const SETTLE_FALLBACK_MS = 600
@@ -37,20 +39,23 @@ type Lifted = { item: EvidenceItemData; dx: number; dy: number; scale: number }
 
 /**
  * Work out the translate and scale that carry an item from where it sits on
- * the board to the centre of the screen. Geometry is the unrotated layout
- * box (offset*), because the item's CSS rotation is about its top centre and
- * the lifted copy keeps that same origin.
+ * the board to the centre of the window. Geometry is the unrotated layout
+ * box (offset*, in px inside the board's layer, which is the design picture
+ * fitted to the window: stageFrame), because the item's CSS rotation is
+ * about its top centre and the lifted copy keeps that same origin.
  */
 export function liftFor(
   box: { left: number; top: number; width: number; height: number },
   viewport: { width: number; height: number },
 ): Pick<Lift, 'dx' | 'dy' | 'scale'> {
-  const maxW = Math.min(viewport.width * MAX_WIDTH_FRACTION, 620)
-  const maxH = viewport.height * MAX_HEIGHT_FRACTION
+  const frame = stageFrame(viewport.width, viewport.height)
+  const maxW = LIFT_WIDTH * frame.scale
+  const maxH = Math.min(viewport.height, REFERENCE_HEIGHT * frame.scale) * MAX_HEIGHT_FRACTION
   const scale = Math.max(1, Math.min(maxW / box.width, maxH / box.height))
+  // The window's centre, in the layer's own px, less where the item is.
   return {
-    dx: viewport.width / 2 - (box.left + box.width / 2),
-    dy: viewport.height / 2 - box.top - (box.height * scale) / 2,
+    dx: viewport.width / 2 - frame.left - (box.left + box.width / 2),
+    dy: viewport.height / 2 - frame.top - box.top - (box.height * scale) / 2,
     scale,
   }
 }

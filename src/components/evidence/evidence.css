@@ -2,7 +2,8 @@
   Evidence pinned to the board.
 
   Geometry comes from custom properties written by EvidenceItem.tsx:
-    --x / --y    left / top, percent of the board
+    --x / --y    left / top, percent of the board (a fixed 1920 by 919 picture
+                 fitted to the window: .board__layer in board.css)
     --w          width, percent of the board
     --rotate     tilt in degrees
     --z          stacking order (hover lifts the item above its neighbours)
@@ -129,22 +130,24 @@
 }
 
 .evidence__label {
-  --gap: calc(14px / var(--lift-s, 1));
+  --gap: calc(14 * var(--u) / var(--lift-s, 1));
   position: absolute;
   left: var(--lx);
   top: var(--ly);
   width: max-content;
-  max-width: calc(190px / var(--lift-s, 1));
-  padding: calc(5px / var(--lift-s, 1)) calc(7px / var(--lift-s, 1)) calc(4px / var(--lift-s, 1));
+  max-width: calc(190 * var(--u) / var(--lift-s, 1));
+  padding: calc(5 * var(--u) / var(--lift-s, 1)) calc(7 * var(--u) / var(--lift-s, 1))
+    calc(4 * var(--u) / var(--lift-s, 1));
   border: calc(1px / var(--lift-s, 1)) solid rgb(27 27 31 / 0.75);
   background: rgb(243 236 217 / 0.94);
   font-family: var(--font-mono-type);
-  font-size: calc(0.8rem / var(--lift-s, 1));
+  font-size: calc(12.8 * var(--u) / var(--lift-s, 1));
   line-height: 1.25;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink);
-  box-shadow: 0 calc(2px / var(--lift-s, 1)) calc(6px / var(--lift-s, 1)) rgb(0 0 0 / 0.35);
+  box-shadow: 0 calc(2 * var(--u) / var(--lift-s, 1)) calc(6 * var(--u) / var(--lift-s, 1))
+    rgb(0 0 0 / 0.35);
 }
 
 /* The leader line (::before) and the anchor dot (::after). */
@@ -156,8 +159,8 @@
 }
 
 .evidence__label::after {
-  width: calc(5px / var(--lift-s, 1));
-  height: calc(5px / var(--lift-s, 1));
+  width: calc(5 * var(--u) / var(--lift-s, 1));
+  height: calc(5 * var(--u) / var(--lift-s, 1));
   border-radius: 50%;
 }
 
@@ -267,16 +270,16 @@
 */
 .lift__title {
   position: absolute;
-  top: clamp(16px, 4vh, 40px);
+  top: calc(37 * var(--u));
   left: 50%;
   margin: 0;
-  padding: 6px 14px 7px;
+  padding: calc(6 * var(--u)) calc(14 * var(--u)) calc(7 * var(--u));
   transform: translate(-50%, -8px);
   border: 1px solid rgb(27 27 31 / 0.8);
   background: var(--color-paper);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
   font-family: var(--font-mono-type);
-  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-size: calc(16 * var(--u));
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-ink);
@@ -299,10 +302,13 @@
   transform: translate(-50%, 0);
 }
 
-/* Spans the viewport like the board, so the item's percent placement lands in the same spot. */
+/* The same box as the board's layer (board.css), so the item's percent placement lands in the same spot. */
 .lift__stage {
   position: absolute;
-  inset: 0;
+  top: calc(50% - var(--stage-h) / 2);
+  left: calc(50% - var(--stage-w) / 2);
+  width: var(--stage-w);
+  height: var(--stage-h);
   pointer-events: none;
 }
 
@@ -339,9 +345,9 @@
 .evidence__pin {
   position: absolute;
   z-index: 3;
-  top: var(--pin-y, clamp(4px, 0.4vw, 7px));
+  top: var(--pin-y, calc(7 * var(--u)));
   left: var(--pin-x, 50%);
-  width: clamp(14px, 1.25vw, 22px);
+  width: calc(22 * var(--u));
   height: auto;
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -367,7 +373,7 @@
 .evidence__tape {
   position: absolute;
   z-index: 3;
-  width: clamp(40px, var(--tape-w, 55%), 170px);
+  width: clamp(calc(40 * var(--u)), var(--tape-w, 55%), calc(170 * var(--u)));
   height: auto;
   opacity: 0.92;
   filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
@@ -384,7 +390,7 @@
 .evidence__tape--tr,
 .evidence__tape--bl,
 .evidence__tape--br {
-  width: clamp(36px, var(--tape-w, 42%), 130px);
+  width: clamp(calc(36 * var(--u)), var(--tape-w, 42%), calc(130 * var(--u)));
 }
 
 .evidence__tape--tl {
@@ -482,7 +488,7 @@
   position: absolute;
   inset: auto 8% 5% 8%;
   font-family: var(--font-caption, var(--font-hand));
-  font-size: clamp(0.55rem, 0.74vw, 1rem);
+  font-size: calc(14.2 * var(--u));
   line-height: 1.05;
   text-align: center;
   color: #1f2a4a;
@@ -585,7 +591,7 @@
   /* Visible so a ring around the last word is not cut off; copy is sized to fit. */
   overflow: visible;
   font-family: var(--font-note, var(--font-hand));
-  font-size: clamp(0.7rem, 1.02vw, 1.25rem);
+  font-size: calc(19.6 * var(--u));
   line-height: 1;
   color: #2b2420;
   mix-blend-mode: multiply;
@@ -601,7 +607,7 @@
   overflow: visible;
   white-space: nowrap;
   text-align: center;
-  font-size: clamp(1rem, 1.5vw, 1.8rem);
+  font-size: calc(28.8 * var(--u));
 }
 
 .evidence__marker {
@@ -660,7 +666,7 @@
 /* Rock Salt has no lowercase and runs wide, so it goes smaller and looser. */
 .evidence__scrawl--caps {
   font-family: var(--font-note-caps, var(--font-hand));
-  font-size: clamp(0.46rem, 0.64vw, 0.82rem);
+  font-size: calc(12.3 * var(--u));
   line-height: 1.55;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -678,7 +684,7 @@
   bottom: 4%;
   left: 6%;
   font-family: var(--font-hand);
-  font-size: clamp(0.8rem, 1.1vw, 1.25rem);
+  font-size: calc(20 * var(--u));
   line-height: 1.1;
   color: #2a2630;
   text-align: center;
@@ -782,7 +788,7 @@
   padding-bottom: 0.3em;
   border-bottom: 2px solid #2a2520;
   font-family: var(--font-news);
-  font-size: clamp(1.2rem, 2.6vw, 3rem);
+  font-size: calc(48 * var(--u));
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1;
@@ -797,7 +803,7 @@
   padding-bottom: 0.3em;
   border-bottom: 1px solid #2a2520;
   font-family: var(--font-news);
-  font-size: clamp(0.38rem, 0.52vw, 0.62rem);
+  font-size: calc(9.92 * var(--u));
   letter-spacing: 0.14em;
   line-height: 1;
   text-transform: uppercase;
@@ -810,7 +816,7 @@
 .evidence__headline {
   margin: 0.4em 0 0.3em;
   font-family: var(--font-news);
-  font-size: clamp(0.7rem, 1.05vw, 1.2rem);
+  font-size: calc(19.2 * var(--u));
   font-weight: 700;
   line-height: 1.1;
   color: #2a2520;
@@ -821,7 +827,7 @@
   column-count: 2;
   column-gap: 1.2em;
   font-family: var(--font-news);
-  font-size: clamp(0.34rem, 0.46vw, 0.54rem);
+  font-size: calc(8.64 * var(--u));
   line-height: 1.3;
   text-align: justify;
   hyphens: auto;
@@ -854,7 +860,7 @@
 .evidence__note {
   margin: 0;
   font-family: var(--font-hand);
-  font-size: clamp(0.9rem, 1.5vw, 1.8rem);
+  font-size: calc(28.8 * var(--u));
   line-height: 1.1;
   color: #23201c;
 }
@@ -915,7 +921,7 @@
   margin-bottom: 0.6em;
   padding-bottom: 0.4em;
   border-bottom: 2px dotted rgb(60 58 52 / 0.5);
-  font-size: clamp(0.5rem, 0.72vw, 0.82rem);
+  font-size: calc(13.12 * var(--u));
   letter-spacing: 0.14em;
   text-align: center;
   color: rgb(60 58 52 / 0.72);
@@ -924,7 +930,7 @@
 .evidence__receipt-lines {
   margin: 0;
   font-family: var(--font-mono-type);
-  font-size: clamp(0.38rem, 0.52vw, 0.62rem);
+  font-size: calc(9.92 * var(--u));
   line-height: 1.45;
   white-space: pre;
   color: rgb(60 58 52 / 0.62);
@@ -942,7 +948,7 @@
   display: block;
   margin-top: 0.8em;
   font-family: var(--font-mono-type);
-  font-size: clamp(0.38rem, 0.52vw, 0.62rem);
+  font-size: calc(9.92 * var(--u));
   line-height: 1.45;
   letter-spacing: 0.1em;
   text-align: center;
@@ -1001,8 +1007,8 @@
     auto,
     auto,
     auto,
-    400px 400px,
-    200px 200px,
+    calc(400 * var(--u)) calc(400 * var(--u)),
+    calc(200 * var(--u)) calc(200 * var(--u)),
     auto;
   background-blend-mode:
     multiply, multiply, multiply, multiply, multiply, multiply, soft-light, multiply, normal;
@@ -1023,7 +1029,7 @@
 }
 
 .evidence__ink-label {
-  font-size: clamp(0.45rem, 0.7vw, 0.8rem);
+  font-size: calc(12.8 * var(--u));
   letter-spacing: 0.12em;
   text-align: center;
   color: #555;
@@ -1039,27 +1045,27 @@
 .evidence__fact {
   position: absolute;
   z-index: 3;
-  top: calc(100% + 14px);
+  top: calc(100% + 14 * var(--u));
   left: 50%;
   width: max-content;
-  max-width: min(260px, 60vw);
-  padding: 8px 12px 9px;
+  max-width: calc(260 * var(--u));
+  padding: calc(8 * var(--u)) calc(12 * var(--u)) calc(9 * var(--u));
   border: 1px solid rgb(0 0 0 / 0.25);
   border-radius: 3px;
   background:
     radial-gradient(
-      circle 4px at 12px 50%,
-      #7a4f27 0 2.5px,
-      rgb(0 0 0 / 0.25) 3px,
-      transparent 4px
+      circle calc(4 * var(--u)) at calc(12 * var(--u)) 50%,
+      #7a4f27 0 calc(2.5 * var(--u)),
+      rgb(0 0 0 / 0.25) calc(3 * var(--u)),
+      transparent calc(4 * var(--u))
     ),
     linear-gradient(180deg, #e9d7ad, #d8c494);
-  padding-left: 24px;
+  padding-left: calc(24 * var(--u));
   box-shadow:
     0 3px 6px rgb(0 0 0 / 0.4),
     0 10px 20px rgb(0 0 0 / 0.3);
   font-family: var(--font-hand);
-  font-size: 1.05rem;
+  font-size: calc(16.8 * var(--u));
   line-height: 1.15;
   color: #2a2420;
   text-align: left;
@@ -1067,7 +1073,7 @@
   visibility: hidden;
   pointer-events: none;
   transform: translate(-50%, -6px) rotate(-2deg);
-  transform-origin: 12px 50%;
+  transform-origin: calc(12 * var(--u)) 50%;
   transition:
     opacity 180ms ease,
     transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2),
@@ -1081,7 +1087,7 @@
   bottom: 100%;
   left: 50%;
   width: 1px;
-  height: 14px;
+  height: calc(14 * var(--u));
   background: rgb(60 40 20 / 0.7);
 }
 

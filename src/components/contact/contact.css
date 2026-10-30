@@ -37,7 +37,7 @@
   left: 50%;
   display: grid;
   justify-items: center;
-  gap: clamp(12px, 1.6vw, 20px);
+  gap: calc(20 * var(--u));
   margin: 0;
   padding: 0;
   transform: translate(-50%, -50%);
@@ -80,11 +80,11 @@
   display: inline-flex;
   align-items: baseline;
   transform: rotate(var(--tilt, 0deg));
-  padding: 7px 16px 8px;
+  padding: calc(7 * var(--u)) calc(16 * var(--u)) calc(8 * var(--u));
   border: 1px solid rgb(27 27 31 / 0.8);
   background: var(--color-paper);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.5);
-  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  font-size: calc(16 * var(--u));
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-decoration: none;

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { attract, centresOf, type MagnetOptions, type Point } from './magnet'
+import { boardScale } from '@/components/view/layout'
+import { attract, centresOf, DEFAULT_REACH, type MagnetOptions, type Point } from './magnet'
 import { useReducedMotion } from './useReducedMotion'
 
 export type TorchOptions = {
@@ -167,9 +168,9 @@ export function useTorch({
         const light = tick(t, dt)
         scale = light.scale
         intensity = light.intensity
-        // Hand-held sway: a few px of slow drift around the eased position.
-        x += 5 * Math.sin(t * 1.1) + 3 * Math.sin(t * 2.9 + 0.8)
-        y += 4 * Math.sin(t * 1.4 + 2.1) + 3 * Math.sin(t * 3.3)
+        // Hand-held sway: a few px of slow drift around the eased position, in board units.
+        x += (5 * Math.sin(t * 1.1) + 3 * Math.sin(t * 2.9 + 0.8)) * scale
+        y += (4 * Math.sin(t * 1.4 + 2.1) + 3 * Math.sin(t * 3.3)) * scale
       }
 
       const p = power(now)
@@ -188,15 +189,21 @@ export function useTorch({
 
     // The clickables' centres, measured once the pointer first moves and again
     // after a resize: the pieces do not move otherwise. Nothing pulls while a
-    // pile or the contact sheet is open over the board.
+    // pile or the contact sheet is open over the board. The magnet's reach,
+    // like the sway, is in board units: it shrinks with the pieces.
+    let scale = boardScale()
     let centres: Point[] | null = null
-    const forgetCentres = () => {
+    const onResize = () => {
       centres = null
+      scale = boardScale()
     }
     const aim = (x: number, y: number): Point => {
       if (!magnet || document.querySelector('dialog[open]')) return { x, y }
       centres ??= centresOf(MAGNET_SELECTOR)
-      return attract({ x, y }, centres, magnet)
+      return attract({ x, y }, centres, {
+        reach: (magnet.reach ?? DEFAULT_REACH) * scale,
+        pull: magnet.pull,
+      })
     }
 
     const onPointerMove = (event: PointerEvent) => {
@@ -219,7 +226,7 @@ export function useTorch({
     paint(current.x, current.y, 1, 1, power(performance.now()))
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerdown', onPointerMove, { passive: true })
-    window.addEventListener('resize', forgetCentres)
+    window.addEventListener('resize', onResize)
     document.addEventListener('visibilitychange', onVisibility)
     if (animate) resume()
 
@@ -228,7 +235,7 @@ export function useTorch({
       if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerMove)
-      window.removeEventListener('resize', forgetCentres)
+      window.removeEventListener('resize', onResize)
       document.removeEventListener('visibilitychange', onVisibility)
       for (const name of PROPERTIES) root.style.removeProperty(name)
     }

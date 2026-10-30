@@ -5,6 +5,7 @@ import type { EvidenceItem } from '@/types/evidence'
 import { boardData } from '@/data/board'
 import { selectedWork } from '@/data/work'
 import { clues } from '@/components/clues/clues'
+import { stageFrame } from '@/components/view/layout'
 import { EvidenceLayer, liftFor } from './EvidenceLayer'
 
 const items: EvidenceItem[] = [
@@ -231,9 +232,11 @@ describe('liftFor', () => {
 
   it('centres the item and scales it up to the viewport limits', () => {
     const lift = liftFor({ left: 100, top: 100, width: 100, height: 100 }, viewport)
-    expect(lift.scale).toBeCloseTo(4.6) // width-bound: 46% of 1000 / 100
-    expect(lift.dx).toBe(350) // 500 - 150
-    expect(lift.dy).toBe(400 - 100 - (100 * 4.6) / 2)
+    const frame = stageFrame(viewport.width, viewport.height)
+    const scale = (620 * frame.scale) / 100 // width-bound: 620 design px wide, at this window's scale
+    expect(lift.scale).toBeCloseTo(scale)
+    expect(lift.dx).toBeCloseTo(500 - frame.left - 150) // the window's centre in layer px, less the item's
+    expect(lift.dy).toBeCloseTo(400 - frame.top - 100 - (100 * scale) / 2)
   })
 
   it('never shrinks an item that is already large', () => {
