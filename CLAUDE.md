@@ -40,11 +40,6 @@ the same facts as the board. Next: the résumé PDF in public/, facts on
 hover for the photos, and a mobile layout. Data model in
 `src/types/evidence.ts`; content goes in `src/data/board.ts`.
 
-## Before the repo goes public
-
-Delete `docs/inspiration/` first. It holds watermarked stock photos used only
-as references. Do not make the repo public with that folder present.
-
 ## Favicon
 
 `public/favicon.png` (and the flattened `apple-touch-icon.png`) is a big "?" in
