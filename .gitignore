@@ -31,3 +31,4 @@ Thumbs.db
 
 # Full-resolution source assets (large binaries). `npm run textures` and `npm run evidence` regenerate public/.
 assets-src/
+.vercel
