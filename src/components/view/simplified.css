@@ -28,9 +28,21 @@
   color: rgb(243 236 217 / 0.6);
 }
 
+/* On a phone the paper fills the screen: no dark margin round it, the notice typed across the top. */
 @media (max-width: 720px) {
   .simplified {
-    padding: 16px 12px 48px;
+    padding: 0;
+  }
+
+  .simplified__notice {
+    margin: 0;
+    padding: 10px 16px;
+  }
+
+  .simplified__sheet {
+    max-width: none;
+    min-height: 100%;
+    box-shadow: none;
   }
 }
 
