@@ -73,9 +73,20 @@ const handles = ({ x, y, dip, swing }: LooseThread) => ({
   y2: y * 0.5 + dip,
 })
 
+/**
+ * Where a thread starts, in px from the pin's centre: just inside the rim of
+ * the pin head (drawn 22px wide on the sheet, so a head of radius 7), so the
+ * threads tuck under it instead of knotting at its centre.
+ */
+const THREAD_START = 6
+
 const loosePath = (t: LooseThread) => {
   const h = handles(t)
-  return `M 0 0 C ${h.x1} ${h.y1} ${h.x2} ${h.y2} ${t.x} ${t.y}`
+  // Set off along the line to the first handle, so the start sits under the head.
+  const len = Math.hypot(h.x1, h.y1) || 1
+  const sx = (h.x1 / len) * THREAD_START
+  const sy = (h.y1 / len) * THREAD_START
+  return `M ${sx.toFixed(1)} ${sy.toFixed(1)} C ${h.x1} ${h.y1} ${h.x2} ${h.y2} ${t.x} ${t.y}`
 }
 
 /** The lowest point, in px below the pin, of the part of a thread's curve that is on the paper. */
@@ -152,10 +163,21 @@ const title = (s: string) => s.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpp
  * with no torch, no pins and nothing to find. Who John is, where he has
  * worked, the selected work, the moonlighting, and how to reach him.
  */
-export function SimplifiedView() {
+type SimplifiedViewProps = {
+  /** The sheet is the whole site (a viewport too narrow for the board): no view switch, and a word about the board. */
+  sole?: boolean
+}
+
+export function SimplifiedView({ sole = false }: SimplifiedViewProps) {
   return (
     <main className="simplified">
-      <ViewToggle place="sheet" />
+      {sole ? (
+        <p className="simplified__notice">
+          This looks a whole lot cooler on a bigger screen. Promise ;)
+        </p>
+      ) : (
+        <ViewToggle place="sheet" />
+      )}
       <article className="simplified__sheet">
         <img
           className="simplified__hero"

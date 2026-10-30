@@ -15,6 +15,25 @@
   cursor: auto;
 }
 
+/* On a viewport with no board: a typed line above the sheet, pointing at the bigger screen. */
+.simplified__notice {
+  max-width: 720px;
+  margin: 0 auto 14px;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgb(243 236 217 / 0.6);
+}
+
+@media (max-width: 720px) {
+  .simplified {
+    padding: 16px 12px 48px;
+  }
+}
+
 .simplified__sheet {
   --sheet-top: clamp(24px, 4vw, 48px);
   --sheet-x: clamp(20px, 4vw, 44px);
@@ -107,6 +126,11 @@
   inset: 0;
   z-index: 3;
   pointer-events: none;
+}
+
+/* Drawn at its full size whatever the window, so the threads' starts (THREAD_START) sit under its head. */
+.simplified__pin .evidence__pin {
+  width: 22px;
 }
 
 /* A lighter shadow than on the board: it lies on paper here, not on cork in the dark. */

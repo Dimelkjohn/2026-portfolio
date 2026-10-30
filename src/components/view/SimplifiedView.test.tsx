@@ -6,6 +6,15 @@ import { selectedWork } from '@/data/work'
 import { SimplifiedView } from './SimplifiedView'
 
 describe('SimplifiedView', () => {
+  it('as the whole site, drops the view switch and says the board wants a bigger screen', () => {
+    render(<SimplifiedView sole />)
+    expect(screen.queryByRole('group', { name: 'View' })).toBeNull()
+    expect(screen.getByText(/looks a whole lot cooler on a bigger screen/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'who is John Dimelu' }),
+    ).toBeInTheDocument()
+  })
+
   it('lays the board out as one sheet: employment, the work, the moonlighting and contact', () => {
     render(<SimplifiedView />)
     expect(

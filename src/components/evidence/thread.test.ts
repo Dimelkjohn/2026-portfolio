@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { jitter, threadPath } from './thread'
 
 describe('threadPath', () => {
+  it('holds each end back by its own inset', () => {
+    const d = threadPath({ x: 0, y: 0 }, { x: 100, y: 0 }, { sag: 0, inset: [10, 0] })
+    expect(d.startsWith('M 10.0 0.0')).toBe(true)
+    expect(d.endsWith('100.0 0.0')).toBe(true)
+  })
+
   it('holds both ends back from the pin centres along the line', () => {
     const d = threadPath({ x: 0, y: 0 }, { x: 100, y: 0 }, { sag: 0, inset: 10 })
     expect(d).toBe('M 10.0 0.0 Q 50.0 0.0 90.0 0.0')

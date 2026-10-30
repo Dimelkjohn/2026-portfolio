@@ -115,7 +115,11 @@ Google Fonts; to change it, redraw it the same way and resize with sharp.
   remembered in localStorage by `src/components/view/viewPreference.ts`):
   the board, and `SimplifiedView`, one plain typed sheet built from the same
   data files (service record, selected work, moonlighting prints, contact).
-  Anything added to the board's data should show up there too.
+  Anything added to the board's data should show up there too. Below 1280px
+  wide, and on any touch device (`SHEET_ONLY_QUERY` in
+  `src/components/view/layout.ts`), the sheet is the whole site: no switch,
+  no sound, and a line saying the board wants a bigger screen. That is the
+  phone and tablet layout; laptops and up get both views.
 - All sound goes through the shared engine in `src/audio/engine.ts` (one
   AudioContext, master gain, clip cache, one autoplay unlock). New sounds
   take `audio.channel(volume, bus)` and `audio.load()`; never create another
