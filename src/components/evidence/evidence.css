@@ -51,11 +51,16 @@
   every kind, so a card and a cutout feel like the same affordance; it follows
   the paper's edge, whatever the shape.
 */
-.evidence--clickable .evidence__paper {
+.evidence--clickable .evidence__paper,
+.evidence--clickable .evidence__cutout {
   transition: filter 160ms ease;
 }
 
-.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper {
+/* On a cutout or a note the glow goes on the image, not the paper: see "the image is the paper" below. */
+.evidence--clickable:not(.evidence--cutout, .evidence--note):is(:hover, :has(:focus-visible))
+  .evidence__paper,
+.evidence--clickable:is(.evidence--cutout, .evidence--note):is(:hover, :has(:focus-visible))
+  .evidence__cutout {
   filter: drop-shadow(0 0 2px rgb(255 255 255 / 1)) drop-shadow(0 0 9px rgb(255 255 255 / 0.85))
     drop-shadow(0 0 22px rgb(255 255 255 / 0.5)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
 }
@@ -77,6 +82,15 @@
   .evidence__paper {
   outline: none;
   box-shadow: none;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
+}
+
+/* A cutout or a note keeps its shadow on the image when lifted too (class doubled for specificity). */
+.lift .evidence--lifted.evidence--lifted:is(.evidence--cutout, .evidence--note) .evidence__paper {
+  filter: none;
+}
+
+.lift .evidence--lifted.evidence--lifted:is(.evidence--cutout, .evidence--note) .evidence__cutout {
   filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
 }
 
@@ -530,6 +544,15 @@
   overflow: visible;
   background: none;
   box-shadow: none;
+}
+
+/*
+  The shadow (and the hover halo) is a filter on the image, never on the paper
+  around it: Chrome drops lines of text, at random, from a tilted element that
+  is filtered, so the writing on a note must sit outside the filter.
+*/
+.evidence--cutout .evidence__cutout,
+.evidence--note .evidence__cutout {
   filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3)) drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
 }
 
@@ -544,7 +567,8 @@
   into its image by the pipeline, so nothing is filtered here per frame. It
   still rises on hover with the ordinary halo, but stays under the bag's layer.
 */
-.evidence--bagged .evidence__paper {
+.evidence--bagged .evidence__paper,
+.evidence--bagged .evidence__cutout {
   filter: none;
   transition: none;
 }
@@ -578,7 +602,8 @@
 }
 
 /* Under the pointer the paper itself stays unfiltered; the halo is the ::before above. */
-.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper {
+.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__paper,
+.evidence--bagged.evidence--clickable:is(:hover, :has(:focus-visible)) .evidence__cutout {
   filter: none;
 }
 
